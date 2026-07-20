@@ -224,9 +224,8 @@ const Proposal: ComponentType<SectionProps> = ({ active }) => {
 
       <div className="proposal-scene">
         <Ring size={56} />
-        <p className="proposal-line">"Em làm đám cưới với anh nhé?"</p>
-        <p className="proposal-answer">
-          <span className="proposal-yes">Có</span>
+        <p className="proposal-line">"Em đồng ý làm vợ anh nhé?"</p>
+        <p className="proposal-answer">Em đồng ý</span>
           <Heart size={20} fill="#C9A84C" />
         </p>
       </div>
@@ -302,7 +301,7 @@ const WeddingDay: ComponentType<SectionProps> = ({ active }) => {
       <div className="timeline">
         {[
           { time: '07:00', title: 'Rước dâu', desc: 'Đoàn rước dâu từ nhà trai' },
-          { time: '19:30', title: 'Lễ cưới', desc: 'Nghi thức tại tư gia nhà gái' },
+          { time: '09:30', title: 'Lễ cưới', desc: 'Nghi thức tại tư gia nhà gái' },
           { time: '12:30', title: 'Tiệc cưới', desc: 'Đãi tiệc thân mật cùng gia đình' },
           { time: '15:00', title: 'Chụp ảnh', desc: 'Khoảnh khắc cùng người thân' },
           { time: '19:00', title: 'Lễ tối', desc: 'Đón khách quý đến chung vui' },
