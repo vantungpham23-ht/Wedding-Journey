@@ -1,0 +1,161 @@
+/* =========================================
+   Finale — Luxury Wine & Champagne Theme
+   ========================================= */
+
+.finale {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.finale-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 0 32px;
+  animation: fadeUp 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  max-width: 100vw;
+}
+
+.finale-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 260px;
+  margin-bottom: 6px;
+  animation: fadeIn 0.7s ease forwards;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-main, #C9A84C), transparent);
+}
+
+.finale-location {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--gold-main, #C9A84C);
+  opacity: 0.85;
+  animation: fadeIn 0.7s ease forwards;
+}
+
+.finale-date {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(26px, 9.5vw, 50px);
+  font-weight: 700;
+  color: var(--cream-warm, #FAF3E6);
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 50px rgba(201, 168, 76, 0.5),
+    0 0 20px rgba(201, 168, 76, 0.3);
+  animation: scaleIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  line-height: 1.1;
+}
+
+.finale-names {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(12px, 3.2vw, 17px);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--gold-light, #E2CE94);
+  animation: fadeIn 0.7s ease forwards;
+  font-style: italic;
+}
+
+.finale-btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(12px, 3vw, 14px) clamp(24px, 6vw, 36px);
+  margin-top: 14px;
+  background: rgba(45, 11, 18, 0.7);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 100px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow:
+    0 8px 32px rgba(24, 10, 14, 0.5),
+    0 0 30px rgba(201, 168, 76, 0.12);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeUp 0.7s ease forwards;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.finale-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.finale-btn:hover::before { opacity: 1; }
+
+.finale-btn:hover {
+  background: rgba(139, 35, 50, 0.5);
+  border-color: rgba(201, 168, 76, 0.65);
+  box-shadow:
+    0 12px 40px rgba(24, 10, 14, 0.6),
+    0 0 50px rgba(201, 168, 76, 0.2);
+  transform: translateY(-3px);
+}
+
+.finale-btn:active { transform: scale(0.96); }
+
+.finale-btn span {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 2.8vw, 14px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cream-warm, #FAF3E6);
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.finale-countdown {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(10px, 2.4vw, 12px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.5);
+  animation: fadeIn 0.5s ease forwards;
+  margin-top: 4px;
+}
+
+/* ── Safe area ── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .finale { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}

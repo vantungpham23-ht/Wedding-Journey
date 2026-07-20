@@ -1,0 +1,235 @@
+/* =========================================
+   Wedding Journey — Global Styles v2
+   Luxury Wine & Champagne Theme
+   ========================================= */
+
+:root {
+  /* ── Wine Red Palette ── */
+  --wine-deepest:  #180A0E;
+  --wine-deep:     #2D0B12;
+  --wine-rich:     #4A0E1A;
+  --wine-bright:   #6B1525;
+  --wine-glow:     rgba(139, 35, 50, 0.35);
+  --wine-accent:   #8B1A2B;
+  --wine-light:    #A82A3A;
+  --wine-pale:     #C44050;
+  --wine-rose:     #D4757A;
+
+  /* ── Champagne Gold Palette ── */
+  --gold-deep:     #5A3A12;
+  --gold-rich:     #7A5020;
+  --gold-main:     #C9A84C;
+  --gold-warm:     #D4B870;
+  --gold-light:    #E2CE94;
+  --gold-pale:     #EDD9A8;
+
+  /* ── Beige / Cream Palette ── */
+  --cream-warm:    #FAF3E6;
+  --cream-light:   #F2E8D8;
+  --cream-mid:     #E8DCC8;
+  --beige-dark:    #8B7355;
+  --beige-mid:     #B8A07A;
+
+  /* ── Semantic ── */
+  --color-bg:          var(--wine-deepest);
+  --color-water:       #1A0A10;
+  --color-terrain:     #3D2418;
+  --color-terrain-edge: #7A4A28;
+  --color-glow:        rgba(201, 168, 76, 0.5);
+  --color-heart:        var(--wine-light);
+  --color-heart-highlight: var(--wine-pale);
+  --color-flight-trail: var(--gold-main);
+  --color-particle:     rgba(201, 168, 76, 0.75);
+
+  /* ── Typography ── */
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-ui: 'Raleway', 'Inter', system-ui, sans-serif;
+
+  /* ── Spacing ── */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--cream-warm);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body { position: fixed; inset: 0; }
+
+/* ── Canvas container ── */
+.canvas-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Vignette overlay ── */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 30%,
+    rgba(24, 10, 14, 0.4) 70%,
+    rgba(24, 10, 14, 0.75) 100%
+  );
+  z-index: 10;
+}
+
+/* ── Loading screen ── */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(74, 14, 21, 0.6) 0%, transparent 60%),
+    var(--wine-deepest);
+  gap: 24px;
+}
+
+.loading-heart {
+  width: 40px;
+  height: 40px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.loading-text {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-main);
+  opacity: 0.8;
+}
+
+.loading-bar {
+  width: 100px;
+  height: 1px;
+  background: rgba(201, 168, 76, 0.15);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-main));
+  transition: transform 0.3s ease;
+}
+
+/* ── Audio button ── */
+.audio-button {
+  position: fixed;
+  top: calc(var(--safe-area-top) + 16px);
+  right: 20px;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(250, 243, 230, 0.06);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--gold-main);
+}
+
+.audio-button:hover {
+  background: rgba(250, 243, 230, 0.1);
+  border-color: rgba(201, 168, 76, 0.55);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+}
+
+.audio-button:active { transform: scale(0.95); }
+.audio-button svg { width: 18px; height: 18px; }
+
+/* ── Location labels ── */
+.location-label {
+  position: fixed;
+  z-index: 30;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cream-warm);
+  text-shadow: 0 0 24px rgba(201, 168, 76, 0.6), 0 2px 12px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.location-label.secondary {
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: var(--gold-main);
+  opacity: 0.9;
+}
+
+/* ── Fade transitions ── */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-exit { opacity: 1; }
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { display: none; }
+
+/* ── Selection ── */
+::selection {
+  background: rgba(201, 168, 76, 0.3);
+  color: var(--cream-warm);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
