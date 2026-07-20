@@ -13,7 +13,7 @@ export default function Landing({ onEnter }: Props) {
 
   const texts = [
     'Chúng mình sắp kết hôn',
-    '20 . 11 . 2026',
+    '27 . 12 . 2026',
     'Tùng Phạm & Thuý Hằng',
   ]
 
