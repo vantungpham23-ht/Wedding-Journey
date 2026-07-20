@@ -110,12 +110,12 @@ const HowWeMet: ComponentType<SectionProps> = ({ active }) => {
       </p>
       <div className="story-meta">
         <div className="story-meta-item">
-          <span className="story-meta-num">7</span>
+          <span className="story-meta-num">5</span>
           <span className="story-meta-label">múi giờ</span>
         </div>
         <Heart size={12} fill="#C9A84C" />
         <div className="story-meta-item">
-          <span className="story-meta-num">9.657</span>
+          <span className="story-meta-num">8.057</span>
           <span className="story-meta-label">km</span>
         </div>
       </div>
