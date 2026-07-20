@@ -105,7 +105,7 @@ const HowWeMet: ComponentType<SectionProps> = ({ active }) => {
       <Ornament />
       <p className="overlay-body overlay-body-center">
         Trong một lần trượt ngón trên mạng xã hội, một tin nhắn bằng tiếng Việt giữa đêm châu Âu
-        đã thay đổi tất cả. Hai con người, hai phương trời — một đứa ở Hà Tĩnh, một đứa đang
+        đã thay đổi tất cả. Hai con người, hai phương trời — một đứa làm ở Vinh, một đứa đang
         đi làm tại EU — chẳng ai nghĩ rằng một cuộc trò chuyện vu vơ lại trở thành định mệnh.
       </p>
       <div className="story-meta">
@@ -147,7 +147,7 @@ const Distance: ComponentType<SectionProps> = ({ active }) => {
       <div className="clock-grid">
         <div className="clock-card">
           <div className="clock-flag">🇻🇳</div>
-          <div className="clock-city">Hà Tĩnh</div>
+          <div className="clock-city">Vinh</div>
           <div className="clock-time">{String((hour + 5) % 24).padStart(2, '0')}:00</div>
           <div className="clock-label">đêm — đang đợi</div>
         </div>
@@ -301,9 +301,9 @@ const WeddingDay: ComponentType<SectionProps> = ({ active }) => {
 
       <div className="timeline">
         {[
-          { time: '09:00', title: 'Rước dâu', desc: 'Đoàn rước dâu từ nhà trai' },
-          { time: '10:30', title: 'Lễ cưới', desc: 'Nghi thức tại tư gia nhà gái' },
-          { time: '12:00', title: 'Tiệc cưới', desc: 'Đãi tiệc thân mật cùng gia đình' },
+          { time: '07:00', title: 'Rước dâu', desc: 'Đoàn rước dâu từ nhà trai' },
+          { time: '19:30', title: 'Lễ cưới', desc: 'Nghi thức tại tư gia nhà gái' },
+          { time: '12:30', title: 'Tiệc cưới', desc: 'Đãi tiệc thân mật cùng gia đình' },
           { time: '15:00', title: 'Chụp ảnh', desc: 'Khoảnh khắc cùng người thân' },
           { time: '19:00', title: 'Lễ tối', desc: 'Đón khách quý đến chung vui' },
         ].map((it, i) => (
