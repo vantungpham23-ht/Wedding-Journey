@@ -225,7 +225,7 @@ const Proposal: ComponentType<SectionProps> = ({ active }) => {
       <div className="proposal-scene">
         <Ring size={56} />
         <p className="proposal-line">"Em đồng ý làm vợ anh nhé?"</p>
-        <p className="proposal-answer">Em đồng ý</span>
+        <p className="proposal-answer">Em đồng ý
           <Heart size={20} fill="#C9A84C" />
         </p>
       </div>
