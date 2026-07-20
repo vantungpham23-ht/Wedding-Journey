@@ -10,11 +10,6 @@ const IS_MOBILE = (() => {
     (navigator.maxTouchPoints > 1 && window.innerWidth < 768)
 })()
 
-// Per-section durations (ms). Final stays on screen for CTA interaction.
-const SECTION_DURATIONS: number[] = IS_MOBILE
-  ? [4200, 4500, 4200, 4200, 4800, 4200, 4800, 6000]
-  : [4500, 4800, 4500, 4500, 5200, 4500, 5200, 6000]
-
 interface Props {
   onBack?: () => void
 }
@@ -22,70 +17,9 @@ interface Props {
 export default function Card({ onBack }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState(0)
-  const [autoScrollDone, setAutoScrollDone] = useState(false)
-  const autoScrollTimerRef = useRef<number[]>([])
+  const [showSwipeHint, setShowSwipeHint] = useState(true)
 
-  // Cumulative timings for each section start
-  const cumTimes = (() => {
-    const arr: number[] = []
-    let acc = 0
-    SECTION_DURATIONS.forEach((d) => { arr.push(acc); acc += d })
-    return arr
-  })()
-
-  /* Auto scroll through sections — instant jump to each section's top */
-  useEffect(() => {
-    autoScrollTimerRef.current.forEach(clearTimeout)
-    autoScrollTimerRef.current = []
-
-    sections.forEach((_, i) => {
-      const t = window.setTimeout(() => {
-        const el = scrollRef.current
-        if (!el) return
-        // Use the actual section element's offsetTop (handles sections of varying height)
-        const sectionEl = el.children[i] as HTMLElement | undefined
-        const target = sectionEl ? sectionEl.offsetTop : el.offsetHeight * i
-        el.scrollTo({ top: target, behavior: 'auto' })
-      }, cumTimes[i])
-      autoScrollTimerRef.current.push(t)
-    })
-
-    // Mark auto-play done after the last section is shown
-    const totalMs = cumTimes[cumTimes.length - 1] + 200
-    const stopT = window.setTimeout(() => {
-      setAutoScrollDone(true)
-    }, totalMs)
-    autoScrollTimerRef.current.push(stopT)
-
-    return () => {
-      autoScrollTimerRef.current.forEach(clearTimeout)
-    }
-  }, [])
-
-  /* Stop autoplay on any user interaction */
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-
-    const stop = () => {
-      if (autoScrollDone) return
-      autoScrollTimerRef.current.forEach(clearTimeout)
-      setAutoScrollDone(true)
-    }
-
-    el.addEventListener('wheel', stop, { passive: true })
-    el.addEventListener('touchstart', stop, { passive: true })
-    el.addEventListener('pointerdown', stop, { passive: true })
-    el.addEventListener('keydown', stop)
-    return () => {
-      el.removeEventListener('wheel', stop)
-      el.removeEventListener('touchstart', stop)
-      el.removeEventListener('pointerdown', stop)
-      el.removeEventListener('keydown', stop)
-    }
-  }, [autoScrollDone])
-
-  /* Update active section based on scroll position (single source of truth) */
+  /* Track active section based on scroll position */
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
@@ -98,6 +32,10 @@ export default function Card({ onBack }: Props) {
         const h = el.offsetHeight
         const idx = Math.max(0, Math.min(sections.length - 1, Math.round(el.scrollTop / h)))
         setActiveSection(idx)
+        // Hide swipe hint after first scroll
+        if (el.scrollTop > 50) {
+          setShowSwipeHint(false)
+        }
       })
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -106,6 +44,14 @@ export default function Card({ onBack }: Props) {
       if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
+
+  const scrollToSection = (index: number) => {
+    if (scrollRef.current) {
+      const sectionEl = scrollRef.current.children[index] as HTMLElement | undefined
+      const target = sectionEl ? sectionEl.offsetTop : scrollRef.current.offsetHeight * index
+      scrollRef.current.scrollTo({ top: target, behavior: 'smooth' })
+    }
+  }
 
   return (
     <div className="card-view">
@@ -125,10 +71,48 @@ export default function Card({ onBack }: Props) {
       <div className="card-scroll" ref={scrollRef}>
         {sections.map((Section, i) => (
           <section key={i} className="card-section" id={`section-${i}`}>
-            <Section active={activeSection === i} autoplay={!autoScrollDone} index={i} />
+            <Section active={activeSection === i} index={i} />
           </section>
         ))}
       </div>
+
+      {/* Mobile: Swipe hint */}
+      {IS_MOBILE && showSwipeHint && (
+        <div className="card-swipe-hint">
+          <div className="card-swipe-hint-icon">
+            <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
+              <path d="M10 4V20M10 20L4 14M10 20L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Vuốt lên</span>
+        </div>
+      )}
+
+      {/* Desktop: Navigation arrows */}
+      {!IS_MOBILE && (
+        <div className="card-nav-arrows">
+          <button
+            className="card-nav-btn card-nav-prev"
+            onClick={() => scrollToSection(Math.max(0, activeSection - 1))}
+            disabled={activeSection === 0}
+            aria-label="Section trước"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5V19M5 12L12 5L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button
+            className="card-nav-btn card-nav-next"
+            onClick={() => scrollToSection(Math.min(sections.length - 1, activeSection + 1))}
+            disabled={activeSection === sections.length - 1}
+            aria-label="Section tiếp"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 19V5M5 12L12 19L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Page indicators */}
       <div className="card-dots">
@@ -136,13 +120,7 @@ export default function Card({ onBack }: Props) {
           <div
             key={i}
             className={`card-dot ${activeSection === i ? 'card-dot-active' : ''}`}
-            onClick={() => {
-              if (scrollRef.current) {
-                const sectionEl = scrollRef.current.children[i] as HTMLElement | undefined
-                const target = sectionEl ? sectionEl.offsetTop : scrollRef.current.offsetHeight * i
-                scrollRef.current.scrollTo({ top: target, behavior: 'smooth' })
-              }
-            }}
+            onClick={() => scrollToSection(i)}
           />
         ))}
       </div>
@@ -150,7 +128,7 @@ export default function Card({ onBack }: Props) {
       {/* Header bar */}
       <div className="card-header">
         <div className="card-header-names">Tùng Phạm & Thuý Hằng</div>
-        <div className="card-header-date">20.11.2026</div>
+        <div className="card-header-date">27.12.2026</div>
       </div>
     </div>
   )

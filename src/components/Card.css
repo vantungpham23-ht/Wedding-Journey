@@ -143,3 +143,100 @@
 @media (prefers-reduced-motion: reduce) {
   .card-scroll { scroll-behavior: auto; }
 }
+
+/* ── Navigation arrows (desktop only) ── */
+.card-nav-arrows {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: none;
+  align-items: center;
+  gap: 20px;
+}
+
+@media screen and (min-width: 769px) {
+  .card-nav-arrows {
+    display: flex;
+  }
+}
+
+.card-nav-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  background: rgba(24, 10, 14, 0.8);
+  color: var(--gold-main, #C9A84C);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.card-nav-btn:hover:not(:disabled) {
+  background: rgba(201, 168, 76, 0.2);
+  border-color: var(--gold-main, #C9A84C);
+  transform: scale(1.1);
+}
+
+.card-nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.card-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Swipe hint ── */
+.card-swipe-hint {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(201, 168, 76, 0.6);
+  animation: swipeHintPulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media screen and (min-width: 769px) {
+  .card-swipe-hint {
+    display: none;
+  }
+}
+
+.card-swipe-hint-icon {
+  animation: swipeHintBounce 1.5s ease-in-out infinite;
+}
+
+.card-swipe-hint span {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@keyframes swipeHintPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes swipeHintBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@media screen and (max-width: 768px) {
+  .card-swipe-hint { bottom: 18px; }
+  .card-swipe-hint span { font-size: 10px; }
+}

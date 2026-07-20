@@ -4,7 +4,6 @@ import './CardOverlay.css'
 
 interface SectionProps {
   active: boolean
-  autoplay: boolean
   index: number
 }
 
@@ -88,7 +87,7 @@ const Cover: ComponentType<SectionProps> = ({ active }) => {
       <p className="overlay-eyebrow">trân trọng kính mời</p>
       <p className="overlay-place">đến dự lễ cưới của chúng mình</p>
       <div className="cover-date-block">
-        <div className="cover-date-num">20 . 11 . 2026</div>
+        <div className="cover-date-num">27 . 12 . 2026</div>
         <div className="cover-date-place">Cẩm Bình — Hà Tĩnh</div>
       </div>
     </div>
@@ -107,7 +106,7 @@ const HowWeMet: ComponentType<SectionProps> = ({ active }) => {
       <p className="overlay-body overlay-body-center">
         Trong một lần trượt ngón trên mạng xã hội, một tin nhắn bằng tiếng Việt giữa đêm châu Âu
         đã thay đổi tất cả. Hai con người, hai phương trời — một đứa ở Hà Tĩnh, một đứa đang
-        du học tại EU — chẳng ai nghĩ rằng một cuộc trò chuyện vu vơ lại trở thành định mệnh.
+        đi làm tại EU — chẳng ai nghĩ rằng một cuộc trò chuyện vu vơ lại trở thành định mệnh.
       </p>
       <div className="story-meta">
         <div className="story-meta-item">
@@ -149,8 +148,8 @@ const Distance: ComponentType<SectionProps> = ({ active }) => {
         <div className="clock-card">
           <div className="clock-flag">🇻🇳</div>
           <div className="clock-city">Hà Tĩnh</div>
-          <div className="clock-time">{String((hour + 7) % 24).padStart(2, '0')}:00</div>
-          <div className="clock-label">đêm — đang ngủ</div>
+          <div className="clock-time">{String((hour + 5) % 24).padStart(2, '0')}:00</div>
+          <div className="clock-label">đêm — đang đợi</div>
         </div>
         <div className="clock-divider">
           <Heart size={20} fill="#C9A84C" stroke="#C9A84C" />
@@ -159,7 +158,7 @@ const Distance: ComponentType<SectionProps> = ({ active }) => {
           <div className="clock-flag">🇪🇺</div>
           <div className="clock-city">EU</div>
           <div className="clock-time">{String(hour).padStart(2, '0')}:00</div>
-          <div className="clock-label">trưa — đang đợi</div>
+          <div className="clock-label">chiều — đang đi làm</div>
         </div>
       </div>
 
@@ -196,7 +195,7 @@ const FirstMeet: ComponentType<SectionProps> = ({ active }) => {
           <span className="plane-flight">15 giờ bay</span>
         </div>
         <div className="plane-end">
-          <span className="plane-city">Hà Tĩnh</span>
+          <span className="plane-city">Việt Nam</span>
           <span className="plane-iata">VII</span>
         </div>
       </div>
@@ -269,8 +268,8 @@ const SaveDate: ComponentType<SectionProps> = ({ active }) => {
 
       <div className="overlay-row">
         <div className="overlay-col">
-          <div className="overlay-num">20</div>
-          <div className="overlay-label">Tháng 11</div>
+          <div className="overlay-num">27</div>
+          <div className="overlay-label">Tháng 12</div>
         </div>
         <div className="overlay-col overlay-col-divider">
           <div className="overlay-num">2026</div>
@@ -345,7 +344,7 @@ const Final: ComponentType<SectionProps> = ({ active }) => {
         <Heart size={22} fill="#722F37" />
         <span className="overlay-final-h-line">Hằng</span>
       </h2>
-      <p className="overlay-final-quote">See you on 20.11.2026</p>
+      <p className="overlay-final-quote">See you on 27.12.2026</p>
 
       <div className="final-cta-block">
         <p className="overlay-final-hint">Chọn một để tiếp tục</p>
