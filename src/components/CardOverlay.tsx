@@ -233,7 +233,7 @@ const Final: ComponentType<SectionProps> = ({ active }) => {
           </div>
           <div className="unlock-banner-text">
             <span className="unlock-banner-title">Đang chờ mở khóa</span>
-            <span className="unlock-banner-sub">Xác nhận tham dự sẽ mở sau 2 tuần</span>
+            <span className="unlock-banner-sub">Xác nhận tham dự sẽ mở trước đám cưới 2 tuần</span>
           </div>
         </div>
       )}
