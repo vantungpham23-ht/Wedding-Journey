@@ -59,7 +59,7 @@ const Cover: ComponentType<SectionProps> = ({ active }) => {
 
       <div className="cover-date-block">
         <div className="cover-date-num">27 . 12 . 2026</div>
-        <div className="cover-date-place">Cẩm Bình — Hà Tĩnh</div>
+        <div className="cover-date-place">Kênh - Cẩm Bình — Hà Tĩnh</div>
       </div>
     </div>
   )
@@ -99,9 +99,7 @@ const ThankYou: ComponentType<SectionProps> = ({ active }) => {
       <h2 className="overlay-h2">Hẹn gặp bạn</h2>
 
       <p className="overlay-body overlay-body-center">
-        Không cần một món quà thật đặc biệt.<br />
-        Chỉ cần bạn đến,<br />
-        ngày vui của chúng mình đã trọn vẹn hơn rồi.
+      Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy trở nên ấm áp và ý nghĩa hơn với chúng mình.
       </p>
 
       <p className="overlay-quote-overlay">
@@ -134,7 +132,7 @@ const SaveDate: ComponentType<SectionProps> = ({ active }) => {
         </div>
       </div>
 
-      <p className="overlay-place-name">Cẩm Bình, Hà Tĩnh</p>
+      <p className="overlay-place-name">Kênh - Cẩm Bình, Hà Tĩnh</p>
 
       <div className="overlay-row">
         <div className="overlay-col">
@@ -240,6 +238,28 @@ const Final: ComponentType<SectionProps> = ({ active }) => {
 
       {/* CTA buttons */}
       <div className="final-cta-block">
+        {/* Map button - Nhà chú rể */}
+        <a
+          className="final-cta final-cta-map"
+          href="https://maps.app.goo.gl/P9oQwKuYT3QgMK4x9"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="final-cta-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+              <circle cx="12" cy="9" r="2.5" />
+            </svg>
+          </span>
+          <span className="final-cta-text">
+            <span className="final-cta-title">Chỉ đường đến nhà chú rể</span>
+            <span className="final-cta-sub">Kênh - Cẩm Bình, Hà Tĩnh</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </a>
+
         <a
           className={`final-cta ${unlocked ? 'final-cta-primary' : 'final-cta-locked'}`}
           href={unlocked ? "https://cuoithoi.pages.dev/" : undefined}

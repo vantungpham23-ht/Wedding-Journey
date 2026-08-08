@@ -920,6 +920,30 @@
   text-shadow: 0 0 16px rgba(201, 168, 76, 0.3);
 }
 
+/* ── Map CTA button ── */
+.final-cta-map {
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  box-shadow:
+    var(--shadow-card),
+    0 0 20px rgba(201, 168, 76, 0.12),
+    inset 0 0 20px rgba(201, 168, 76, 0.04);
+}
+
+.final-cta-map:hover {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.7);
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 30px rgba(24, 10, 14, 0.5),
+    0 0 30px rgba(201, 168, 76, 0.25);
+}
+
+.final-cta-map .final-cta-icon {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
 /* ── Final CTA block ── */
 .final-cta-block {
   display: flex;
