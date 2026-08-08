@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Torus } from '@react-three/drei'
+import * as THREE from 'three'
 import './Landing.css'
 
 interface Props {
@@ -8,8 +11,6 @@ interface Props {
 export default function Landing({ onEnter }: Props) {
   const [phase, setPhase] = useState<'idle' | 'entering'>('idle')
   const [textIdx, setTextIdx] = useState(0)
-  const [hearts, setHearts] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number; color: string }>>([])
-  const heartAnimatedRef = useRef(false)
 
   const texts = [
     'Chúng mình sắp kết hôn',
@@ -26,30 +27,6 @@ export default function Landing({ onEnter }: Props) {
     return () => clearInterval(cycle)
   }, [phase, texts.length])
 
-  /* Floating hearts */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newHeart = {
-        id: Date.now() + Math.random(),
-        x: 10 + Math.random() * 80,
-        y: 70 + Math.random() * 25,
-        size: 0.4 + Math.random() * 0.6,
-        delay: Math.random() * 0.4,
-        color: Math.random() > 0.5 ? '#D7AE6A' : '#B8860B',
-      }
-      setHearts(h => [...h.slice(-20), newHeart])
-      setTimeout(() => {
-        setHearts(h => h.filter(x => x.id !== newHeart.id))
-      }, 6500)
-    }, 500)
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    const t = setTimeout(() => { heartAnimatedRef.current = true }, 600)
-    return () => clearTimeout(t)
-  }, [])
-
   const handleEnter = useCallback(() => {
     if (phase === 'entering') return
     setPhase('entering')
@@ -58,52 +35,18 @@ export default function Landing({ onEnter }: Props) {
 
   return (
     <div className={`landing ${phase === 'entering' ? 'landing-entering' : ''}`}>
-      {hearts.map(h => (
-        <div
-          key={h.id}
-          className="landing-heart-float"
-          style={{
-            left: `${h.x}%`,
-            top: `${h.y}%`,
-            '--size': h.size,
-            '--delay': `${h.delay}s`,
-            '--color': h.color,
-          } as React.CSSProperties}
-        />
-      ))}
-
       <div className="landing-inner">
         <p className="landing-eyebrow">— Thiệp mời cưới —</p>
 
-        <svg
-          className={`landing-heart ${heartAnimatedRef.current ? 'animate' : ''}`}
-          viewBox="0 0 32 32"
-          fill="none"
-          style={{ animationDelay: '0.4s', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
-        >
-          <defs>
-            <linearGradient id="landingHeartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E8C77A" />
-              <stop offset="50%" stopColor="#D7AE6A" />
-              <stop offset="100%" stopColor="#B8860B" />
-            </linearGradient>
-            <filter id="landingHeartShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#5a3a00" floodOpacity="0.4"/>
-            </filter>
-          </defs>
-          <path
-            d="M16 28 C16 28 4 19 4 11 C4 6 8 2 13 2 C14.5 2 16 3 16 3 C16 3 17.5 2 19 2 C24 2 28 6 28 11 C28 19 16 28 16 28Z"
-            fill="url(#landingHeartGrad)"
-            stroke="#C9A84C"
-            strokeWidth="0.6"
-            filter="url(#landingHeartShadow)"
-          />
-          {/* 3D highlight */}
-          <path
-            d="M10 9 C10 7 11 6 13 6 C13.5 6 14 6.2 14.5 6.5 C13 5.5 11.5 5.5 10 6.5 C9 7.5 9 9 10 9Z"
-            fill="rgba(255,255,255,0.2)"
-          />
-        </svg>
+        {/* 3D Wedding Ring */}
+        <div className="landing-3d-ring">
+          <Canvas camera={{ position: [0, 0, 3], fov: 50 }} gl={{ antialias: true }}>
+            <ambientLight intensity={1.0} color="#E8D5B7" />
+            <pointLight position={[1, 1, 2]} intensity={2.0} color="#C9A84C" />
+            <pointLight position={[-1, -1, 1]} intensity={0.8} color="#D4B483" />
+            <LandingRing />
+          </Canvas>
+        </div>
 
         <div className="landing-text-wrap">
           {texts.map((t, i) => (
@@ -118,7 +61,7 @@ export default function Landing({ onEnter }: Props) {
 
         <div className="landing-names">
           <span>Tùng Phạm</span>
-          <span className="landing-names-amp">&amp;</span>
+          <span className="landing-names-amp">&</span>
           <span>Thuý Hằng</span>
         </div>
 
@@ -149,5 +92,50 @@ export default function Landing({ onEnter }: Props) {
         <p className="landing-hint">Nhấn để bắt đầu</p>
       </div>
     </div>
+  )
+}
+
+/* ── 3D Spinning Rings for Landing ── */
+function LandingRing() {
+  const ring1Ref = useRef<THREE.Group>(null)
+  const ring2Ref = useRef<THREE.Group>(null)
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+    if (ring1Ref.current) {
+      ring1Ref.current.rotation.z = t * 0.25
+      ring1Ref.current.rotation.x = t * 0.15
+    }
+    if (ring2Ref.current) {
+      ring2Ref.current.rotation.z = -t * 0.2
+      ring2Ref.current.rotation.y = t * 0.12
+    }
+  })
+
+  return (
+    <>
+      <group ref={ring1Ref}>
+        <Torus args={[0.85, 0.06, 16, 80]}>
+          <meshPhysicalMaterial
+            color="#C9A84C"
+            metalness={0.95}
+            roughness={0.04}
+            clearcoat={1.0}
+            clearcoatRoughness={0.01}
+          />
+        </Torus>
+      </group>
+      <group ref={ring2Ref}>
+        <Torus args={[0.72, 0.055, 16, 80]}>
+          <meshPhysicalMaterial
+            color="#D4B483"
+            metalness={0.9}
+            roughness={0.06}
+            clearcoat={1.0}
+            clearcoatRoughness={0.02}
+          />
+        </Torus>
+      </group>
+    </>
   )
 }

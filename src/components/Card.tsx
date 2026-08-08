@@ -137,13 +137,10 @@ export default function Card({ onBack }: Props) {
 /* Maps section index to 3D scene preset */
 function SceneForSection({ section }: { section: number }) {
   const preset =
-    section === 0 ? 'hero' :
-    section === 1 ? 'dove' :
-    section === 2 ? 'petals' :
+    section === 0 ? 'hero'  :
+    section === 1 ? 'hero'  :
+    section === 2 ? 'hero'  :
     section === 3 ? 'rings' :
-    section === 4 ? 'rings' :
-    section === 5 ? 'rings' :
-    section === 6 ? 'dove' :
     'hero'
   return <InviteScene preset={preset} key={preset} />
 }
