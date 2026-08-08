@@ -40,7 +40,7 @@
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 24px 18px;
+  padding: 32px 24px;
 }
 
 .overlay-show {
@@ -52,18 +52,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
 }
 
 /* ── Eyebrow text ── */
 .overlay-eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.45em;
+  font-size: 12px;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   color: var(--gold-main);
   font-weight: 600;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* ── Ornament divider ── */
@@ -94,7 +94,7 @@
 
 .cover-mono-groom,
 .cover-mono-bride {
-  font-size: clamp(50px, 12vw, 68px);
+  font-size: clamp(56px, 14vw, 72px);
   font-weight: 700;
   line-height: 1;
   color: var(--gold-main);
@@ -105,7 +105,7 @@
 }
 
 .overlay-title {
-  font-size: clamp(28px, 6.5vw, 42px);
+  font-size: clamp(32px, 8vw, 48px);
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.15;
@@ -121,7 +121,7 @@
 .overlay-title-line { display: block; }
 
 .overlay-title-amp {
-  font-size: clamp(20px, 4.5vw, 28px);
+  font-size: clamp(24px, 5.5vw, 32px);
   color: var(--gold-main);
   font-style: italic;
   font-weight: 400;
@@ -130,9 +130,9 @@
 }
 
 .overlay-place {
-  font-size: clamp(13px, 2.8vw, 16px);
+  font-size: clamp(15px, 3.5vw, 18px);
   color: var(--cream-mid);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   font-style: italic;
 }
 
@@ -161,36 +161,36 @@
 }
 
 .cover-date-num {
-  font-size: clamp(26px, 6.5vw, 36px);
+  font-size: clamp(30px, 8vw, 42px);
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--gold-main);
   text-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
   font-variant-numeric: tabular-nums;
 }
 
 .cover-date-place {
-  font-size: 11px;
-  letter-spacing: 0.32em;
+  font-size: 13px;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--cream-light);
-  opacity: 0.75;
+  opacity: 0.8;
   margin-top: 6px;
 }
 
 .cover-trong {
-  font-size: clamp(14px, 3vw, 17px);
-  letter-spacing: 0.15em;
+  font-size: clamp(16px, 4vw, 20px);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--gold-main);
   margin: 8px 0 2px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .cover-attend {
   font-style: italic;
-  font-size: clamp(12px, 2.6vw, 14px);
-  color: rgba(242, 232, 216, 0.7);
+  font-size: clamp(14px, 3.2vw, 16px);
+  color: rgba(242, 232, 216, 0.75);
   margin: 0 0 6px;
   letter-spacing: 0.04em;
 }
@@ -198,9 +198,9 @@
 .cover-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 160px;
-  margin: 6px 0;
+  gap: 14px;
+  width: 180px;
+  margin: 8px 0;
 }
 
 .cover-divider-line {
@@ -249,46 +249,34 @@
 }
 
 .overlay-h2 {
-  font-size: clamp(24px, 5.5vw, 34px);
+  font-size: clamp(28px, 6.5vw, 38px);
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--cream-warm);
-  line-height: 1.2;
+  line-height: 1.25;
   margin: 2px 0;
   text-shadow: 0 2px 16px rgba(0,0,0,0.3);
 }
 
 .overlay-body {
-  font-size: clamp(13px, 2.8vw, 15px);
-  line-height: 1.9;
-  color: rgba(242, 232, 216, 0.82);
+  font-size: clamp(16px, 4vw, 18px);
+  line-height: 1.75;
+  color: rgba(242, 232, 216, 0.88);
   letter-spacing: 0.02em;
-  text-align: justify;
-  text-align-last: center;
-  hyphens: auto;
+  text-align: center;
+  padding: 0 4px;
 }
 
 .overlay-body-center { text-align: center; }
 
 .overlay-quote-overlay {
   font-style: italic;
-  font-size: clamp(13px, 2.8vw, 15px);
+  font-size: clamp(15px, 3.5vw, 17px);
   line-height: 1.6;
   color: var(--gold-light);
   text-align: center;
   margin: 2px 0;
   padding: 0 8px;
-  position: relative;
-}
-
-.overlay-quote-overlay::before,
-.overlay-quote-overlay::after {
-  content: '"';
-  font-size: 1.4em;
-  color: rgba(201, 168, 76, 0.4);
-  line-height: 0;
-  vertical-align: -0.3em;
-  margin: 0 4px;
 }
 
 /* ── Chapter number ── */
@@ -772,7 +760,7 @@
 }
 
 .countdown-num {
-  font-size: clamp(22px, 5vw, 30px);
+  font-size: clamp(26px, 6vw, 36px);
   font-weight: 700;
   color: var(--gold-main);
   font-variant-numeric: tabular-nums;
@@ -781,14 +769,14 @@
 }
 
 .countdown-unit {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(242, 232, 216, 0.5);
+  color: rgba(242, 232, 216, 0.55);
 }
 
 .countdown-sep {
-  font-size: clamp(20px, 4.5vw, 28px);
+  font-size: clamp(24px, 5.5vw, 32px);
   font-weight: 700;
   color: var(--gold-main);
   opacity: 0.6;
@@ -908,7 +896,7 @@
 }
 
 .overlay-final-h {
-  font-size: clamp(26px, 5.5vw, 40px);
+  font-size: clamp(30px, 7vw, 46px);
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--cream-warm);
@@ -1070,19 +1058,32 @@
 
 /* ── Mobile ── */
 @media screen and (max-width: 480px) {
-  .overlay { padding: 20px 14px; gap: 10px; }
-  .overlay-eyebrow { font-size: 9px; letter-spacing: 0.38em; }
-  .cover-mono-groom, .cover-mono-bride { font-size: 46px; }
+  .overlay { padding: 24px 16px; gap: 14px; }
+  .overlay-eyebrow { font-size: 11px; letter-spacing: 0.32em; }
+  .cover-mono-groom, .cover-mono-bride { font-size: 52px; }
+  .overlay-title { font-size: 30px; gap: 2px; }
+  .overlay-title-amp { font-size: 22px; }
+  .overlay-place { font-size: 14px; }
+  .cover-trong { font-size: 15px; }
+  .cover-attend { font-size: 13px; }
+  .cover-date-num { font-size: 28px; }
+  .cover-date-place { font-size: 11px; }
+  .overlay-h2 { font-size: 26px; }
+  .overlay-body { font-size: 15px; line-height: 1.7; }
+  .welcome-highlight { font-size: 15px; }
+  .overlay-quote-overlay { font-size: 14px; }
+  .overlay-row { padding: 14px 6px; }
+  .cover-date-block { padding: 16px 24px; }
+  .overlay-final-h { font-size: 28px; gap: 10px; }
+  .countdown-num { font-size: 24px; }
+  .countdown-unit { font-size: 9px; }
   .date-mono-block { padding: 14px 22px; min-width: 80px; }
   .date-mono-letter { font-size: 50px; }
   .date-mono-grid { gap: 10px; }
-  .overlay-row { padding: 14px 6px; }
-  .cover-date-block { padding: 16px 24px; }
-  .overlay-final-h { gap: 10px; }
-  .final-cta { padding: 12px 14px; gap: 10px; }
-  .final-cta-icon { width: 34px; height: 34px; }
-  .final-cta-title { font-size: 14px; letter-spacing: 0.08em; }
-  .final-cta-sub { font-size: 10px; }
+  .final-cta { padding: 14px 16px; gap: 12px; }
+  .final-cta-icon { width: 36px; height: 36px; }
+  .final-cta-title { font-size: 15px; letter-spacing: 0.1em; }
+  .final-cta-sub { font-size: 11px; }
   .clock-card { padding: 12px 8px; }
   .clock-flag { font-size: 20px; }
   .clock-city { font-size: 9px; letter-spacing: 0.22em; }
@@ -1100,10 +1101,10 @@
 }
 
 @media screen and (max-width: 380px) {
-  .overlay { padding: 16px 12px; }
+  .overlay { padding: 20px 14px; gap: 12px; }
   .final-cta-text { gap: 1px; }
-  .final-cta-title { font-size: 13px; }
-  .final-cta-sub { font-size: 9px; }
+  .final-cta-title { font-size: 14px; }
+  .final-cta-sub { font-size: 10px; }
   .clock-grid { gap: 6px; }
   .timeline-item { grid-template-columns: 44px 20px 1fr; }
 }
