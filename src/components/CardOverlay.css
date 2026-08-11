@@ -1080,6 +1080,458 @@
   margin-top: 18px;
 }
 
+/* ============================================================
+   FINAL SECTION — Redesigned 2026
+   ============================================================ */
+
+/* ── Hero with animated heart ── */
+.final-hero {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0 16px;
+}
+
+.final-hero-heart {
+  position: relative;
+  z-index: 2;
+  animation: finalHeartPulse 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(201, 168, 76, 0.5));
+}
+
+.final-hero-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  animation: finalRingRotate 8s linear infinite;
+}
+
+.final-hero-ring-1 {
+  width: 100px;
+  height: 100px;
+}
+
+.final-hero-ring-2 {
+  width: 80px;
+  height: 80px;
+  animation-direction: reverse;
+  animation-duration: 6s;
+}
+
+@keyframes finalHeartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes finalRingRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Names block ── */
+.final-names-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.final-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 160px;
+}
+
+.final-ornament-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.5), transparent);
+}
+
+.final-names-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: clamp(28px, 7vw, 40px);
+  font-weight: 700;
+  color: var(--cream-warm);
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 20px rgba(201, 168, 76, 0.3);
+}
+
+.final-names-amp {
+  color: var(--gold-main);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.75em;
+  text-shadow: 0 0 20px rgba(201, 168, 76, 0.6);
+}
+
+/* ── Countdown wrapper ── */
+.final-countdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 20px 24px;
+  background: rgba(201, 168, 76, 0.05);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(24, 10, 14, 0.4), inset 0 0 40px rgba(201, 168, 76, 0.03);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 340px;
+}
+
+/* Gold gradient top border */
+.final-countdown-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.6), transparent);
+}
+
+.final-countdown-label {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold-main);
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.final-countdown-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.final-countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.final-countdown-num {
+  font-size: clamp(32px, 8vw, 44px);
+  font-weight: 700;
+  color: var(--gold-main);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px rgba(201, 168, 76, 0.4);
+  line-height: 1;
+}
+
+.final-countdown-unit {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(242, 232, 216, 0.5);
+}
+
+.final-countdown-sep {
+  font-size: clamp(28px, 7vw, 38px);
+  font-weight: 700;
+  color: var(--gold-main);
+  opacity: 0.5;
+  margin-bottom: 14px;
+  animation: finalCountPulse 1s ease-in-out infinite;
+}
+
+@keyframes finalCountPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+}
+
+.final-countdown-date {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: rgba(242, 232, 216, 0.6);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* ── CTA Cards container ── */
+.final-cta-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 380px;
+  margin: 8px 0;
+}
+
+.final-card-wrapper {
+  position: relative;
+}
+
+.final-card-wrapper-unlocked .final-card-lock-badge {
+  display: none;
+}
+
+.final-card-lock-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  padding: 4px 10px;
+  background: rgba(139, 35, 50, 0.9);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 100px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--gold-main);
+  z-index: 3;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: finalLockBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes finalLockBadgePulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(201, 168, 76, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(201, 168, 76, 0.4); }
+}
+
+/* ── Individual CTA card ── */
+.final-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.final-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.final-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.final-card-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--cream-warm);
+}
+
+.final-card-desc {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(242, 232, 216, 0.6);
+  font-style: italic;
+}
+
+.final-card-arrow {
+  flex-shrink: 0;
+  color: var(--gold-main);
+  transition: transform 0.3s ease;
+}
+
+/* Card variants */
+.final-card-primary {
+  background: linear-gradient(135deg, rgba(139, 35, 50, 0.6) 0%, rgba(74, 14, 21, 0.7) 100%);
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  box-shadow: 
+    0 8px 32px rgba(74, 14, 21, 0.4),
+    0 0 30px rgba(139, 35, 50, 0.2),
+    inset 0 0 30px rgba(201, 168, 76, 0.05);
+}
+
+.final-card-primary .final-card-icon {
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold-main);
+}
+
+.final-card-secondary {
+  background: rgba(24, 10, 14, 0.7);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  box-shadow: 0 8px 32px rgba(24, 10, 14, 0.3);
+}
+
+.final-card-secondary .final-card-icon {
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--gold-main);
+}
+
+.final-card-tertiary {
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  box-shadow: 0 8px 32px rgba(24, 10, 14, 0.3);
+}
+
+.final-card-tertiary .final-card-icon {
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: var(--gold-main);
+}
+
+.final-card-locked {
+  background: rgba(24, 10, 14, 0.5);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.final-card-locked .final-card-icon {
+  background: rgba(201, 168, 76, 0.05);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  color: rgba(201, 168, 76, 0.4);
+}
+
+.final-card-locked .final-card-title,
+.final-card-locked .final-card-desc {
+  opacity: 0.6;
+}
+
+/* Card hover states */
+.final-card:not(.final-card-locked):hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.final-card-primary:not(.final-card-locked):hover {
+  border-color: rgba(201, 168, 76, 0.7);
+  box-shadow: 
+    0 12px 40px rgba(74, 14, 21, 0.5),
+    0 0 50px rgba(139, 35, 50, 0.3);
+}
+
+.final-card-secondary:not(.final-card-locked):hover {
+  border-color: rgba(201, 168, 76, 0.6);
+  box-shadow: 0 12px 40px rgba(24, 10, 14, 0.4), 0 0 30px rgba(201, 168, 76, 0.15);
+}
+
+.final-card-tertiary:not(.final-card-locked):hover {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.5);
+  box-shadow: 0 12px 40px rgba(24, 10, 14, 0.4), 0 0 30px rgba(201, 168, 76, 0.15);
+}
+
+.final-card:not(.final-card-locked):hover .final-card-arrow {
+  transform: translateX(4px);
+}
+
+.final-card:not(.final-card-locked):active {
+  transform: scale(0.98);
+}
+
+/* ── Closing message ── */
+.final-closing {
+  margin-top: 20px;
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.final-closing-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(15px, 4vw, 18px);
+  line-height: 1.6;
+  color: rgba(242, 232, 216, 0.8);
+  letter-spacing: 0.04em;
+}
+
+.final-closing-text span {
+  color: var(--gold-main);
+  font-style: italic;
+}
+
+/* ── Credit ── */
+.final-credit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.final-credit-ornament {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100px;
+}
+
+.final-credit-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+}
+
+.final-credit-text {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.35);
+}
+
+/* ── Mobile responsive ── */
+@media screen and (max-width: 480px) {
+  .final-hero { width: 100px; height: 100px; margin: 4px 0 12px; }
+  .final-hero-ring-1 { width: 80px; height: 80px; }
+  .final-hero-ring-2 { width: 64px; height: 64px; }
+  .final-names-title { font-size: 26px; gap: 12px; }
+  .final-ornament { width: 140px; }
+  .final-countdown-wrapper { padding: 16px 20px; max-width: 300px; }
+  .final-countdown-num { font-size: 28px; }
+  .final-countdown-sep { font-size: 24px; }
+  .final-cta-cards { gap: 12px; max-width: 340px; }
+  .final-card { padding: 14px 16px; gap: 14px; }
+  .final-card-icon { width: 46px; height: 46px; border-radius: 14px; }
+  .final-card-title { font-size: 16px; }
+  .final-card-desc { font-size: 11px; }
+  .final-closing { margin-top: 16px; padding: 12px 16px; }
+  .final-closing-text { font-size: 14px; }
+  .final-credit { margin-top: 20px; }
+}
+
+@media screen and (max-width: 380px) {
+  .final-names-title { font-size: 22px; gap: 10px; }
+  .final-ornament { width: 120px; gap: 8px; }
+  .final-countdown-wrapper { padding: 14px 16px; }
+  .final-countdown-num { font-size: 26px; }
+  .final-cta-cards { max-width: 300px; }
+  .final-card { padding: 12px 14px; gap: 12px; }
+  .final-card-icon { width: 42px; height: 42px; }
+  .final-card-title { font-size: 15px; letter-spacing: 0.05em; }
+}
+
 /* ── Mobile ── */
 @media screen and (max-width: 480px) {
   .overlay { padding: 24px 16px; gap: 14px; }

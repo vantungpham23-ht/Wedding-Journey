@@ -156,20 +156,27 @@ const SaveDate: ComponentType<SectionProps> = ({ active }) => {
   )
 }
 
-/* ── SECTION 6 — Final / CTAs with Countdown ── */
+/* ── Pause audio helper ── */
+const pauseWeddingAudio = () => {
+  if (typeof window !== 'undefined' && (window as any).__weddingPauseAudio) {
+    (window as any).__weddingPauseAudio()
+  }
+}
+
+/* ── SECTION 5 — Final / Countdown + CTAs ── */
 const WEDDING_DATE = new Date('2026-12-27T10:00:00+07:00')
-const UNLOCK_DATE = new Date('2026-12-13T00:00:00+07:00')
+const UNLOCK_CARD_DATE = new Date('2026-12-15T00:00:00+07:00')
 
 const Final: ComponentType<SectionProps> = ({ active }) => {
   const show = useInView(active, 200)
   const [now, setNow] = useState(Date.now())
-  const [unlocked, setUnlocked] = useState(Date.now() >= UNLOCK_DATE.getTime())
+  const [cardUnlocked, setCardUnlocked] = useState(Date.now() >= UNLOCK_CARD_DATE.getTime())
 
   useEffect(() => {
     const t = setInterval(() => {
       const n = Date.now()
       setNow(n)
-      setUnlocked(n >= UNLOCK_DATE.getTime())
+      setCardUnlocked(n >= UNLOCK_CARD_DATE.getTime())
     }, 1000)
     return () => clearInterval(t)
   }, [])
@@ -184,176 +191,182 @@ const Final: ComponentType<SectionProps> = ({ active }) => {
 
   return (
     <div className={`overlay overlay-center ${show ? 'overlay-show' : ''}`}>
-      <div className="final-heart-big">
-        <Heart size={80} />
-      </div>
-
-      <h2 className="overlay-final-h">
-        <span className="overlay-final-h-line">Tùng</span>
-        <Heart size={22} fill="#722F37" />
-        <span className="overlay-final-h-line">Hằng</span>
-      </h2>
-
-      {/* Countdown */}
-      <div className="countdown-block">
-        <div className="countdown-label">Đếm ngược đến ngày trọng đại</div>
-        <div className="countdown-grid">
-          <div className="countdown-cell">
-            <div className="countdown-num">{pad(days)}</div>
-            <div className="countdown-unit">ngày</div>
-          </div>
-          <div className="countdown-sep">:</div>
-          <div className="countdown-cell">
-            <div className="countdown-num">{pad(hours)}</div>
-            <div className="countdown-unit">giờ</div>
-          </div>
-          <div className="countdown-sep">:</div>
-          <div className="countdown-cell">
-            <div className="countdown-num">{pad(mins)}</div>
-            <div className="countdown-unit">phút</div>
-          </div>
-          <div className="countdown-sep">:</div>
-          <div className="countdown-cell">
-            <div className="countdown-num">{pad(secs)}</div>
-            <div className="countdown-unit">giây</div>
-          </div>
+      {/* Hero heart animation */}
+      <div className="final-hero">
+        <div className="final-hero-ring final-hero-ring-1" />
+        <div className="final-hero-ring final-hero-ring-2" />
+        <div className="final-hero-heart">
+          <Heart size={72} fill="#722F37" />
         </div>
       </div>
 
-      {/* Locked notice banner */}
-      {!unlocked && (
-        <div className="unlock-banner">
-          <div className="unlock-banner-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <rect x="5" y="11" width="14" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
+      {/* Names with decorative line */}
+      <div className="final-names-block">
+        <div className="final-ornament">
+          <span className="final-ornament-line" />
+          <Heart size={12} />
+          <span className="final-ornament-line" />
+        </div>
+        <h2 className="final-names-title">
+          <span>Tùng Phạm</span>
+          <span className="final-names-amp">&</span>
+          <span>Thuý Hằng</span>
+        </h2>
+        <div className="final-ornament">
+          <span className="final-ornament-line" />
+          <Heart size={12} />
+          <span className="final-ornament-line" />
+        </div>
+      </div>
+
+      {/* Countdown grid */}
+      <div className="final-countdown-wrapper">
+        <p className="final-countdown-label">Ngày trọng đại</p>
+        <div className="final-countdown-grid">
+          <div className="final-countdown-item">
+            <span className="final-countdown-num">{pad(days)}</span>
+            <span className="final-countdown-unit">Ngày</span>
           </div>
-          <div className="unlock-banner-text">
-            <span className="unlock-banner-title">Đang chờ mở khóa</span>
-            <span className="unlock-banner-sub">Xác nhận tham dự sẽ mở trước đám cưới 2 tuần</span>
+          <div className="final-countdown-sep">:</div>
+          <div className="final-countdown-item">
+            <span className="final-countdown-num">{pad(hours)}</span>
+            <span className="final-countdown-unit">Giờ</span>
+          </div>
+          <div className="final-countdown-sep">:</div>
+          <div className="final-countdown-item">
+            <span className="final-countdown-num">{pad(mins)}</span>
+            <span className="final-countdown-unit">Phút</span>
+          </div>
+          <div className="final-countdown-sep">:</div>
+          <div className="final-countdown-item">
+            <span className="final-countdown-num">{pad(secs)}</span>
+            <span className="final-countdown-unit">Giây</span>
           </div>
         </div>
-      )}
+        <p className="final-countdown-date">27 · 12 · 2026 — 11:00</p>
+      </div>
 
-      {/* CTA buttons */}
-      <div className="final-cta-block">
-        {/* Map button - Nhà chú rể */}
+      {/* CTA Cards */}
+      <div className="final-cta-cards">
+        {/* Card 1: Confirm Attendance - Always open */}
         <a
-          className="final-cta final-cta-map"
-          href="https://maps.app.goo.gl/P9oQwKuYT3QgMK4x9"
+          className="final-card final-card-primary"
+          href="https://cuoithoi.pages.dev/"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={pauseWeddingAudio}
         >
-          <span className="final-cta-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-              <circle cx="12" cy="9" r="2.5" />
+          <div className="final-card-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M9 12l2 2 4-4" />
+              <circle cx="12" cy="12" r="10" />
             </svg>
-          </span>
-          <span className="final-cta-text">
-            <span className="final-cta-title">Chỉ đường đến nhà chú rể</span>
-            <span className="final-cta-sub">Kênh - Cẩm Bình, Hà Tĩnh</span>
-          </span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 12h14M13 5l7 7-7 7" />
-          </svg>
+          </div>
+          <div className="final-card-content">
+            <span className="final-card-title">Xác nhận tham dự</span>
+            <span className="final-card-desc">Giúp chúng mình chuẩn bị chu đáo</span>
+          </div>
+          <div className="final-card-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </div>
         </a>
 
-        <a
-          className={`final-cta ${unlocked ? 'final-cta-primary' : 'final-cta-locked'}`}
-          href={unlocked ? "https://cuoithoi.pages.dev/" : undefined}
-          target={unlocked ? "_blank" : undefined}
-          rel={unlocked ? "noopener noreferrer" : undefined}
-          aria-disabled={!unlocked}
-          onClick={(e) => { if (!unlocked) e.preventDefault() }}
-        >
-          <span className="final-cta-icon">
-            {unlocked ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <path d="M9 12l2 2 4-4" />
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        {/* Card 2: View Detailed Card - Locked until 15/12 */}
+        <div className={`final-card-wrapper ${cardUnlocked ? 'final-card-wrapper-unlocked' : ''}`}>
+          {!cardUnlocked && (
+            <div className="final-card-lock-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="5" y="11" width="14" height="10" rx="2" />
                 <path d="M8 11V7a4 4 0 0 1 8 0v4" />
               </svg>
-            )}
-          </span>
-          <span className="final-cta-text">
-            <span className="final-cta-title">
-              {unlocked ? 'Xác nhận tham dự' : 'Xác nhận tham dự'}
-            </span>
-            <span className="final-cta-sub">
-              {unlocked ? 'Giúp chúng mình chuẩn bị chu đáo' : 'Mở vào ngày 15.12.2026'}
-            </span>
-          </span>
-          {unlocked ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <rect x="5" y="11" width="14" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
+              <span>Mở 15.12.2026</span>
+            </div>
           )}
-        </a>
-
-        <a
-          className={`final-cta ${unlocked ? 'final-cta-secondary' : 'final-cta-locked'}`}
-          href={unlocked ? "https://locnt1.my.canva.site/tungvahang" : undefined}
-          target={unlocked ? "_blank" : undefined}
-          rel={unlocked ? "noopener noreferrer" : undefined}
-          aria-disabled={!unlocked}
-          onClick={(e) => { if (!unlocked) e.preventDefault() }}
-        >
-          <span className="final-cta-icon">
-            {unlocked ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <a
+            className={`final-card ${cardUnlocked ? 'final-card-secondary' : 'final-card-locked'}`}
+            href={cardUnlocked ? "https://locnt1.my.canva.site/tungvahang" : undefined}
+            target={cardUnlocked ? "_blank" : undefined}
+            rel={cardUnlocked ? "noopener noreferrer" : undefined}
+            onClick={(e) => {
+              if (!cardUnlocked) {
+                e.preventDefault()
+              } else {
+                pauseWeddingAudio()
+              }
+            }}
+          >
+            <div className="final-card-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="M3 9h18M7 13h4" />
               </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <rect x="5" y="11" width="14" height="10" rx="2" />
-                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-              </svg>
-            )}
-          </span>
-          <span className="final-cta-text">
-            <span className="final-cta-title">
-              {unlocked ? 'Xem thiệp chi tiết' : 'Xem thiệp chi tiết'}
-            </span>
-            <span className="final-cta-sub">
-              {unlocked ? 'Câu chuyện & khoảnh khắc' : 'Mở vào ngày 15.12.2026'}
-            </span>
-          </span>
-          {unlocked ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            </div>
+            <div className="final-card-content">
+              <span className="final-card-title">Xem thiệp chi tiết</span>
+              <span className="final-card-desc">
+                {cardUnlocked ? 'Câu chuyện & khoảnh khắc' : 'Nội dung đang được chuẩn bị'}
+              </span>
+            </div>
+            <div className="final-card-arrow">
+              {cardUnlocked ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M13 5l7 7-7 7" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+              )}
+            </div>
+          </a>
+        </div>
+
+        {/* Card 3: Map - Always open */}
+        <a
+          className="final-card final-card-tertiary"
+          href="https://maps.app.goo.gl/P9oQwKuYT3QgMK4x9"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={pauseWeddingAudio}
+        >
+          <div className="final-card-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+              <circle cx="12" cy="9" r="2.5" />
+            </svg>
+          </div>
+          <div className="final-card-content">
+            <span className="final-card-title">Địa điểm tổ chức</span>
+            <span className="final-card-desc">Kênh - Cẩm Bình, Hà Tĩnh</span>
+          </div>
+          <div className="final-card-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <rect x="5" y="11" width="14" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
-          )}
+          </div>
         </a>
-
-        {!unlocked && (
-          <p className="final-cta-note">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v4M12 16h.01" />
-            </svg>
-            Các liên kết sẽ được mở khóa vào ngày <strong>15.12.2026</strong>
-          </p>
-        )}
       </div>
 
-      <p className="overlay-final-credit">Crafted with ❤ — Tùng & Hằng</p>
+      {/* Closing message */}
+      <div className="final-closing">
+        <p className="final-closing-text">
+          Sự hiện diện của bạn<br />
+          <span>là món quà quý giá nhất</span>
+        </p>
+      </div>
+
+      {/* Credit */}
+      <div className="final-credit">
+        <div className="final-credit-ornament">
+          <span className="final-credit-line" />
+          <Heart size={10} />
+          <span className="final-credit-line" />
+        </div>
+        <p className="final-credit-text">Tùng Phạm & Thuý Hằng — 2026</p>
+      </div>
     </div>
   )
 }

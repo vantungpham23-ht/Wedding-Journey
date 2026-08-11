@@ -1,12 +1,20 @@
 import { useEffect, useRef } from 'react'
 
-// Local MP3 served from /public — autoplay works since AudioGate mounts
-// right after the user clicks "Mở thiệp mời" (still inside user-gesture context)
 const MP3_URL = '/golden-hour.mp3'
+const AUDIO_STATE_KEY = 'wedding-journey-audio'
 
 export default function AudioGate(): null {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const armedFallbackRef = useRef(false)
+  const isPlayingRef = useRef(false)
+
+  const pauseAudio = () => {
+    if (isPlayingRef.current && audioRef.current) {
+      audioRef.current.pause()
+      isPlayingRef.current = false
+      localStorage.removeItem(AUDIO_STATE_KEY)
+    }
+  }
 
   useEffect(() => {
     const audio = new Audio(MP3_URL)
@@ -16,13 +24,20 @@ export default function AudioGate(): null {
     audioRef.current = audio
 
     const tryPlay = () => {
+      if (isPlayingRef.current) return
       const p = audio.play()
       if (p && typeof p.catch === 'function') {
-        p.catch(() => {
+        p.then(() => {
+          isPlayingRef.current = true
+          localStorage.setItem(AUDIO_STATE_KEY, Date.now().toString())
+        }).catch(() => {
           if (armedFallbackRef.current) return
           armedFallbackRef.current = true
           const resume = () => {
-            audio.play().catch(() => {})
+            audio.play().then(() => {
+              isPlayingRef.current = true
+              localStorage.setItem(AUDIO_STATE_KEY, Date.now().toString())
+            }).catch(() => {})
             document.removeEventListener('click', resume, true)
             document.removeEventListener('touchstart', resume, true)
             document.removeEventListener('touchend', resume, true)
@@ -38,6 +53,19 @@ export default function AudioGate(): null {
       }
     }
 
+    // Expose pause function globally for external links
+    const pauseOnExternalClick = () => {
+      pauseAudio()
+    }
+    ;(window as any).__weddingPauseAudio = pauseOnExternalClick
+
+    // Listen for storage events from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === AUDIO_STATE_KEY && e.newValue !== null) {
+        pauseAudio()
+      }
+    }
+
     // Try immediately, and also on first user gesture as a safety net
     tryPlay()
     const onFirstGesture = () => {
@@ -50,12 +78,16 @@ export default function AudioGate(): null {
     document.addEventListener('touchstart', onFirstGesture, true)
     document.addEventListener('keydown', onFirstGesture, true)
 
+    window.addEventListener('storage', handleStorageChange)
+
     return () => {
       document.removeEventListener('click', onFirstGesture, true)
       document.removeEventListener('touchstart', onFirstGesture, true)
       document.removeEventListener('keydown', onFirstGesture, true)
-      audio.pause()
+      window.removeEventListener('storage', handleStorageChange)
+      pauseAudio()
       audio.src = ''
+      delete (window as any).__weddingPauseAudio
     }
   }, [])
 
