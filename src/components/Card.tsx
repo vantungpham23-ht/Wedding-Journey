@@ -18,6 +18,7 @@ export default function Card({ onBack }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState(0)
   const [showSwipeHint, setShowSwipeHint] = useState(true)
+  const [showDesktopHint, setShowDesktopHint] = useState(true)
 
   /* Track active section based on scroll position */
   useEffect(() => {
@@ -32,9 +33,10 @@ export default function Card({ onBack }: Props) {
         const h = el.offsetHeight
         const idx = Math.max(0, Math.min(sections.length - 1, Math.round(el.scrollTop / h)))
         setActiveSection(idx)
-        // Hide swipe hint after first scroll
+        // Hide hints after first scroll
         if (el.scrollTop > 50) {
           setShowSwipeHint(false)
+          setShowDesktopHint(false)
         }
       })
     }
@@ -76,8 +78,8 @@ export default function Card({ onBack }: Props) {
         ))}
       </div>
 
-      {/* Mobile: Swipe hint */}
-      {IS_MOBILE && showSwipeHint && (
+      {/* Mobile: Swipe hint - only on section 0 */}
+      {IS_MOBILE && showSwipeHint && activeSection === 0 && (
         <div className="card-swipe-hint">
           <div className="card-swipe-hint-icon">
             <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
@@ -85,6 +87,18 @@ export default function Card({ onBack }: Props) {
             </svg>
           </div>
           <span>Vuốt lên</span>
+        </div>
+      )}
+
+      {/* Desktop: Scroll hint - only on section 0 */}
+      {!IS_MOBILE && showDesktopHint && activeSection === 0 && (
+        <div className="card-desktop-hint">
+          <div className="card-desktop-hint-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <span>Cuộn xuống để xem tiếp</span>
         </div>
       )}
 

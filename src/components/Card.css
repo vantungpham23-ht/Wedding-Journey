@@ -240,3 +240,47 @@
   .card-swipe-hint { bottom: 18px; }
   .card-swipe-hint span { font-size: 10px; }
 }
+
+/* ── Desktop scroll hint ── */
+.card-desktop-hint {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(201, 168, 76, 0.5);
+  animation: desktopHintFade 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media screen and (min-width: 769px) {
+  .card-desktop-hint {
+    display: flex;
+  }
+}
+
+.card-desktop-hint-icon {
+  animation: desktopHintBounce 2s ease-in-out infinite;
+}
+
+.card-desktop-hint span {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(201, 168, 76, 0.5);
+}
+
+@keyframes desktopHintFade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes desktopHintBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
