@@ -381,7 +381,7 @@ a:focus-visible {
 }
 
 .title-glow {
-  animation: goldenPulse 4s ease-in-out infinite;
+  animation: goldenPulse 8s ease-in-out infinite;
 }
 
 /* Warm light leak from center seam - fade out as doors open */

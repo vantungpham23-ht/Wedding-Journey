@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 // ============== ANIMATION HELPERS ==============
-const ease = [0.16, 1, 0.3, 1]; // Cinematic ease
+const ease = [0.16, 1, 0.3, 1]; // Cinematic ease (đã chậm hơn nhờ stagger/duration tăng)
 
 // ============== SPLIT TEXT - từng chữ fade-up mượt mà ==============
 // Hiệu ứng "lời thì thầm" - mỗi ký tự xuất hiện theo thứ tự
@@ -22,8 +22,8 @@ function SplitText({
   text,
   active,
   delay = 0,
-  stagger = 0.04,
-  duration = 0.8,
+  stagger = 0.08,
+  duration = 1.6,
   className = "",
   as: Tag = "p",
 }: SplitTextProps) {
@@ -63,8 +63,8 @@ function SplitText({
                     y: -8,
                     filter: "blur(4px)",
                     transition: {
-                      duration: 0.3,
-                      delay: i * 0.01,
+                      duration: 0.6,
+                      delay: i * 0.02,
                       ease,
                     },
                   }
@@ -94,8 +94,8 @@ function LineReveal({
   lines,
   active,
   delay = 0,
-  stagger = 0.18,
-  duration = 1,
+  stagger = 0.36,
+  duration = 2,
   className = "",
   lineClassName = "",
 }: LineRevealProps) {
@@ -120,8 +120,8 @@ function LineReveal({
                     y: "-100%",
                     opacity: 0,
                     transition: {
-                      duration: 0.4,
-                      delay: i * 0.05,
+                      duration: 0.8,
+                      delay: i * 0.1,
                       ease,
                     },
                   }
@@ -145,7 +145,7 @@ interface FadeBlurProps {
   children: React.ReactNode;
 }
 
-function FadeBlur({ active, delay = 0, duration = 1, className = "", children }: FadeBlurProps) {
+function FadeBlur({ active, delay = 0, duration = 2, className = "", children }: FadeBlurProps) {
   return (
     <motion.div
       className={className}
@@ -162,7 +162,7 @@ function FadeBlur({ active, delay = 0, duration = 1, className = "", children }:
               opacity: 0,
               y: -10,
               filter: "blur(6px)",
-              transition: { duration: 0.4, ease },
+              transition: { duration: 0.8, ease },
             }
       }
     >
@@ -224,7 +224,7 @@ function CTACard({
       rel="noopener noreferrer"
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-300 sm:gap-4 sm:p-5"
+      className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
     >
       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#fdfbf7] ring-1 ring-[#c4a484]/30 sm:h-12 sm:w-12">
         {icon}
@@ -239,7 +239,7 @@ function CTACard({
         </span>
       </div>
 
-      <div className="text-[#c4a484] transition-transform duration-300 group-hover:translate-x-1">
+      <div className="text-[#c4a484] transition-transform duration-700 group-hover:translate-x-1">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M13 5l7 7-7 7" />
         </svg>
@@ -277,13 +277,13 @@ function Section({ active, children, theme = "light" }: SectionProps) {
                 opacity: 1,
                 y: 0,
                 filter: "blur(0px)",
-                transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
+                transition: { duration: 2, ease: [0.16, 1, 0.3, 1] },
               }
             : {
                 opacity: 0,
                 y: -20,
                 filter: "blur(8px)",
-                transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
               }
         }
       >
@@ -344,7 +344,7 @@ export function DetailsSections({
       {/* SECTION 2: WELCOME - NỀN NÂU */}
       <Section active={activeSection === 1} theme="dark">
         <div className="text-center">
-          <FadeBlur active={activeSection === 1} delay={0.2} duration={1}>
+          <FadeBlur active={activeSection === 1} delay={0.4} duration={2}>
             <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]">
               Lời mời
             </p>
@@ -354,9 +354,9 @@ export function DetailsSections({
             as="h3"
             text="Vì bạn là một phần của hành trình"
             active={activeSection === 1}
-            delay={0.4}
-            stagger={0.035}
-            duration={1}
+            delay={0.8}
+            stagger={0.07}
+            duration={2}
             className="mb-8 font-serif text-2xl font-bold text-[#fdfbf7] sm:text-3xl md:text-4xl"
           />
 
@@ -367,14 +367,14 @@ export function DetailsSections({
               "trong câu chuyện của chúng mình.",
             ]}
             active={activeSection === 1}
-            delay={1.4}
-            stagger={0.2}
-            duration={1}
+            delay={2.8}
+            stagger={0.4}
+            duration={2}
             className="mx-auto mb-6 max-w-md space-y-1 font-serif text-base leading-relaxed text-[#fdfbf7]/80 sm:text-lg"
             lineClassName=""
           />
 
-          <FadeBlur active={activeSection === 1} delay={2.1} duration={1}>
+          <FadeBlur active={activeSection === 1} delay={4.2} duration={2}>
             <p className="mx-auto max-w-md font-serif text-base font-semibold italic text-[#fdfbf7] sm:text-lg">
               Và bạn là một trong những người như thế.
             </p>
@@ -384,7 +384,7 @@ export function DetailsSections({
             initial={{ opacity: 0, scale: 0 }}
             animate={
               activeSection === 1
-                ? { opacity: 1, scale: 1, transition: { delay: 2.4, duration: 0.6 } }
+                ? { opacity: 1, scale: 1, transition: { delay: 4.8, duration: 1.2 } }
                 : { opacity: 0, scale: 0 }
             }
             className="mt-8 flex justify-center sm:mt-10"
@@ -399,7 +399,7 @@ export function DetailsSections({
       {/* SECTION 3: HẸN GẶP BẠN - nền be */}
       <Section active={activeSection === 2}>
         <div className="text-center">
-          <FadeBlur active={activeSection === 2} delay={0.2} duration={1}>
+          <FadeBlur active={activeSection === 2} delay={0.4} duration={2}>
             <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]">
               Gửi đến bạn
             </p>
@@ -409,13 +409,13 @@ export function DetailsSections({
             as="h3"
             text="Hẹn gặp bạn"
             active={activeSection === 2}
-            delay={0.4}
-            stagger={0.07}
-            duration={1}
+            delay={0.8}
+            stagger={0.14}
+            duration={2}
             className="mb-8 font-serif text-3xl font-bold text-[#4a3525] sm:text-4xl md:text-5xl"
           />
 
-          <FadeBlur active={activeSection === 2} delay={1.2} duration={1}>
+          <FadeBlur active={activeSection === 2} delay={2.4} duration={2}>
             <p className="mx-auto mb-6 max-w-md font-serif text-base italic leading-relaxed text-[#4a3525]/80 sm:text-lg">
               Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy
               <br />
@@ -429,9 +429,9 @@ export function DetailsSections({
               "chính thức về chung một nhà.",
             ]}
             active={activeSection === 2}
-            delay={1.6}
-            stagger={0.25}
-            duration={1}
+            delay={3.2}
+            stagger={0.5}
+            duration={2}
             className="font-serif text-base italic text-[#c4a484] sm:text-lg"
             lineClassName=""
           />
@@ -440,7 +440,7 @@ export function DetailsSections({
             initial={{ opacity: 0, scale: 0 }}
             animate={
               activeSection === 2
-                ? { opacity: 1, scale: 1, transition: { delay: 2.2, duration: 0.6 } }
+                ? { opacity: 1, scale: 1, transition: { delay: 4.4, duration: 1.2 } }
                 : { opacity: 0, scale: 0 }
             }
             className="mt-8 flex justify-center sm:mt-10"
@@ -461,7 +461,7 @@ export function DetailsSections({
             initial={{ opacity: 0, scale: 0 }}
             animate={
               activeSection === 3
-                ? { opacity: 1, scale: 1, transition: { delay: 0.2, duration: 0.8 } }
+                ? { opacity: 1, scale: 1, transition: { delay: 0.4, duration: 1.6 } }
                 : { opacity: 0 }
             }
             className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center sm:mb-8 sm:h-20 sm:w-20"
@@ -469,12 +469,12 @@ export function DetailsSections({
             <motion.span
               className="absolute inset-0 rounded-full border border-[#c4a484]/30"
               animate={{ scale: [1, 1.4, 1.6], opacity: [0.5, 0.2, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeOut" }}
             />
             <motion.span
               className="absolute inset-0 rounded-full border border-[#c4a484]/30"
               animate={{ scale: [1, 1.4, 1.6], opacity: [0.5, 0.2, 0] }}
-              transition={{ duration: 2.5, delay: 1.25, repeat: Infinity, ease: "easeOut" }}
+              transition={{ duration: 5, delay: 2.5, repeat: Infinity, ease: "easeOut" }}
             />
             <svg width="42" height="14" viewBox="0 0 60 20" fill="none" className="text-[#c4a484]">
               <path d="M 2 10 Q 15 10 22 4 Q 28 -1 30 8 Q 32 17 38 4 Q 45 -1 58 10" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
@@ -483,7 +483,7 @@ export function DetailsSections({
           </motion.div>
 
           {/* Names với flourish divider */}
-          <FadeBlur active={activeSection === 3} delay={0.4} duration={1}>
+          <FadeBlur active={activeSection === 3} delay={0.8} duration={2}>
             <div className="mb-6 flex items-center justify-center gap-3 sm:gap-4">
               <span className="h-px w-10 bg-[#c4a484]/40 sm:w-12" />
               <svg width="16" height="6" viewBox="0 0 24 8" fill="none" className="text-[#c4a484]">
@@ -498,14 +498,14 @@ export function DetailsSections({
             as="h3"
             text={`${groom} & ${bride}`}
             active={activeSection === 3}
-            delay={0.6}
-            stagger={0.04}
-            duration={0.9}
+            delay={1.2}
+            stagger={0.08}
+            duration={1.8}
             className="mb-8 font-serif text-xl font-bold text-[#fdfbf7] sm:text-2xl"
           />
 
           {/* Countdown */}
-          <FadeBlur active={activeSection === 3} delay={1.4} duration={1}>
+          <FadeBlur active={activeSection === 3} delay={2.8} duration={2}>
             <div className="my-6">
               <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.4em] text-[#c4a484]">
                 Đếm ngược
@@ -534,7 +534,7 @@ export function DetailsSections({
             variants={{
               hidden: {},
               visible: {
-                transition: { staggerChildren: 0.15, delayChildren: 1.8 },
+                transition: { staggerChildren: 0.3, delayChildren: 3.6 },
               },
             }}
             className="mx-auto mt-6 flex max-w-md flex-col gap-2.5 sm:gap-3"
@@ -577,16 +577,16 @@ export function DetailsSections({
                         opacity: 1,
                         x: 0,
                         filter: "blur(0px)",
-                        transition: { duration: 0.9, ease },
+                        transition: { duration: 1.8, ease },
                       }
                     : {
                         opacity: 0,
                         x: -10,
                         filter: "blur(4px)",
-                        transition: { duration: 0.3 },
+                        transition: { duration: 0.6 },
                       }
                 }
-                className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-300 sm:gap-4 sm:p-5"
+                className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
               >
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#fdfbf7] ring-1 ring-[#c4a484]/30 sm:h-12 sm:w-12">
                   {card.icon}
@@ -599,7 +599,7 @@ export function DetailsSections({
                     {card.desc}
                   </span>
                 </div>
-                <div className="text-[#c4a484] transition-transform duration-300 group-hover:translate-x-1">
+                <div className="text-[#c4a484] transition-transform duration-700 group-hover:translate-x-1">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
@@ -614,7 +614,7 @@ export function DetailsSections({
             initial={{ opacity: 0, scaleX: 0 }}
             animate={
               activeSection === 3
-                ? { opacity: 1, scaleX: 1, transition: { delay: 2.4, duration: 0.8 } }
+                ? { opacity: 1, scaleX: 1, transition: { delay: 4.8, duration: 1.6 } }
                 : { opacity: 0 }
             }
             className="mb-8 mt-12 flex items-center justify-center gap-3 sm:mb-12 sm:mt-16 sm:gap-4"
@@ -633,13 +633,13 @@ export function DetailsSections({
             as="p"
             text="Sự hiện diện của bạn là món quà quý giá nhất"
             active={activeSection === 3}
-            delay={2.6}
-            stagger={0.04}
-            duration={0.9}
+            delay={5.2}
+            stagger={0.08}
+            duration={1.8}
             className="mb-8 font-serif text-xl italic text-[#fdfbf7] sm:text-2xl md:text-3xl"
           />
 
-          <FadeBlur active={activeSection === 3} delay={3.4} duration={1}>
+          <FadeBlur active={activeSection === 3} delay={6.8} duration={2}>
             <div className="flex flex-col items-center gap-2">
               <p className="font-serif text-lg text-[#fdfbf7] sm:text-xl">
                 {groomInit} <span className="text-[#c4a484]">&</span> {brideInit}
@@ -656,7 +656,7 @@ export function DetailsSections({
             initial={{ opacity: 0, scaleX: 0 }}
             animate={
               activeSection === 3
-                ? { opacity: 1, scaleX: 1, transition: { delay: 3.6, duration: 0.8 } }
+                ? { opacity: 1, scaleX: 1, transition: { delay: 7.2, duration: 1.6 } }
                 : { opacity: 0 }
             }
             style={{ transformOrigin: "center" }}

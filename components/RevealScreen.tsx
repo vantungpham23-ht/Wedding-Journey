@@ -18,7 +18,7 @@ function generateParticles(count: number): Particle[] {
     id: i,
     x: Math.random() * 100,
     size: 3 + Math.random() * 5,
-    duration: 10 + Math.random() * 15,
+    duration: 20 + Math.random() * 30,
     delay: Math.random() * 15,
     drift: -20 + Math.random() * 40,
     type: Math.random() > 0.4 ? "circle" : "leaf",
@@ -32,17 +32,17 @@ interface RevealScreenProps {
 }
 
 // Timing cho reveal sequence sau khi doors mở
-// Doors finish opening ~3.0s, content fades in starting 3.0s
+// Doors finish opening ~6.0s, content fades in starting 6.0s (timeline kéo dài ~2x)
 const REVEAL_TIMING = {
-  startDelay: 3.0, // Doors mở xong
-  eyebrow: 3.2,
-  monogram: 3.5,
-  flourish: 3.8,
-  date: 4.1,
-  names: 4.6,
-  location: 4.9,
-  bottomDecor: 5.3,
-  scrollHint: 5.7,
+  startDelay: 6.0, // Doors mở xong
+  eyebrow: 6.4,
+  monogram: 7.0,
+  flourish: 7.6,
+  date: 8.2,
+  names: 9.2,
+  location: 9.8,
+  bottomDecor: 10.6,
+  scrollHint: 11.4,
 };
 
 // === EASING CURVES (cubic-bezier) ===
@@ -57,8 +57,8 @@ const charVariants = {
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 0.9,
-      delay: i * 0.05,
+      duration: 1.8,
+      delay: i * 0.1,
       ease: ease,
     },
   }),
@@ -71,7 +71,7 @@ const maskVariants = {
     y: "0%",
     opacity: 1,
     transition: {
-      duration: 1.2,
+      duration: 2.4,
       ease: ease,
     },
   },
@@ -83,7 +83,7 @@ const shimmerVariants = {
   visible: {
     backgroundPosition: "0% center",
     transition: {
-      duration: 2,
+      duration: 4,
       ease: "easeOut",
     },
   },
@@ -114,13 +114,13 @@ export default function RevealScreen({
           opacity: 1,
           y: 0,
           filter: "blur(0px)",
-          transition: { duration: 1.3, delay, ease },
+          transition: { duration: 2.6, delay, ease },
         }
       : {
           opacity: 0,
           y: -20,
           filter: fromBlur ? "blur(8px)" : "blur(0px)",
-          transition: { duration: 0.6, ease },
+          transition: { duration: 1.2, ease },
         },
   });
 
@@ -184,7 +184,7 @@ export default function RevealScreen({
             ? { scale: [1, 1.1, 1], opacity: [0.6, 0.9, 0.6] }
             : { scale: 1, opacity: 0 }
         }
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Layer 4: Top light rays */}
@@ -197,7 +197,7 @@ export default function RevealScreen({
         }}
         initial={{ opacity: 0, y: -50 }}
         animate={active ? { opacity: 1, y: 0 } : { opacity: 0 }}
-        transition={{ duration: 2, delay: 3.2, ease }}
+        transition={{ duration: 4, delay: 6.4, ease }}
       />
 
       {/* Layer 5: Floating bokeh - các quả cầu ánh sáng lơ lửng */}
@@ -225,9 +225,9 @@ export default function RevealScreen({
               : { opacity: 0 }
           }
           transition={{
-            duration: 8 + i * 2,
+            duration: 16 + i * 4,
             repeat: Infinity,
-            delay: i * 0.8,
+            delay: i * 1.6,
             ease: "easeInOut",
           }}
         />
@@ -245,7 +245,7 @@ export default function RevealScreen({
             className="block h-px bg-gradient-to-r from-transparent to-[#c4a484]/50 sm:w-20"
             initial={{ width: 0, opacity: 0 }}
             animate={active ? { width: 80, opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ duration: 1, delay: REVEAL_TIMING.eyebrow + 0.3, ease }}
+            transition={{ duration: 2, delay: REVEAL_TIMING.eyebrow + 0.6, ease }}
             style={{ width: "80px" }}
           />
           <span className="font-sans text-[9px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
@@ -256,7 +256,7 @@ export default function RevealScreen({
             className="block h-px bg-gradient-to-l from-transparent to-[#c4a484]/50 sm:w-20"
             initial={{ width: 0, opacity: 0 }}
             animate={active ? { width: 80, opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ duration: 1, delay: REVEAL_TIMING.eyebrow + 0.3, ease }}
+            transition={{ duration: 2, delay: REVEAL_TIMING.eyebrow + 0.6, ease }}
             style={{ width: "80px" }}
           />
         </motion.div>
@@ -266,7 +266,7 @@ export default function RevealScreen({
           initial={{ opacity: 0, y: 30, scale: 0.9 }}
           animate={
             active
-              ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.3, delay: REVEAL_TIMING.monogram, ease: easeBack } }
+              ? { opacity: 1, y: 0, scale: 1, transition: { duration: 2.6, delay: REVEAL_TIMING.monogram, ease: easeBack } }
               : { opacity: 0, y: -20 }
           }
           className="mb-6 flex items-center justify-center sm:mb-8"
@@ -277,7 +277,7 @@ export default function RevealScreen({
             style={{ fontWeight: 500, letterSpacing: "-0.02em" }}
             initial={{ opacity: 0, x: -30 }}
             animate={active ? { opacity: 1, x: 0 } : { opacity: 0 }}
-            transition={{ duration: 1, delay: REVEAL_TIMING.monogram + 0.2, ease }}
+            transition={{ duration: 2, delay: REVEAL_TIMING.monogram + 0.4, ease }}
           >
             T
           </motion.span>
@@ -290,7 +290,7 @@ export default function RevealScreen({
             fill="none"
             initial={{ opacity: 0, scaleX: 0, rotate: -10 }}
             animate={active ? { opacity: 1, scaleX: 1, rotate: 0 } : { opacity: 0 }}
-            transition={{ duration: 1, delay: REVEAL_TIMING.flourish, ease }}
+            transition={{ duration: 2, delay: REVEAL_TIMING.flourish, ease }}
             className="mx-3 text-[#c4a484] sm:mx-4 sm:h-4 sm:w-14"
             style={{ transformOrigin: "center" }}
           >
@@ -318,7 +318,7 @@ export default function RevealScreen({
             style={{ fontWeight: 500, letterSpacing: "-0.02em", fontStyle: "italic" }}
             initial={{ opacity: 0, x: 30 }}
             animate={active ? { opacity: 1, x: 0 } : { opacity: 0 }}
-            transition={{ duration: 1, delay: REVEAL_TIMING.monogram + 0.4, ease }}
+            transition={{ duration: 2, delay: REVEAL_TIMING.monogram + 0.8, ease }}
           >
             H
           </motion.span>
@@ -344,7 +344,7 @@ export default function RevealScreen({
                 className={`inline-block ${char === "·" ? "text-[#c4a484]" : ""}`}
                 style={{
                   transitionDelay: active
-                    ? `${REVEAL_TIMING.date + i * 0.07}s`
+                    ? `${REVEAL_TIMING.date + i * 0.14}s`
                     : "0s",
                   width: char === "·" ? "0.5em" : "auto",
                   transform: char === "·" ? "translateY(-0.15em)" : "none",
@@ -361,7 +361,7 @@ export default function RevealScreen({
           className="mt-2 h-px bg-gradient-to-r from-transparent via-[#c4a484]/40 to-transparent sm:mt-4"
           initial={{ width: 0, opacity: 0 }}
           animate={active ? { width: "60%", opacity: 1 } : { width: 0 }}
-          transition={{ duration: 1.5, delay: REVEAL_TIMING.date + 0.5, ease }}
+          transition={{ duration: 3, delay: REVEAL_TIMING.date + 1.0, ease }}
           style={{ maxWidth: "400px" }}
         />
 
@@ -385,7 +385,7 @@ export default function RevealScreen({
                   className="inline-block"
                   style={{
                     transitionDelay: active
-                      ? `${REVEAL_TIMING.names + i * 0.06}s`
+                      ? `${REVEAL_TIMING.names + i * 0.12}s`
                       : "0s",
                   }}
                 >
@@ -401,7 +401,7 @@ export default function RevealScreen({
                   ? { opacity: 1, scale: 1, rotate: 0 }
                   : { opacity: 0, scale: 0 }
               }
-              transition={{ duration: 0.8, delay: REVEAL_TIMING.names + 0.4, ease: easeBack }}
+              transition={{ duration: 1.6, delay: REVEAL_TIMING.names + 0.8, ease: easeBack }}
             >
               &
             </motion.span>
@@ -416,7 +416,7 @@ export default function RevealScreen({
                   className="inline-block"
                   style={{
                     transitionDelay: active
-                      ? `${REVEAL_TIMING.names + 0.5 + i * 0.06}s`
+                      ? `${REVEAL_TIMING.names + 1.0 + i * 0.12}s`
                       : "0s",
                   }}
                 >
@@ -431,7 +431,7 @@ export default function RevealScreen({
             initial={{ opacity: 0, y: 10 }}
             animate={
               active
-                ? { opacity: 1, y: 0, transition: { delay: REVEAL_TIMING.location, duration: 1, ease } }
+                ? { opacity: 1, y: 0, transition: { delay: REVEAL_TIMING.location, duration: 2, ease } }
                 : { opacity: 0 }
             }
             className="mt-4 font-sans text-[9px] uppercase tracking-[0.3em] text-[#4a3525]/50 sm:mt-6 sm:text-xs sm:tracking-[0.4em]"
@@ -443,7 +443,7 @@ export default function RevealScreen({
           <motion.p
             initial={{ opacity: 0 }}
             animate={active ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ delay: REVEAL_TIMING.location + 0.2, duration: 1, ease }}
+            transition={{ delay: REVEAL_TIMING.location + 0.4, duration: 2, ease }}
             className="relative mt-2 font-sans text-[9px] uppercase tracking-[0.3em] text-[#c4a484] sm:mt-3 sm:text-xs sm:tracking-[0.4em]"
           >
             Kênh · Cẩm Bình · Hà Tĩnh
@@ -452,7 +452,7 @@ export default function RevealScreen({
               className="absolute -bottom-1 left-1/2 h-px bg-[#c4a484]/40"
               initial={{ width: 0, x: "-50%" }}
               animate={active ? { width: "100%" } : { width: 0 }}
-              transition={{ delay: REVEAL_TIMING.location + 0.5, duration: 1.2, ease }}
+              transition={{ delay: REVEAL_TIMING.location + 1.0, duration: 2.4, ease }}
             />
           </motion.p>
         </motion.div>
@@ -476,7 +476,7 @@ export default function RevealScreen({
                 ? { rotate: [0, 360] }
                 : { rotate: 0 }
             }
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
           >
             <path d="M16 28 C16 28 4 19 4 11 C4 6 8 2 13 2 C14.5 2 16 3 16 3 C16 3 17.5 2 19 2 C24 2 28 6 28 11 C28 19 16 28 16 28Z" />
           </motion.svg>
@@ -491,7 +491,7 @@ export default function RevealScreen({
           <motion.span
             className="font-sans text-[9px] uppercase tracking-[0.4em] text-[#4a3525]/40 sm:tracking-[0.5em]"
             animate={active ? { y: [0, -2, 0] } : {}}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           >
             Vuốt lên để xem tiếp
           </motion.span>
@@ -499,12 +499,12 @@ export default function RevealScreen({
           <motion.div
             className="relative h-10 w-px overflow-hidden bg-[#4a3525]/20 sm:h-12"
             animate={{ opacity: [0.4, 0.8, 0.4] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
             <motion.div
               className="absolute inset-x-0 top-0 h-1/2 bg-[#c4a484]"
               animate={prefersReducedMotion ? {} : { y: ["0%", "200%"] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
             />
           </motion.div>
         </motion.div>

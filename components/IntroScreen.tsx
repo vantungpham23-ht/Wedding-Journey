@@ -22,7 +22,7 @@ function IntroParticles() {
         x: Math.random() * 100,
         y: Math.random() * 100,
         size: 1.5 + Math.random() * 3,
-        duration: 10 + Math.random() * 12,
+        duration: 20 + Math.random() * 24,
         delay: Math.random() * 8,
       }))
     );
@@ -66,9 +66,9 @@ function IntroParticles() {
 // 2.3s: onUnlock called
 
 const TIMING = {
-  doorOpenDuration: 2.0,         // 2 giây - đơn giản, nhanh gọn
-  doorOpenDelay: 0.3,             // Bắt đầu bay sau khi button tan
-  totalExit: 2.5,                 // Tổng thời gian
+  doorOpenDuration: 3.6,         // 2 tờ giấy nâu ghép vào nhau - bay dần ra 2 bên
+  doorOpenDelay: 0.6,             // Bắt đầu bay sau khi button tan
+  totalExit: 4.5,                 // Tổng thời gian
 };
 
 // Easing mượt - cubic-bezier cơ bản
@@ -110,7 +110,7 @@ const pulseRingVariants = {
     scale: [1, 1.4, 1.7],
     opacity: [0.5, 0.2, 0],
     transition: {
-      duration: 2.5,
+      duration: 5,
       repeat: Infinity,
       ease: "easeOut",
     },
@@ -123,8 +123,8 @@ const secondRingVariants = {
     scale: [1, 1.4, 1.7],
     opacity: [0.5, 0.2, 0],
     transition: {
-      duration: 2.5,
-      delay: 1.25,
+      duration: 5,
+      delay: 2.5,
       repeat: Infinity,
       ease: "easeOut",
     },
@@ -250,7 +250,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
             opacity: 1,
             scale: 1,
             transition: {
-              duration: 1.2,
+              duration: 2.4,
               ease: easeSmooth,
             },
           },
@@ -263,7 +263,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={mounted ? { opacity: 0.7, y: 0 } : { opacity: 0 }}
-          transition={{ delay: 0.3, duration: 1, ease: easeSmooth }}
+          transition={{ delay: 0.6, duration: 2, ease: easeSmooth }}
           className="mb-4 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:text-xs"
         >
           We are getting married
@@ -276,7 +276,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
               ? { opacity: 1, y: 0, filter: "blur(0px)" }
               : { opacity: 0, y: -10 }
           }
-          transition={{ delay: 0.5, duration: 1.1, ease: easeSmooth }}
+          transition={{ delay: 1.0, duration: 2.2, ease: easeSmooth }}
           className="mb-2 max-w-2xl font-serif text-4xl leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
         >
           {groom}
@@ -289,7 +289,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
               ? { opacity: 1, scale: 1 }
               : { opacity: 0, scale: 0 }
           }
-          transition={{ delay: 0.8, duration: 0.8, ease: "backOut" }}
+          transition={{ delay: 1.6, duration: 1.6, ease: "backOut" }}
           className="mb-2 font-serif text-3xl italic text-[#c4a484] sm:text-4xl"
         >
           &
@@ -302,7 +302,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
               ? { opacity: 1, y: 0, filter: "blur(0px)" }
               : { opacity: 0, y: -10 }
           }
-          transition={{ delay: 0.7, duration: 1.1, ease: easeSmooth }}
+          transition={{ delay: 1.4, duration: 2.2, ease: easeSmooth }}
           className="mb-12 max-w-2xl font-serif text-4xl leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
         >
           {bride}
@@ -317,8 +317,8 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
               : { opacity: 0, y: -10, scale: 0.9 }
           }
           transition={{
-            delay: 1,
-            duration: 1,
+            delay: 2.0,
+            duration: 2.0,
             ease: easeSmooth,
           }}
           onClick={handleClick}
@@ -350,7 +350,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
                 scale: [0.8, 1.2, 0.8],
               }}
               transition={{
-                duration: 2,
+                duration: 4,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
@@ -358,7 +358,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
             <span className="whitespace-nowrap">Chạm để mở</span>
             <motion.span
               animate={{ x: [0, 4, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Infinity }}
               className="text-[#c4a484]"
             >
               →
@@ -370,7 +370,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         <motion.p
           initial={{ opacity: 0 }}
           animate={mounted ? { opacity: 0.4 } : { opacity: 0 }}
-          transition={{ delay: 1.5, duration: 1 }}
+          transition={{ delay: 3.0, duration: 2 }}
           className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
         >
           27 · 12 · 2026
