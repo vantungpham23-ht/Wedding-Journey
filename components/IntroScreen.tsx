@@ -292,9 +292,9 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         {/* Names */}
         <motion.div
           className="mb-8 flex flex-col items-center gap-2 sm:mb-12"
-          initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
-          animate={mounted ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0 }}
-          transition={{ delay: T_NAMES, duration: 0.9, ease }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0 }}
+          transition={{ delay: T_NAMES, duration: 0.6, ease }}
         >
           <span
             className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"

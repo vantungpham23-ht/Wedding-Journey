@@ -15,7 +15,7 @@ import {
   ease,
 } from "./animation";
 
-// ============== SPLIT TEXT ==============
+// ============== SPLIT TEXT — smooth, no blur ==============
 interface SplitTextProps {
   text: string;
   active: boolean;
@@ -46,20 +46,18 @@ function SplitText({
           <motion.span
             key={`${char}-${i}`}
             className="inline-block"
-            initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: 12 }}
             animate={
               active
                 ? {
                     opacity: 1,
                     y: 0,
-                    filter: "blur(0px)",
                     transition: { duration: _duration, delay: delay + i * _stagger, ease },
                   }
                 : {
                     opacity: 0,
-                    y: -8,
-                    filter: "blur(4px)",
-                    transition: { duration: _duration * 0.7, delay: i * _stagger * 0.4, ease },
+                    y: -6,
+                    transition: { duration: _duration * 0.5, delay: i * _stagger * 0.3, ease },
                   }
             }
             style={{ whiteSpace: char === " " ? "pre" : "normal" }}
@@ -124,8 +122,8 @@ function LineReveal({
   );
 }
 
-// ============== FADE BLUR ==============
-interface FadeBlurProps {
+// ============== FADE SLIDE — smooth, no blur ==============
+interface FadeSlideProps {
   active: boolean;
   delay?: number;
   duration?: number;
@@ -133,30 +131,28 @@ interface FadeBlurProps {
   children: React.ReactNode;
 }
 
-function FadeBlur({
+function FadeSlide({
   active,
   delay = 0,
-  duration = 0.5,
+  duration = 0.4,
   className = "",
   children,
-}: FadeBlurProps) {
+}: FadeSlideProps) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 15, filter: "blur(8px)" }}
+      initial={{ opacity: 0, y: 12 }}
       animate={
         active
           ? {
               opacity: 1,
               y: 0,
-              filter: "blur(0px)",
               transition: { duration, delay, ease },
             }
           : {
               opacity: 0,
-              y: -10,
-              filter: "blur(6px)",
-              transition: { duration: duration * 0.6, ease },
+              y: -8,
+              transition: { duration: duration * 0.5, ease },
             }
       }
     >
@@ -191,7 +187,7 @@ function CountdownBox({
   );
 }
 
-// ============== SECTION WRAPPER ==============
+// ============== SECTION WRAPPER — smooth, no blur ==============
 interface SectionProps {
   active: boolean;
   children: React.ReactNode;
@@ -208,20 +204,18 @@ function Section({ active, children, theme = "light" }: SectionProps) {
     >
       <motion.div
         className="flex h-full w-full max-w-2xl flex-col justify-center"
-        initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+        initial={{ opacity: 0, y: 15 }}
         animate={
           active
             ? {
                 opacity: 1,
                 y: 0,
-                filter: "blur(0px)",
-                transition: { duration: 1.2, ease },
+                transition: { duration: 0.8, ease },
               }
             : {
                 opacity: 0,
-                y: -15,
-                filter: "blur(6px)",
-                transition: { duration: 0.8, ease },
+                y: -10,
+                transition: { duration: 0.5, ease },
               }
         }
       >
@@ -356,11 +350,11 @@ export function DetailsSections({
           <MonogramArt theme="dark" size={100} delay={s2_t1} active={is2} />
 
           {/* Eyebrow */}
-          <FadeBlur active={is2} delay={s2_t1 + 0.1} duration={0.4}>
+          <FadeSlide active={is2} delay={s2_t1 + 0.1} duration={0.3}>
             <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
               Lời mời
             </p>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Tiêu đề */}
           <div className="text-center">
@@ -374,9 +368,9 @@ export function DetailsSections({
           </div>
 
           {/* Đường kẻ */}
-          <FadeBlur active={is2} delay={s2_t2 + S2a * 0.5} duration={0.6}>
+          <FadeSlide active={is2} delay={s2_t2 + 0.2} duration={0.4}>
             <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#c4a484]/50 to-transparent" />
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Nội dung — 3 dòng */}
           <div className="max-w-md space-y-0 text-center">
@@ -393,16 +387,16 @@ export function DetailsSections({
           </div>
 
           {/* Quote */}
-          <FadeBlur active={is2} delay={s2_t4} duration={0.6}>
+          <FadeSlide active={is2} delay={s2_t4} duration={0.4}>
             <p className="max-w-sm font-serif text-base italic text-[#fdfbf7] sm:text-lg">
               Và bạn là một trong những người như thế.
             </p>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Divider */}
-          <FadeBlur active={is2} delay={s2_t4 + 0.4} duration={0.8}>
+          <FadeSlide active={is2} delay={s2_t4 + 0.2} duration={0.5}>
             <OrnamentDivider className="w-48 opacity-60" />
-          </FadeBlur>
+          </FadeSlide>
         </div>
       </Section>
 
@@ -413,11 +407,11 @@ export function DetailsSections({
         <div className="flex flex-col items-center gap-6 sm:gap-8">
 
           {/* Eyebrow + Constellation */}
-          <FadeBlur active={is3} delay={s3_t1} duration={0.4}>
+          <FadeSlide active={is3} delay={s3_t1} duration={0.3}>
             <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
               Gửi đến bạn
             </p>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Lotus: Hoa sen — Kênh, Cẩm Bình */}
           <LotusArt theme="light" size={120} delay={s3_t1 + 0.1} active={is3} />
@@ -433,8 +427,8 @@ export function DetailsSections({
             />
           </div>
 
-          {/* Thông tin ngày-giờ-địa điểm — lấp khoảng trống */}
-          <FadeBlur active={is3} delay={s3_t2 + S3a * 0.6} duration={0.7}>
+          {/* Thông tin ngày-giờ-địa điểm */}
+          <FadeSlide active={is3} delay={s3_t2 + 0.2} duration={0.5}>
             <div className="flex items-center gap-4 rounded-2xl border border-[#c4a484]/25 bg-[#fdfbf7]/60 px-6 py-4 backdrop-blur-sm sm:gap-6">
               {/* Date */}
               <div className="flex flex-col items-center">
@@ -454,16 +448,16 @@ export function DetailsSections({
                 <span className="font-sans text-[9px] uppercase tracking-widest text-[#c4a484]">Cẩm Bình · Hà Tĩnh</span>
               </div>
             </div>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Quote */}
-          <FadeBlur active={is3} delay={s3_t3} duration={0.6}>
+          <FadeSlide active={is3} delay={s3_t3} duration={0.4}>
             <p className="max-w-md text-center font-serif text-base italic leading-relaxed text-[#4a3525]/80 sm:text-lg">
               Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy
               <br />
               trở nên ấm áp và ý nghĩa hơn với chúng mình.
             </p>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* Hai dòng kết */}
           <div className="max-w-md text-center">
@@ -479,9 +473,9 @@ export function DetailsSections({
           </div>
 
           {/* Divider */}
-          <FadeBlur active={is3} delay={s3_t4 + 0.5} duration={0.8}>
+          <FadeSlide active={is3} delay={s3_t4 + 0.2} duration={0.5}>
             <OrnamentDivider className="w-48 opacity-60" />
-          </FadeBlur>
+          </FadeSlide>
         </div>
       </Section>
 
@@ -495,7 +489,7 @@ export function DetailsSections({
           <RingArt theme="dark" size={120} delay={0.5} active={is4} />
 
           {/* Countdown */}
-          <FadeBlur active={is4} delay={1.2} duration={0.7}>
+          <FadeSlide active={is4} delay={0.8} duration={0.5}>
             <div className="flex flex-col items-center gap-3">
               <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
                 Đếm ngược
@@ -513,7 +507,7 @@ export function DetailsSections({
                 27 · 12 · 2026 — 11:00
               </p>
             </div>
-          </FadeBlur>
+          </FadeSlide>
 
           {/* CTA Cards — 2 cột trên desktop */}
           <motion.div
@@ -521,7 +515,7 @@ export function DetailsSections({
             animate={is4 ? "visible" : "hidden"}
             variants={{
               hidden: {},
-              visible: { transition: { staggerChildren: 0.2, delayChildren: 2.0 } },
+              visible: { transition: { staggerChildren: 0.15, delayChildren: 1.5 } },
             }}
             className="flex w-full max-w-lg flex-col gap-3 sm:flex-row"
           >
@@ -557,8 +551,8 @@ export function DetailsSections({
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
                 variants={{
-                  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
-                  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease } },
+                  hidden: { opacity: 0, y: 15 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
                 }}
                 className="info-card group flex flex-1 items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
               >
@@ -583,19 +577,19 @@ export function DetailsSections({
           </motion.div>
 
           {/* Divider + lời chúc + footer */}
-          <FadeBlur active={is4} delay={3.0} duration={0.8}>
+          <FadeSlide active={is4} delay={2.2} duration={0.5}>
             <OrnamentDivider className="w-40 opacity-70" />
-          </FadeBlur>
+          </FadeSlide>
 
           <SplitText
             as="p"
             text="Sự hiện diện của bạn là món quà quý giá nhất"
             active={is4}
-            delay={3.2}
+            delay={2.4}
             className="text-center font-serif text-lg italic text-[#fdfbf7] sm:text-xl"
           />
 
-          <FadeBlur active={is4} delay={4.0} duration={0.7}>
+          <FadeSlide active={is4} delay={2.8} duration={0.4}>
             <div className="flex flex-col items-center gap-1">
               <p className="font-serif text-lg text-[#fdfbf7] sm:text-xl">
                 {groomInit} <span className="text-[#c4a484]">&</span> {brideInit}
@@ -604,11 +598,11 @@ export function DetailsSections({
                 27 · 12 · 2026
               </p>
             </div>
-          </FadeBlur>
+          </FadeSlide>
 
-          <FadeBlur active={is4} delay={4.4} duration={0.8}>
+          <FadeSlide active={is4} delay={3.0} duration={0.4}>
             <OrnamentFlourish className="w-12 opacity-50" />
-          </FadeBlur>
+          </FadeSlide>
         </div>
       </Section>
     </>

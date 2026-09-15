@@ -6,33 +6,32 @@ import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from 
 import SaveTheDateOrnament from "./SaveTheDateOrnament";
 
 // =====================================================================
-// REVEAL TIMING — sau khi doors mở (intro exit ~6s)
-// Dùng blockDur() cho text blocks để pacing đều với Details sections
+// REVEAL TIMING — smooth, liên tục, không delay thừa
 // =====================================================================
 const T0 = CONTENT_START; // 0.5s — section fade-in
 
-// Eyebrow
-const T_EYEBROW = T0 + 0.3;              // 0.8s
+// Eyebrow: bắt đầu ngay sau section vào
+const T_EYEBROW = T0 + 0.15;             // 0.65s
 
-// Monogram T  bắt đầu xuất hiện
-const T_MONO = T0 + 0.8;                  // 1.3s
+// Ornament: xuất hiện cùng lúc với eyebrow
+const T_MONO = T_EYEBROW;                 // 0.65s
 
-// Date: block với staggered chars
+// Date: ngay sau eyebrow + ornament
 const DATE = "27·12·2026";
-const T_DATE = T0 + 1.8;                 // 2.3s  — date block starts
+const T_DATE = T_EYEBROW + 0.35;          // 1.0s
 
-// Names
+// Names: liền sau date
 const NAMES_TEXT = "Tùng Phạm & Thuý Hằng";
-const T_NAMES = T_DATE + blockDur(DATE) + 0.3; // ≈ 2.3 + 0.79 + 0.3 = 3.39s
+const T_NAMES = T_DATE + 0.5;             // 1.5s
 
-// Location
-const T_LOCATION = T_NAMES + blockDur(NAMES_TEXT) + 0.3; // ≈ 3.39 + 1.71 + 0.3 = 5.4s
+// Location: liền sau names
+const T_LOCATION = T_NAMES + 0.5;          // 2.0s
 
 // Bottom ornament
-const T_BOTTOM = T_LOCATION + 0.8;       // ≈ 6.2s
+const T_BOTTOM = T_LOCATION + 0.4;         // 2.4s
 
 // Scroll hint
-const T_SCROLL = T_BOTTOM + 0.5;         // ≈ 6.7s
+const T_SCROLL = T_BOTTOM + 0.3;          // 2.7s
 
 // =====================================================================
 // SHARED EASING
@@ -44,11 +43,10 @@ const sharedEaseBack = easeBack;
 // CHAR / MASK VARIANTS — dùng pacing chuẩn CPS
 // =====================================================================
 const charVariants = {
-  hidden: { opacity: 0, y: 30, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
       duration: charDur(),
       delay: i * charStag(),
@@ -92,14 +90,14 @@ function generateParticles(count: number): Particle[] {
 }
 
 // =====================================================================
-// ITEM ANIM (cho ornament / section wrapper con)
+// ITEM ANIM (cho ornament / section wrapper con) — smooth, không blur
 // =====================================================================
 function itemAnim(active: boolean, delay: number) {
   return {
-    initial: { opacity: 0, y: 20, filter: "blur(6px)" },
+    initial: { opacity: 0, y: 15 },
     animate: active
-      ? { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, delay, ease: sharedEase } }
-      : { opacity: 0, y: -15, filter: "blur(4px)", transition: { duration: 0.5, ease: sharedEase } },
+      ? { opacity: 1, y: 0, transition: { duration: 0.6, delay, ease: sharedEase } }
+      : { opacity: 0, y: -10, transition: { duration: 0.3, ease: sharedEase } },
   };
 }
 
