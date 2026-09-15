@@ -142,6 +142,7 @@ interface ConstellationArtProps {
   theme?: "dark" | "light";
   delay?: number;
   active?: boolean;
+  className?: string;
 }
 
 export default function ConstellationArt({
@@ -149,6 +150,7 @@ export default function ConstellationArt({
   theme = "dark",
   delay = 0,
   active = true,
+  className = "",
 }: ConstellationArtProps) {
   const isDark = theme === "dark";
   const starFill = isDark ? "#d4b896" : "#4a3525";
@@ -166,7 +168,7 @@ export default function ConstellationArt({
   });
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className={`relative ${className}`} style={{ width: size, height: size }}>
       {/* Outer halo glow */}
       <motion.div
         className="absolute inset-0 rounded-full"
@@ -434,14 +436,14 @@ function ConstellationZone({
 
       {/* Labels */}
       <motion.p
-        className="absolute font-sans text-[8px] uppercase tracking-[0.25em] text-[#c4a484]"
+        className="absolute whitespace-nowrap font-sans text-[8px] uppercase tracking-[0.25em] text-[#c4a484]"
         style={{ left: `${cx}%`, top: `${cy + radius + 12}%`, transform: "translateX(-50%)" }}
         {...fadeIn(1.2)}
       >
         {label}
       </motion.p>
       <motion.p
-        className="absolute font-serif text-[10px] italic text-[#c4a484]/60"
+        className="absolute whitespace-nowrap font-serif text-[10px] italic text-[#c4a484]/60"
         style={{ left: `${cx}%`, top: `${cy + radius + 18}%`, transform: "translateX(-50%)" }}
         {...fadeIn(1.3)}
       >

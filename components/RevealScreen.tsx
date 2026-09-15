@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
 import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from "./animation";
-import ConstellationArt from "./ConstellationArt";
+import SaveTheDateOrnament from "./SaveTheDateOrnament";
 
 // =====================================================================
 // REVEAL TIMING — sau khi doors mở (intro exit ~6s)
@@ -16,12 +16,6 @@ const T_EYEBROW = T0 + 0.3;              // 0.8s
 
 // Monogram T  bắt đầu xuất hiện
 const T_MONO = T0 + 0.8;                  // 1.3s
-
-// Flourish
-const T_FLOURISH = T0 + 1.1;             // 1.6s
-
-// Monogram H
-const T_MONO_H = T0 + 1.3;               // 1.8s
 
 // Date: block với staggered chars
 const DATE = "27·12·2026";
@@ -223,34 +217,18 @@ export default function RevealScreen({ groom, bride, active = true }: RevealScre
       {/* ========== MAIN CONTENT ========== */}
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center">
 
-        {/* --- EYEBROW: Save the Date --- */}
+        {/* --- SAVE THE DATE ORNAMENT --- */}
         <motion.div
           {...itemAnim(active, T_EYEBROW)}
-          className="mb-5 flex items-center gap-3 overflow-hidden sm:mb-8"
+          className="mb-5 sm:mb-8"
         >
-          <motion.span
-            className="block h-px bg-gradient-to-r from-transparent to-[#c4a484]/50"
-            initial={{ width: 0, opacity: 0 }}
-            animate={active ? { width: 72, opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ duration: 1.2, delay: T_EYEBROW + 0.3, ease: sharedEase }}
+          <SaveTheDateOrnament 
+            size={224} 
+            theme="dark" 
+            delay={T_EYEBROW} 
+            active={active} 
+            className="!w-[224px] !h-[179px] sm:!w-[252px] sm:!h-[202px]" 
           />
-          <span className="whitespace-nowrap font-sans text-[9px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
-            Save the Date
-          </span>
-          <motion.span
-            className="block h-px bg-gradient-to-l from-transparent to-[#c4a484]/50"
-            initial={{ width: 0, opacity: 0 }}
-            animate={active ? { width: 72, opacity: 1 } : { width: 0, opacity: 0 }}
-            transition={{ duration: 1.2, delay: T_EYEBROW + 0.3, ease: sharedEase }}
-          />
-        </motion.div>
-
-        {/* --- CONSTELLATION: Bạch Dương ♈ & Xử Nữ ♍ --- */}
-        <motion.div
-          {...itemAnim(active, T_MONO)}
-          className="mb-5 sm:mb-7"
-        >
-          <ConstellationArt size={140} theme="dark" delay={T_MONO} active={active} />
         </motion.div>
 
         {/* --- THE DATE: "27·12·2026" --- */}
