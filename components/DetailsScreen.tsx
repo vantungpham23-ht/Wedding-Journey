@@ -1,19 +1,30 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import ConstellationArt from "./ConstellationArt";
+import MonogramArt from "./MonogramArt";
+import LotusArt from "./LotusArt";
+import RingArt from "./RingArt";
+import {
+  CPS,
+  charDur,
+  charStag,
+  lineStag,
+  blockDur,
+  CONTENT_START,
+  BLOCK_GAP,
+  fadeBlurProps,
+  ease,
+} from "./animation";
 
-// ============== ANIMATION HELPERS ==============
-const ease = [0.16, 1, 0.3, 1]; // Cinematic ease (đã chậm hơn nhờ stagger/duration tăng)
-
-// ============== SPLIT TEXT - từng chữ fade-up mượt mà ==============
-// Hiệu ứng "lời thì thầm" - mỗi ký tự xuất hiện theo thứ tự
+// ============== SPLIT TEXT ==============
 interface SplitTextProps {
   text: string;
   active: boolean;
-  delay?: number;        // delay trước khi bắt đầu
-  stagger?: number;       // khoảng cách giữa các chữ (giây)
-  duration?: number;      // thời gian mỗi chữ
+  delay?: number;
+  stagger?: number;
+  duration?: number;
   className?: string;
   as?: "p" | "h1" | "h2" | "h3" | "span";
 }
@@ -22,21 +33,14 @@ function SplitText({
   text,
   active,
   delay = 0,
-  stagger = 0.08,
-  duration = 1.6,
+  stagger,
+  duration,
   className = "",
   as: Tag = "p",
 }: SplitTextProps) {
-  const prefersReducedMotion = useReducedMotion();
   const chars = text.split("");
-
-  if (prefersReducedMotion) {
-    return (
-      <Tag className={className}>
-        {text}
-      </Tag>
-    );
-  }
+  const _stagger = stagger ?? charStag();
+  const _duration = duration ?? charDur();
 
   return (
     <Tag className={className}>
@@ -52,21 +56,13 @@ function SplitText({
                     opacity: 1,
                     y: 0,
                     filter: "blur(0px)",
-                    transition: {
-                      duration,
-                      delay: delay + i * stagger,
-                      ease,
-                    },
+                    transition: { duration: _duration, delay: delay + i * _stagger, ease },
                   }
                 : {
                     opacity: 0,
                     y: -8,
                     filter: "blur(4px)",
-                    transition: {
-                      duration: 0.6,
-                      delay: i * 0.02,
-                      ease,
-                    },
+                    transition: { duration: _duration * 0.7, delay: i * _stagger * 0.4, ease },
                   }
             }
             style={{ whiteSpace: char === " " ? "pre" : "normal" }}
@@ -79,12 +75,12 @@ function SplitText({
   );
 }
 
-// ============== LINE REVEAL - từng dòng fade-up (cho text dài nhiều dòng) ==============
+// ============== LINE REVEAL ==============
 interface LineRevealProps {
   lines: string[];
   active: boolean;
   delay?: number;
-  stagger?: number;       // giữa các dòng
+  stagger?: number;
   duration?: number;
   className?: string;
   lineClassName?: string;
@@ -94,36 +90,31 @@ function LineReveal({
   lines,
   active,
   delay = 0,
-  stagger = 0.36,
-  duration = 2,
+  stagger,
+  duration,
   className = "",
   lineClassName = "",
 }: LineRevealProps) {
+  const _stagger = stagger ?? lineStag();
+  const _duration = duration ?? charDur() * 6;
+
   return (
     <div className={className}>
       {lines.map((line, i) => (
         <div key={i} className="overflow-hidden">
           <motion.div
-            initial={{ y: "100%", opacity: 0 }}
+            initial={{ y: "105%", opacity: 0 }}
             animate={
               active
                 ? {
                     y: "0%",
                     opacity: 1,
-                    transition: {
-                      duration,
-                      delay: delay + i * stagger,
-                      ease,
-                    },
+                    transition: { duration: _duration, delay: delay + i * _stagger, ease },
                   }
                 : {
-                    y: "-100%",
+                    y: "-105%",
                     opacity: 0,
-                    transition: {
-                      duration: 0.8,
-                      delay: i * 0.1,
-                      ease,
-                    },
+                    transition: { duration: _duration * 0.6, delay: i * _stagger * 0.3, ease },
                   }
             }
             className={lineClassName}
@@ -136,7 +127,7 @@ function LineReveal({
   );
 }
 
-// ============== FADE BLUR - cho text ngắn (eyebrow, date...) ==============
+// ============== FADE BLUR ==============
 interface FadeBlurProps {
   active: boolean;
   delay?: number;
@@ -145,7 +136,13 @@ interface FadeBlurProps {
   children: React.ReactNode;
 }
 
-function FadeBlur({ active, delay = 0, duration = 2, className = "", children }: FadeBlurProps) {
+function FadeBlur({
+  active,
+  delay = 0,
+  duration = 0.5,
+  className = "",
+  children,
+}: FadeBlurProps) {
   return (
     <motion.div
       className={className}
@@ -162,7 +159,7 @@ function FadeBlur({ active, delay = 0, duration = 2, className = "", children }:
               opacity: 0,
               y: -10,
               filter: "blur(6px)",
-              transition: { duration: 0.8, ease },
+              transition: { duration: duration * 0.6, ease },
             }
       }
     >
@@ -182,75 +179,22 @@ function CountdownBox({
   value: string;
   theme?: "light" | "dark";
 }) {
-  const valueClass =
-    theme === "dark" ? "text-[#c4a484]" : "text-[#c4a484]";
+  const valueClass = "text-[#c4a484]";
   const labelClass =
     theme === "dark" ? "text-[#fdfbf7]/70" : "text-[#4a3525]/60";
   return (
-    <div className="info-card flex min-w-[55px] flex-col items-center rounded-xl px-2 py-3 sm:min-w-[72px] sm:px-3 sm:py-4">
+    <div className="info-card flex min-w-[52px] flex-col items-center rounded-xl px-2 py-3 sm:min-w-[68px] sm:px-3 sm:py-4">
       <span className={`font-serif text-xl font-bold sm:text-3xl ${valueClass}`}>
         {value}
       </span>
-      <span
-        className={`mt-1 font-sans text-[8px] uppercase tracking-[0.25em] sm:text-[9px] sm:tracking-[0.3em] ${labelClass}`}
-      >
+      <span className={`mt-1 font-sans text-[8px] uppercase tracking-[0.25em] sm:text-[9px] sm:tracking-[0.3em] ${labelClass}`}>
         {label}
       </span>
     </div>
   );
 }
 
-function CTACard({
-  icon,
-  title,
-  desc,
-  href,
-  theme = "light",
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-  href: string;
-  theme?: "light" | "dark";
-}) {
-  const titleClass =
-    theme === "dark" ? "text-[#fdfbf7]" : "text-[#4a3525]";
-  const descClass =
-    theme === "dark" ? "text-[#fdfbf7]/70" : "text-[#4a3525]/60";
-  return (
-    <motion.a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
-    >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#fdfbf7] ring-1 ring-[#c4a484]/30 sm:h-12 sm:w-12">
-        {icon}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <span className={`block truncate font-serif text-base font-bold sm:text-lg ${titleClass}`}>
-          {title}
-        </span>
-        <span className={`block truncate font-sans text-[11px] sm:text-xs ${descClass}`}>
-          {desc}
-        </span>
-      </div>
-
-      <div className="text-[#c4a484] transition-transform duration-700 group-hover:translate-x-1">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 12h14M13 5l7 7-7 7" />
-        </svg>
-      </div>
-    </motion.a>
-  );
-}
-
 // ============== SECTION WRAPPER ==============
-// theme: "light" = nền be + chữ nâu | "dark" = nền nâu + chữ be
-
 interface SectionProps {
   active: boolean;
   children: React.ReactNode;
@@ -258,38 +202,75 @@ interface SectionProps {
 }
 
 function Section({ active, children, theme = "light" }: SectionProps) {
-  const prefersReducedMotion = useReducedMotion();
-
-  const bgClass =
-    theme === "dark" ? "section-bg-dark" : "section-bg-light";
+  const bgClass = theme === "dark" ? "section-bg-dark" : "section-bg-light";
 
   return (
     <section
-      className={`flex h-screen w-full items-center justify-center px-4 py-20 sm:px-6 ${bgClass}`}
+      className={`flex h-screen w-full items-center justify-center px-6 py-16 sm:px-8 ${bgClass}`}
       style={{ scrollSnapAlign: "start" }}
     >
       <motion.div
-        className="w-full max-w-2xl"
-        initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+        className="flex h-full w-full max-w-2xl flex-col justify-center"
+        initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
         animate={
           active
             ? {
                 opacity: 1,
                 y: 0,
                 filter: "blur(0px)",
-                transition: { duration: 2, ease: [0.16, 1, 0.3, 1] },
+                transition: { duration: 1.2, ease },
               }
             : {
                 opacity: 0,
-                y: -20,
-                filter: "blur(8px)",
-                transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
+                y: -15,
+                filter: "blur(6px)",
+                transition: { duration: 0.8, ease },
               }
         }
       >
         {children}
       </motion.div>
     </section>
+  );
+}
+
+// ============== SHARED ORNAMENTS ==============
+function OrnamentFlourish({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="48"
+      height="16"
+      viewBox="0 0 72 24"
+      fill="none"
+      className={`text-[#c4a484] ${className}`}
+    >
+      <path
+        d="M 4 12 Q 20 12 28 5 Q 34 -1 36 10 Q 38 21 44 5 Q 52 -1 68 12"
+        stroke="currentColor"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <circle cx="36" cy="11" r="1.4" fill="currentColor" />
+      <path
+        d="M 12 12 Q 24 16 36 14 Q 48 16 60 12"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.5"
+      />
+    </svg>
+  );
+}
+
+function OrnamentDivider({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center gap-4 ${className}`}>
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#c4a484]/40" />
+      <OrnamentFlourish />
+      <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#c4a484]/40" />
+    </div>
   );
 }
 
@@ -336,208 +317,217 @@ export function DetailsSections({
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
-  // ============ SECTION 2: WELCOME / LỜI MỜI ============
-  // (Bỏ "Lời mời cưới" cover section vì trùng Save the Date)
-  // Bắt đầu từ section 2: Welcome (lời mời/cảm ơn)
+  // =================================================================
+  // PACING — mỗi section dùng blockDuration() để tính timeline
+  // Section fade-in ( CONTENT_START = 0.5s )
+  // rồi mỗi block tiếp theo bắt đầu ngay khi block trước ổn định.
+  // =================================================================
+  const S2a = blockDur("Vì bạn là một phần của hành trình");     // ≈ 1.04s
+  const S2b = blockDur("Có những người không xuất hiện trong mọi khoảnh khắc, nhưng luôn có một vị trí rất riêng trong câu chuyện của chúng mình."); // ≈ 6.5s
+  const S2c = blockDur("Và bạn là một trong những người như thế."); // ≈ 1.26s
+
+  const S3a = blockDur("Hẹn gặp bạn");                           // ≈ 0.47s
+  const S3b = blockDur("Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy trở nên ấm áp và ý nghĩa hơn với chúng mình."); // ≈ 2.7s
+  const S3c = blockDur("Hẹn gặp bạn trong ngày chúng mình chính thức về chung một nhà."); // ≈ 2.7s
+
+  const GAP = 0.12; // khoảng trống nhẹ giữa các block
+
+  // Timeline cho Section 2 (Welcome)
+  const s2_t1 = CONTENT_START;                                    // 0.5
+  const s2_t2 = s2_t1 + S2a + GAP;                                    // ≈ 1.66
+  const s2_t3 = s2_t2 + S2b + GAP;                                   // ≈ 8.28
+  const s2_t4 = s2_t3 + S2c + GAP;                                    // ≈ 9.66
+
+  // Timeline cho Section 3 (Hẹn gặp bạn)
+  const s3_t1 = CONTENT_START;                                   // 0.5
+  const s3_t2 = s3_t1 + S3a + GAP;                                    // ≈ 1.09
+  const s3_t3 = s3_t2 + S3b + GAP;                                    // ≈ 3.91
+  const s3_t4 = s3_t3 + S3c + GAP;                                    // ≈ 6.73
+
+  const is2 = activeSection === 1;
+  const is3 = activeSection === 2;
+  const is4 = activeSection === 3;
+
   return (
     <>
-      {/* SECTION 2: WELCOME - NỀN NÂU */}
-      <Section active={activeSection === 1} theme="dark">
-        <div className="text-center">
-          <FadeBlur active={activeSection === 1} delay={0.4} duration={2}>
-            <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]">
+      {/* ================================================================
+          SECTION 2: WELCOME / LỜI MỜI  — Nền nâu, không gian ấm áp
+          ================================================================ */}
+      <Section active={is2} theme="dark">
+        <div className="flex flex-col items-center gap-6 sm:gap-8">
+
+          {/* Monogram: T & H */}
+          <MonogramArt theme="dark" size={260} delay={s2_t1} active={is2} />
+
+          {/* Eyebrow */}
+          <FadeBlur active={is2} delay={s2_t1 + 0.1} duration={0.4}>
+            <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
               Lời mời
             </p>
           </FadeBlur>
 
-          <SplitText
-            as="h3"
-            text="Vì bạn là một phần của hành trình"
-            active={activeSection === 1}
-            delay={0.8}
-            stagger={0.07}
-            duration={2}
-            className="mb-8 font-serif text-2xl font-bold text-[#fdfbf7] sm:text-3xl md:text-4xl"
-          />
+          {/* Tiêu đề */}
+          <div className="text-center">
+            <SplitText
+              as="h2"
+              text="Vì bạn là một phần của hành trình"
+              active={is2}
+              delay={s2_t2}
+              className="font-serif text-2xl font-bold leading-snug text-[#fdfbf7] sm:text-3xl md:text-4xl"
+            />
+          </div>
 
-          <LineReveal
-            lines={[
-              "Có những người không xuất hiện trong mọi khoảnh khắc,",
-              "nhưng luôn có một vị trí rất riêng",
-              "trong câu chuyện của chúng mình.",
-            ]}
-            active={activeSection === 1}
-            delay={2.8}
-            stagger={0.4}
-            duration={2}
-            className="mx-auto mb-6 max-w-md space-y-1 font-serif text-base leading-relaxed text-[#fdfbf7]/80 sm:text-lg"
-            lineClassName=""
-          />
+          {/* Đường kẻ */}
+          <FadeBlur active={is2} delay={s2_t2 + S2a * 0.5} duration={0.6}>
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#c4a484]/50 to-transparent" />
+          </FadeBlur>
 
-          <FadeBlur active={activeSection === 1} delay={4.2} duration={2}>
-            <p className="mx-auto max-w-md font-serif text-base font-semibold italic text-[#fdfbf7] sm:text-lg">
+          {/* Nội dung — 3 dòng */}
+          <div className="max-w-md space-y-0 text-center">
+            <LineReveal
+              lines={[
+                "Có những người không xuất hiện trong mọi khoảnh khắc,",
+                "nhưng luôn có một vị trí rất riêng",
+                "trong câu chuyện của chúng mình.",
+              ]}
+              active={is2}
+              delay={s2_t3}
+              className="space-y-3 font-serif text-base leading-relaxed text-[#fdfbf7]/75 sm:text-lg"
+            />
+          </div>
+
+          {/* Quote */}
+          <FadeBlur active={is2} delay={s2_t4} duration={0.6}>
+            <p className="max-w-sm font-serif text-base italic text-[#fdfbf7] sm:text-lg">
               Và bạn là một trong những người như thế.
             </p>
           </FadeBlur>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={
-              activeSection === 1
-                ? { opacity: 1, scale: 1, transition: { delay: 4.8, duration: 1.2 } }
-                : { opacity: 0, scale: 0 }
-            }
-            className="mt-8 flex justify-center sm:mt-10"
-          >
-            <svg width="20" height="6" viewBox="0 0 24 8" fill="none" className="text-[#c4a484]">
-              <path d="M 1 4 Q 6 4 9 1.5 Q 11.5 -0.5 12 4 Q 12.5 8.5 15 1.5 Q 18 -0.5 23 4" stroke="currentColor" strokeWidth="0.6" strokeLinecap="round" fill="none" />
-            </svg>
-          </motion.div>
+          {/* Divider */}
+          <FadeBlur active={is2} delay={s2_t4 + 0.4} duration={0.8}>
+            <OrnamentDivider className="w-48 opacity-60" />
+          </FadeBlur>
         </div>
       </Section>
 
-      {/* SECTION 3: HẸN GẶP BẠN - nền be */}
-      <Section active={activeSection === 2}>
-        <div className="text-center">
-          <FadeBlur active={activeSection === 2} delay={0.4} duration={2}>
-            <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]">
+      {/* ================================================================
+          SECTION 3: HẸN GẶP BẠN — Nền be, nhẹ nhàng và thân thiện
+          ================================================================ */}
+      <Section active={is3}>
+        <div className="flex flex-col items-center gap-6 sm:gap-8">
+
+          {/* Eyebrow + Constellation */}
+          <FadeBlur active={is3} delay={s3_t1} duration={0.4}>
+            <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
               Gửi đến bạn
             </p>
           </FadeBlur>
 
-          <SplitText
-            as="h3"
-            text="Hẹn gặp bạn"
-            active={activeSection === 2}
-            delay={0.8}
-            stagger={0.14}
-            duration={2}
-            className="mb-8 font-serif text-3xl font-bold text-[#4a3525] sm:text-4xl md:text-5xl"
-          />
+          {/* Lotus: Hoa sen — Kênh, Cẩm Bình */}
+          <LotusArt theme="light" size={220} delay={s3_t1 + 0.1} active={is3} />
 
-          <FadeBlur active={activeSection === 2} delay={2.4} duration={2}>
-            <p className="mx-auto mb-6 max-w-md font-serif text-base italic leading-relaxed text-[#4a3525]/80 sm:text-lg">
+          {/* Tiêu đề chính */}
+          <div className="text-center">
+            <SplitText
+              as="h2"
+              text="Hẹn gặp bạn"
+              active={is3}
+              delay={s3_t2}
+              className="font-serif text-3xl font-bold text-[#4a3525] sm:text-4xl md:text-5xl"
+            />
+          </div>
+
+          {/* Thông tin ngày-giờ-địa điểm — lấp khoảng trống */}
+          <FadeBlur active={is3} delay={s3_t2 + S3a * 0.6} duration={0.7}>
+            <div className="flex items-center gap-4 rounded-2xl border border-[#c4a484]/25 bg-[#fdfbf7]/60 px-6 py-4 backdrop-blur-sm sm:gap-6">
+              {/* Date */}
+              <div className="flex flex-col items-center">
+                <span className="font-serif text-2xl font-bold text-[#4a3525] sm:text-3xl">27</span>
+                <span className="font-sans text-[9px] uppercase tracking-widest text-[#c4a484]">Tháng 12</span>
+              </div>
+              <div className="h-10 w-px bg-[#c4a484]/30" />
+              {/* Time */}
+              <div className="flex flex-col items-center">
+                <span className="font-serif text-2xl font-bold text-[#4a3525] sm:text-3xl">11:00</span>
+                <span className="font-sans text-[9px] uppercase tracking-widest text-[#c4a484]">Chủ nhật</span>
+              </div>
+              <div className="h-10 w-px bg-[#c4a484]/30" />
+              {/* Location */}
+              <div className="flex flex-col items-center">
+                <span className="font-serif text-2xl font-bold text-[#4a3525] sm:text-3xl">Kênh</span>
+                <span className="font-sans text-[9px] uppercase tracking-widest text-[#c4a484]">Cẩm Bình · Hà Tĩnh</span>
+              </div>
+            </div>
+          </FadeBlur>
+
+          {/* Quote */}
+          <FadeBlur active={is3} delay={s3_t3} duration={0.6}>
+            <p className="max-w-md text-center font-serif text-base italic leading-relaxed text-[#4a3525]/80 sm:text-lg">
               Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy
               <br />
               trở nên ấm áp và ý nghĩa hơn với chúng mình.
             </p>
           </FadeBlur>
 
-          <LineReveal
-            lines={[
-              "Hẹn gặp bạn trong ngày chúng mình",
-              "chính thức về chung một nhà.",
-            ]}
-            active={activeSection === 2}
-            delay={3.2}
-            stagger={0.5}
-            duration={2}
-            className="font-serif text-base italic text-[#c4a484] sm:text-lg"
-            lineClassName=""
-          />
+          {/* Hai dòng kết */}
+          <div className="max-w-md text-center">
+            <LineReveal
+              lines={[
+                "Hẹn gặp bạn trong ngày chúng mình",
+                "chính thức về chung một nhà.",
+              ]}
+              active={is3}
+              delay={s3_t4}
+              className="space-y-3 font-serif text-base italic text-[#c4a484] sm:text-lg"
+            />
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={
-              activeSection === 2
-                ? { opacity: 1, scale: 1, transition: { delay: 4.4, duration: 1.2 } }
-                : { opacity: 0, scale: 0 }
-            }
-            className="mt-8 flex justify-center sm:mt-10"
-          >
-            <svg width="24" height="8" viewBox="0 0 60 20" fill="none" className="text-[#c4a484]">
-              <path d="M 2 10 Q 15 10 22 4 Q 28 -1 30 8 Q 32 17 38 4 Q 45 -1 58 10" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round" fill="none" />
-              <circle cx="30" cy="10" r="1.1" fill="currentColor" />
-            </svg>
-          </motion.div>
+          {/* Divider */}
+          <FadeBlur active={is3} delay={s3_t4 + 0.5} duration={0.8}>
+            <OrnamentDivider className="w-48 opacity-60" />
+          </FadeBlur>
         </div>
       </Section>
 
-      {/* SECTION 4: COUNTDOWN + CTA CARDS + FOOTER (gộp) - NỀN NÂU */}
-      <Section active={activeSection === 3} theme="dark">
-        <div className="text-center">
-          {/* Pulsing flourish thay cho heart */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={
-              activeSection === 3
-                ? { opacity: 1, scale: 1, transition: { delay: 0.4, duration: 1.6 } }
-                : { opacity: 0 }
-            }
-            className="relative mx-auto mb-6 flex h-16 w-16 items-center justify-center sm:mb-8 sm:h-20 sm:w-20"
-          >
-            <motion.span
-              className="absolute inset-0 rounded-full border border-[#c4a484]/30"
-              animate={{ scale: [1, 1.4, 1.6], opacity: [0.5, 0.2, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeOut" }}
-            />
-            <motion.span
-              className="absolute inset-0 rounded-full border border-[#c4a484]/30"
-              animate={{ scale: [1, 1.4, 1.6], opacity: [0.5, 0.2, 0] }}
-              transition={{ duration: 5, delay: 2.5, repeat: Infinity, ease: "easeOut" }}
-            />
-            <svg width="42" height="14" viewBox="0 0 60 20" fill="none" className="text-[#c4a484]">
-              <path d="M 2 10 Q 15 10 22 4 Q 28 -1 30 8 Q 32 17 38 4 Q 45 -1 58 10" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
-              <circle cx="30" cy="10" r="1.2" fill="currentColor" />
-            </svg>
-          </motion.div>
+      {/* ================================================================
+          SECTION 4: COUNTDOWN + CTA + FOOTER — Nền nâu, giàu thông tin
+          ================================================================ */}
+      <Section active={is4} theme="dark">
+        <div className="flex flex-col items-center gap-5 sm:gap-7">
 
-          {/* Names với flourish divider */}
-          <FadeBlur active={activeSection === 3} delay={0.8} duration={2}>
-            <div className="mb-6 flex items-center justify-center gap-3 sm:gap-4">
-              <span className="h-px w-10 bg-[#c4a484]/40 sm:w-12" />
-              <svg width="16" height="6" viewBox="0 0 24 8" fill="none" className="text-[#c4a484]">
-                <path d="M 1 4 Q 6 4 9 1.5 Q 11.5 -0.5 12 4 Q 12.5 8.5 15 1.5 Q 18 -0.5 23 4" stroke="currentColor" strokeWidth="0.6" strokeLinecap="round" fill="none" />
-              </svg>
-              <span className="h-px w-10 bg-[#c4a484]/40 sm:w-12" />
-            </div>
-          </FadeBlur>
-
-          {/* Names - SplitText */}
-          <SplitText
-            as="h3"
-            text={`${groom} & ${bride}`}
-            active={activeSection === 3}
-            delay={1.2}
-            stagger={0.08}
-            duration={1.8}
-            className="mb-8 font-serif text-xl font-bold text-[#fdfbf7] sm:text-2xl"
-          />
+          {/* Ring Art: 2 Wedding Rings */}
+          <RingArt theme="dark" size={180} delay={0.5} active={is4} />
 
           {/* Countdown */}
-          <FadeBlur active={activeSection === 3} delay={2.8} duration={2}>
-            <div className="my-6">
-              <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.4em] text-[#c4a484]">
+          <FadeBlur active={is4} delay={1.2} duration={0.7}>
+            <div className="flex flex-col items-center gap-3">
+              <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
                 Đếm ngược
               </p>
-
-              <div className="mx-auto flex max-w-md items-center justify-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <CountdownBox label="Ngày" value={pad(timeLeft.days)} theme="dark" />
-                <span className="font-serif text-lg text-[#c4a484]/40 sm:text-2xl">:</span>
+                <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
                 <CountdownBox label="Giờ" value={pad(timeLeft.hours)} theme="dark" />
-                <span className="font-serif text-lg text-[#c4a484]/40 sm:text-2xl">:</span>
+                <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
                 <CountdownBox label="Phút" value={pad(timeLeft.mins)} theme="dark" />
-                <span className="font-serif text-lg text-[#c4a484]/40 sm:text-2xl">:</span>
+                <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
                 <CountdownBox label="Giây" value={pad(timeLeft.secs)} theme="dark" />
               </div>
-
-              <p className="mt-3 font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/60">
+              <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/50 sm:text-xs">
                 27 · 12 · 2026 — 11:00
               </p>
             </div>
           </FadeBlur>
 
-          {/* CTA Cards - stagger */}
+          {/* CTA Cards — 2 cột trên desktop */}
           <motion.div
             initial="hidden"
-            animate={activeSection === 3 ? "visible" : "hidden"}
+            animate={is4 ? "visible" : "hidden"}
             variants={{
               hidden: {},
-              visible: {
-                transition: { staggerChildren: 0.3, delayChildren: 3.6 },
-              },
+              visible: { transition: { staggerChildren: 0.2, delayChildren: 2.0 } },
             }}
-            className="mx-auto mt-6 flex max-w-md flex-col gap-2.5 sm:gap-3"
+            className="flex w-full max-w-lg flex-col gap-3 sm:flex-row"
           >
             {[
               {
@@ -545,7 +535,7 @@ export function DetailsSections({
                 title: "Xác nhận tham dự",
                 desc: "Giúp chúng mình chuẩn bị chu đáo",
                 icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c4a484" strokeWidth="1.6">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c4a484" strokeWidth="1.6">
                     <path d="M9 12l2 2 4-4" />
                     <circle cx="12" cy="12" r="10" />
                   </svg>
@@ -554,9 +544,9 @@ export function DetailsSections({
               {
                 href: "https://maps.app.goo.gl/P9oQwKuYT3QgMK4x9",
                 title: "Địa điểm tổ chức",
-                desc: "Kênh · Cẩm Bình, Hà Tĩnh",
+                desc: "Kênh · Cẩm Bình · Hà Tĩnh",
                 icon: (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c4a484" strokeWidth="1.6">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c4a484" strokeWidth="1.6">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                     <circle cx="12" cy="9" r="2.5" />
                   </svg>
@@ -568,25 +558,13 @@ export function DetailsSections({
                 href={card.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ y: -2 }}
+                whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, x: -20, filter: "blur(6px)" }}
-                animate={
-                  activeSection === 3
-                    ? {
-                        opacity: 1,
-                        x: 0,
-                        filter: "blur(0px)",
-                        transition: { duration: 1.8, ease },
-                      }
-                    : {
-                        opacity: 0,
-                        x: -10,
-                        filter: "blur(4px)",
-                        transition: { duration: 0.6 },
-                      }
-                }
-                className="info-card group flex items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
+                variants={{
+                  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
+                  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease } },
+                }}
+                className="info-card group flex flex-1 items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
               >
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#fdfbf7] ring-1 ring-[#c4a484]/30 sm:h-12 sm:w-12">
                   {card.icon}
@@ -595,12 +573,12 @@ export function DetailsSections({
                   <span className="block truncate font-serif text-base font-bold text-[#fdfbf7] sm:text-lg">
                     {card.title}
                   </span>
-                  <span className="block truncate font-sans text-[11px] text-[#fdfbf7]/70 sm:text-xs">
+                  <span className="block truncate font-sans text-[11px] text-[#fdfbf7]/60 sm:text-xs">
                     {card.desc}
                   </span>
                 </div>
                 <div className="text-[#c4a484] transition-transform duration-700 group-hover:translate-x-1">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 12h14M13 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -608,64 +586,33 @@ export function DetailsSections({
             ))}
           </motion.div>
 
-          {/* === FOOTER (gộp vào đây) === */}
-          {/* Divider flourish */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={
-              activeSection === 3
-                ? { opacity: 1, scaleX: 1, transition: { delay: 4.8, duration: 1.6 } }
-                : { opacity: 0 }
-            }
-            className="mb-8 mt-12 flex items-center justify-center gap-3 sm:mb-12 sm:mt-16 sm:gap-4"
-            style={{ transformOrigin: "center" }}
-          >
-            <span className="h-px w-12 bg-gradient-to-r from-transparent to-[#c4a484]/40 sm:w-16" />
-            <svg width="24" height="8" viewBox="0 0 60 20" fill="none" className="text-[#c4a484]">
-              <path d="M 2 10 Q 15 10 22 4 Q 28 -1 30 8 Q 32 17 38 4 Q 45 -1 58 10" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
-              <circle cx="30" cy="10" r="1.2" fill="currentColor" />
-            </svg>
-            <span className="h-px w-12 bg-gradient-to-l from-transparent to-[#c4a484]/40 sm:w-16" />
-          </motion.div>
+          {/* Divider + lời chúc + footer */}
+          <FadeBlur active={is4} delay={3.0} duration={0.8}>
+            <OrnamentDivider className="w-40 opacity-70" />
+          </FadeBlur>
 
-          {/* Lời chúc cuối - SplitText */}
           <SplitText
             as="p"
             text="Sự hiện diện của bạn là món quà quý giá nhất"
-            active={activeSection === 3}
-            delay={5.2}
-            stagger={0.08}
-            duration={1.8}
-            className="mb-8 font-serif text-xl italic text-[#fdfbf7] sm:text-2xl md:text-3xl"
+            active={is4}
+            delay={3.2}
+            className="text-center font-serif text-lg italic text-[#fdfbf7] sm:text-xl"
           />
 
-          <FadeBlur active={activeSection === 3} delay={6.8} duration={2}>
-            <div className="flex flex-col items-center gap-2">
+          <FadeBlur active={is4} delay={4.0} duration={0.7}>
+            <div className="flex flex-col items-center gap-1">
               <p className="font-serif text-lg text-[#fdfbf7] sm:text-xl">
                 {groomInit} <span className="text-[#c4a484]">&</span> {brideInit}
               </p>
-              <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/60">
+              <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/50 sm:text-xs">
                 27 · 12 · 2026
               </p>
             </div>
           </FadeBlur>
 
-          {/* Footer flourish - thay heart đập */}
-          <motion.div
-            className="mt-8 flex justify-center"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={
-              activeSection === 3
-                ? { opacity: 1, scaleX: 1, transition: { delay: 7.2, duration: 1.6 } }
-                : { opacity: 0 }
-            }
-            style={{ transformOrigin: "center" }}
-          >
-            <svg width="32" height="10" viewBox="0 0 60 20" fill="none" className="text-[#c4a484]/60">
-              <path d="M 2 10 Q 15 10 22 4 Q 28 -1 30 8 Q 32 17 38 4 Q 45 -1 58 10" stroke="currentColor" strokeWidth="0.6" strokeLinecap="round" fill="none" />
-              <circle cx="30" cy="10" r="1" fill="currentColor" />
-            </svg>
-          </motion.div>
+          <FadeBlur active={is4} delay={4.4} duration={0.8}>
+            <OrnamentFlourish className="w-12 opacity-50" />
+          </FadeBlur>
         </div>
       </Section>
     </>

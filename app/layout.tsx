@@ -38,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={`${playfair.variable} ${inter.variable} ${pinyon.variable}`}>
-      <body className="bg-beige text-mocha font-sans">{children}</body>
+      <body className="bg-beige text-mocha font-sans" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

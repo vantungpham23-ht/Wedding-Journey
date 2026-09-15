@@ -2,14 +2,28 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { CPS, charDur, charStag, blockDur, CONTENT_START, ease } from "./animation";
 
-interface IntroScreenProps {
-  onUnlock: () => void;
-  bride: string;
-  groom: string;
-}
+// =====================================================================
+// PACING — Intro content dùng cùng CPS = 14
+// =====================================================================
+// Eyebrow: "We are getting married" (22 chars) + duration 2s
+const INTRO_EYEBROW = "We are getting married";
+const T_EYEBROW = CONTENT_START + 0.3;              // 0.8s
 
-// Subtle floating particles
+// Names block: "Tùng Phạm" (8) + "&" + "Thuý Hằng" (8) + separators
+// Gap between eyebrow end and names start
+const T_NAMES = T_EYEBROW + blockDur(INTRO_EYEBROW) + 2.0 + 0.4; // ≈ eyebrow end + 2s pause + 0.4s
+
+// Seal button: appears right after names stabilize
+const T_SEAL = T_NAMES + 1.0;                        // ≈ 6.1s
+
+// Footer date
+const T_DATE = T_SEAL + 1.5;                        // ≈ 7.6s
+
+// =====================================================================
+// PARTICLES
+// =====================================================================
 function IntroParticles() {
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number; size: number; duration: number; delay: number }[]
@@ -34,59 +48,40 @@ function IntroParticles() {
         <motion.span
           key={p.id}
           className="intro-particle"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-          }}
+          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{
             opacity: [0, 0.4, 0],
             scale: [0, 1, 0.5],
             y: [0, -40, -80],
           }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
     </>
   );
 }
 
-// ============ ANIMATION TIMELINE (ĐƠN GIẢN - 2 tờ giấy) ============
-// 0.0s: User clicks button
-// 0.0s - 0.5s: Button + content fade out
-// 0.3s - 2.3s: 2 tờ giấy nâu ghép vào nhau từ từ bay ra 2 bên (2s)
-// 1.0s - 2.0s: Nội dung bên trong hiện ra (fade)
-// 2.3s: onUnlock called
-
+// =====================================================================
+// TIMING CONSTANTS
+// =====================================================================
 const TIMING = {
-  doorOpenDuration: 3.6,         // 2 tờ giấy nâu ghép vào nhau - bay dần ra 2 bên
-  doorOpenDelay: 0.6,             // Bắt đầu bay sau khi button tan
-  totalExit: 4.5,                 // Tổng thời gian
+  doorOpenDuration: 3.6,
+  doorOpenDelay: 0.6,
+  totalExit: 4.5,
 };
 
-// Easing mượt - cubic-bezier cơ bản
-const easeSmooth = [0.4, 0, 0.2, 1];   // Material ease - mượt, tự nhiên
-const easeElegant = [0.65, 0, 0.35, 1]; // Smooth in-out
+const easeSmooth = [0.4, 0, 0.2, 1];
 
-// ============ PAPER DOOR ANIMATIONS ============
-// 2 tờ giấy nâu ghép vào nhau - bay dần ra 2 bên (gentle slide + slight rotate)
+// =====================================================================
+// DOOR ANIMATIONS
+// =====================================================================
 const doorLeftVariants = {
   initial: { x: "0%", rotate: 0 },
   exit: {
     x: "-110%",
-    rotate: -3, // xoay nhẹ như tờ giấy thật
-    transition: {
-      duration: TIMING.doorOpenDuration,
-      delay: TIMING.doorOpenDelay,
-      ease: easeSmooth,
-    },
+    rotate: -3,
+    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
   },
 };
 
@@ -95,45 +90,112 @@ const doorRightVariants = {
   exit: {
     x: "110%",
     rotate: 3,
-    transition: {
-      duration: TIMING.doorOpenDuration,
-      delay: TIMING.doorOpenDelay,
-      ease: easeSmooth,
-    },
+    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
   },
 };
 
-// Pulsing rings around button
-const pulseRingVariants = {
-  initial: { scale: 1, opacity: 0.5 },
+// Ambient glow ring around seal
+const sealGlowVariants = {
   animate: {
-    scale: [1, 1.4, 1.7],
-    opacity: [0.5, 0.2, 0],
-    transition: {
-      duration: 5,
-      repeat: Infinity,
-      ease: "easeOut",
-    },
+    scale: [1, 1.12, 1],
+    opacity: [0.4, 0.7, 0.4],
   },
+  transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
 };
 
-const secondRingVariants = {
-  initial: { scale: 1, opacity: 0.5 },
-  animate: {
-    scale: [1, 1.4, 1.7],
-    opacity: [0.5, 0.2, 0],
-    transition: {
-      duration: 5,
-      delay: 2.5,
-      repeat: Infinity,
-      ease: "easeOut",
-    },
-  },
-};
+// =====================================================================
+// WAX SEAL BUTTON
+// =====================================================================
+function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boolean }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
+      whileHover={visible ? { scale: 1.04, y: -2 } : {}}
+      whileTap={visible ? { scale: 0.97, y: 1 } : {}}
+      transition={{ duration: 0.8, ease }}
+      className="relative flex h-28 w-28 items-center justify-center rounded-full sm:h-36 sm:w-36"
+      aria-label="Mở thiệp mời"
+    >
+      {/* Outer ambient glow ring */}
+      <motion.span
+        variants={sealGlowVariants}
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: "transparent",
+          boxShadow: "0 0 32px 8px rgba(196, 164, 132, 0.25), 0 0 64px 16px rgba(196, 164, 132, 0.1)",
+        }}
+      />
 
-interface IntroScreenPropsWithNames extends IntroScreenProps {}
+      {/* Wax seal body — layered gradients for engraved depth */}
+      <div
+        className="relative flex h-full w-full items-center justify-center rounded-full"
+        style={{
+          background: "linear-gradient(145deg, #8b6f47 0%, #6b5235 20%, #4a3525 50%, #3d2a1c 80%, #2d1f15 100%)",
+          boxShadow:
+            "inset 0 2px 4px rgba(255, 240, 220, 0.12), inset 0 -2px 4px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        {/* Inner engraved ring */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            inset: 10,
+            border: "1.5px solid rgba(196, 164, 132, 0.2)",
+            boxShadow:
+              "inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 -1px 2px rgba(255, 240, 220, 0.06)",
+          }}
+        />
 
-export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenPropsWithNames) {
+        {/* Second inner ring (groove) */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            inset: 16,
+            border: "0.75px solid rgba(196, 164, 132, 0.12)",
+          }}
+        />
+
+        {/* Monogram: T & H */}
+        <div className="relative z-10 flex flex-col items-center">
+          <span
+            className="font-[family-name:var(--font-playfair)] text-3xl leading-none text-[#c4a484] sm:text-4xl"
+            style={{
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              textShadow: "0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(196, 164, 132, 0.3)",
+            }}
+          >
+            T
+          </span>
+          <div className="my-0.5 h-px w-8 bg-gradient-to-r from-transparent via-[#c4a484]/60 to-transparent sm:my-1 sm:w-10" />
+          <span
+            className="font-[family-name:var(--font-playfair)] text-3xl leading-none italic text-[#c4a484] sm:text-4xl"
+            style={{
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              textShadow: "0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(196, 164, 132, 0.3)",
+            }}
+          >
+            H
+          </span>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+// =====================================================================
+// INTRO SCREEN
+// =====================================================================
+interface IntroScreenProps {
+  onUnlock: () => void;
+  bride: string;
+  groom: string;
+}
+
+export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps) {
   const [mounted, setMounted] = useState(false);
   const [exiting, setExiting] = useState(false);
 
@@ -145,63 +207,38 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
   const handleClick = () => {
     if (exiting) return;
     setExiting(true);
-    setTimeout(() => {
-      onUnlock();
-    }, TIMING.totalExit * 1000);
+    setTimeout(() => onUnlock(), TIMING.totalExit * 1000);
   };
-
-  const previewDelay = TIMING.doorOpenDelay + 0.7;
 
   return (
     <div className="intro-bg relative h-screen w-full overflow-hidden">
+
       {/* Ambient particles */}
       <IntroParticles />
 
-      {/* ====== BACKGROUND HINT - nội dung bên trong lộ ra khi cửa bay ====== */}
+      {/* Background hint — nội dung bên trong lộ ra khi cửa bay */}
       <motion.div
         className="pointer-events-none absolute inset-0"
-        style={{
-          background: "radial-gradient(ellipse at center, #fdfbf7 0%, #f5ebd9 50%, #e8d4b8 100%)",
-        }}
+        style={{ background: "radial-gradient(ellipse at center, #fdfbf7 0%, #f5ebd9 50%, #e8d4b8 100%)" }}
         initial={{ opacity: 0 }}
         animate={exiting ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1.5, delay: TIMING.doorOpenDelay + 0.7, ease: easeSmooth }}
       />
 
-      {/* Tia sáng đơn giản ở khe cửa (chỉ chiếu khi cửa mở) */}
+      {/* Light beam at door seam */}
       <motion.div
         className="pointer-events-none absolute top-0 left-1/2 z-[5] h-full w-1/2 -translate-x-1/2"
         style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(255, 248, 220, 0.25) 50%, transparent 100%)",
+          background: "linear-gradient(90deg, transparent 0%, rgba(255, 248, 220, 0.25) 50%, transparent 100%)",
           filter: "blur(30px)",
         }}
         initial={{ opacity: 0, scaleX: 0 }}
-        animate={
-          exiting
-            ? {
-                opacity: [0, 1, 0.5],
-                scaleX: [0, 1.5, 3],
-              }
-            : { opacity: 0, scaleX: 0 }
-        }
-        transition={{
-          duration: TIMING.doorOpenDuration,
-          delay: TIMING.doorOpenDelay,
-          times: [0, 0.4, 1],
-          ease: easeSmooth,
-        }}
+        animate={exiting ? { opacity: [0, 1, 0.5], scaleX: [0, 1.5, 3] } : { opacity: 0, scaleX: 0 }}
+        transition={{ duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, times: [0, 0.4, 1], ease: easeSmooth }}
       />
 
-      {/* ====== THE TWO PAPER DOORS (bay ra 2 bên) ====== */}
-      <div
-        className="absolute inset-0"
-        style={{
-          zIndex: 10,
-          pointerEvents: "none",
-        }}
-      >
-        {/* LEFT PAPER */}
+      {/* ====== TWO PAPER DOORS ====== */}
+      <div className="absolute inset-0" style={{ zIndex: 10, pointerEvents: "none" }}>
         <motion.div
           className="gpu absolute top-0 left-0 h-full w-1/2"
           variants={doorLeftVariants}
@@ -214,8 +251,6 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
             boxShadow: "inset -30px 0 50px rgba(0, 0, 0, 0.6)",
           }}
         />
-
-        {/* RIGHT PAPER */}
         <motion.div
           className="gpu absolute top-0 right-0 h-full w-1/2"
           variants={doorRightVariants}
@@ -230,147 +265,69 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         />
       </div>
 
-      {/* Center seam line (subtle) - fade out as doors open */}
+      {/* Center seam line */}
       <motion.div
         className="absolute top-0 left-1/2 z-20 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#c4a484]/40 to-transparent"
-        animate={{
-          opacity: exiting ? 0 : (mounted ? 0.6 : 0),
-        }}
+        animate={{ opacity: exiting ? 0 : mounted ? 0.6 : 0 }}
         transition={{ duration: 0.6 }}
       />
 
-      {/* ====== CENTER CONTENT (Button + Text) - FADES OUT FIRST ====== */}
+      {/* ====== CENTER CONTENT ====== */}
       <motion.div
         className="absolute inset-0 z-30 flex flex-col items-center justify-center px-8 text-center"
-        initial="hidden"
-        animate={mounted && !exiting ? "visible" : "hidden"}
-        variants={{
-          hidden: { opacity: 0, scale: 0.95 },
-          visible: {
-            opacity: 1,
-            scale: 1,
-            transition: {
-              duration: 2.4,
-              ease: easeSmooth,
-            },
-          },
-        }}
-        style={{
-          pointerEvents: exiting ? "none" : "auto",
-        }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={mounted && !exiting ? { opacity: 1, scale: 1 } : { opacity: 0 }}
+        transition={{ duration: 2.4, ease: easeSmooth }}
+        style={{ pointerEvents: exiting ? "none" : "auto" }}
       >
-        {/* Names display */}
+        {/* Eyebrow */}
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={mounted ? { opacity: 0.7, y: 0 } : { opacity: 0 }}
-          transition={{ delay: 0.6, duration: 2, ease: easeSmooth }}
-          className="mb-4 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:text-xs"
+          transition={{ delay: T_EYEBROW, duration: 1.5, ease }}
+          className="mb-6 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:mb-8 sm:text-xs"
         >
-          We are getting married
+          {INTRO_EYEBROW}
         </motion.p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
-          animate={
-            mounted && !exiting
-              ? { opacity: 1, y: 0, filter: "blur(0px)" }
-              : { opacity: 0, y: -10 }
-          }
-          transition={{ delay: 1.0, duration: 2.2, ease: easeSmooth }}
-          className="mb-2 max-w-2xl font-serif text-4xl leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
+        {/* Names */}
+        <motion.div
+          className="mb-8 flex flex-col items-center gap-2 sm:mb-12"
+          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+          animate={mounted ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0 }}
+          transition={{ delay: T_NAMES, duration: 2.0, ease }}
         >
-          {groom}
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, scale: 0 }}
-          animate={
-            mounted && !exiting
-              ? { opacity: 1, scale: 1 }
-              : { opacity: 0, scale: 0 }
-          }
-          transition={{ delay: 1.6, duration: 1.6, ease: "backOut" }}
-          className="mb-2 font-serif text-3xl italic text-[#c4a484] sm:text-4xl"
-        >
-          &
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
-          animate={
-            mounted && !exiting
-              ? { opacity: 1, y: 0, filter: "blur(0px)" }
-              : { opacity: 0, y: -10 }
-          }
-          transition={{ delay: 1.4, duration: 2.2, ease: easeSmooth }}
-          className="mb-12 max-w-2xl font-serif text-4xl leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
-        >
-          {bride}
-        </motion.h1>
-
-        {/* Unlock Button */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={
-            mounted && !exiting
-              ? { opacity: 1, y: 0 }
-              : { opacity: 0, y: -10, scale: 0.9 }
-          }
-          transition={{
-            delay: 2.0,
-            duration: 2.0,
-            ease: easeSmooth,
-          }}
-          onClick={handleClick}
-          disabled={exiting}
-          className="btn-primary relative overflow-hidden rounded-full px-12 py-5"
-          whileHover={!exiting ? { scale: 1.03 } : {}}
-          whileTap={!exiting ? { scale: 0.97 } : {}}
-        >
-          {/* Pulsing rings */}
-          <motion.span
-            variants={pulseRingVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute inset-0 rounded-full border border-[#c4a484]/50"
-          />
-          <motion.span
-            variants={secondRingVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute inset-0 rounded-full border border-[#c4a484]/50"
-          />
-
-          <span className="relative z-10 flex items-center gap-4 font-sans text-sm uppercase tracking-[0.25em] text-[#fdfbf7]">
-            {/* Animated dot */}
-            <motion.span
-              className="h-2 w-2 rounded-full bg-[#c4a484]"
-              animate={{
-                opacity: [0.5, 1, 0.5],
-                scale: [0.8, 1.2, 0.8],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            <span className="whitespace-nowrap">Chạm để mở</span>
-            <motion.span
-              animate={{ x: [0, 4, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="text-[#c4a484]"
-            >
-              →
-            </motion.span>
+          <span
+            className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
+            style={{ letterSpacing: "-0.01em" }}
+          >
+            {groom}
           </span>
-        </motion.button>
+          <span className="font-[family-name:var(--font-playfair)] text-2xl italic text-[#c4a484] sm:text-3xl">
+            &
+          </span>
+          <span
+            className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
+            style={{ letterSpacing: "-0.01em" }}
+          >
+            {bride}
+          </span>
+        </motion.div>
 
-        {/* Footer hint */}
+        {/* Wax Seal Button */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={mounted ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
+          transition={{ delay: T_SEAL, duration: 1.0, ease }}
+        >
+          <WaxSealButton onClick={handleClick} visible={mounted && !exiting} />
+        </motion.div>
+
+        {/* Hint text below seal */}
         <motion.p
           initial={{ opacity: 0 }}
-          animate={mounted ? { opacity: 0.4 } : { opacity: 0 }}
-          transition={{ delay: 3.0, duration: 2 }}
+          animate={mounted ? { opacity: 0.35 } : { opacity: 0 }}
+          transition={{ delay: T_DATE, duration: 1.5, ease }}
           className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
         >
           27 · 12 · 2026
