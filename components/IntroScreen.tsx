@@ -94,12 +94,29 @@ const doorRightVariants = {
 };
 
 // Ambient glow ring around seal
+// Pulsing outer ring — báo hiệu có thể nhấn
+const outerRingVariants = {
+  animate: {
+    scale: [1, 1.15, 1],
+    opacity: [0.15, 0.3, 0.15],
+  },
+  transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+};
+
 const sealGlowVariants = {
   animate: {
-    scale: [1, 1.12, 1],
-    opacity: [0.4, 0.7, 0.4],
+    scale: [1, 1.08, 1],
+    opacity: [0.5, 0.8, 0.5],
   },
-  transition: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+};
+
+// Bounce nhẹ cho icon mũi tên
+const arrowBounceVariants = {
+  animate: {
+    y: [0, 3, 0],
+  },
+  transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
 };
 
 // =====================================================================
@@ -111,13 +128,22 @@ function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boo
       onClick={onClick}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-      whileHover={visible ? { scale: 1.04, y: -2 } : {}}
-      whileTap={visible ? { scale: 0.97, y: 1 } : {}}
+      whileHover={visible ? { scale: 1.08, y: -3 } : {}}
+      whileTap={visible ? { scale: 0.95, y: 2 } : {}}
       transition={{ duration: 0.8, ease }}
-      className="relative flex h-28 w-28 items-center justify-center rounded-full sm:h-36 sm:w-36"
+      className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full sm:h-36 sm:w-36"
       aria-label="Mở thiệp mời"
     >
-      {/* Outer ambient glow ring */}
+      {/* Outer pulsing ring — báo hiệu có thể nhấn */}
+      <motion.span
+        variants={outerRingVariants}
+        className="absolute inset-0 rounded-full"
+        style={{
+          border: "1px solid rgba(196, 164, 132, 0.4)",
+        }}
+      />
+
+      {/* Glow ring */}
       <motion.span
         variants={sealGlowVariants}
         className="absolute inset-0 rounded-full"
@@ -320,6 +346,16 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
           transition={{ delay: T_SEAL, duration: 0.6, ease }}
         >
           <WaxSealButton onClick={handleClick} visible={mounted && !exiting} />
+
+          {/* Hint text — "chạm để mở" */}
+          <motion.p
+            initial={{ opacity: 0, y: 5 }}
+            animate={mounted ? { opacity: 0.4, y: 0 } : { opacity: 0, y: 5 }}
+            transition={{ delay: T_SEAL + 0.4, duration: 0.5, ease }}
+            className="mt-4 text-center font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/50 sm:text-[11px]"
+          >
+            Chạm để mở
+          </motion.p>
         </motion.div>
 
         {/* Hint text below seal */}
