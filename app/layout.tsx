@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Pinyon_Script } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -18,13 +18,6 @@ const inter = Inter({
   preload: false,
 });
 
-const pinyon = Pinyon_Script({
-  subsets: ["latin"],
-  variable: "--font-pinyon",
-  display: "swap",
-  weight: ["400"],
-});
-
 export const metadata: Metadata = {
   title: "Tùng & Hằng — Save The Date · 27.12.26",
   description:
@@ -37,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${playfair.variable} ${inter.variable} ${pinyon.variable}`}>
+    <html lang="vi" className={`${playfair.variable} ${inter.variable}`}>
       <body className="bg-beige text-mocha font-sans" suppressHydrationWarning>{children}</body>
     </html>
   );

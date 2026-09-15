@@ -2,24 +2,23 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { CPS, charDur, charStag, blockDur, CONTENT_START, ease } from "./animation";
+import { CONTENT_START, ease } from "./animation";
 
 // =====================================================================
-// PACING — Intro content dùng cùng CPS = 14
+// PACING — Intro content: smooth, quick transitions
 // =====================================================================
-// Eyebrow: "We are getting married" (22 chars) + duration 2s
+// Eyebrow: "We are getting married" (22 chars) + duration 1.5s
 const INTRO_EYEBROW = "We are getting married";
-const T_EYEBROW = CONTENT_START + 0.3;              // 0.8s
+const T_EYEBROW = CONTENT_START + 0.2;              // 0.7s — eyebrow appears
 
-// Names block: "Tùng Phạm" (8) + "&" + "Thuý Hằng" (8) + separators
-// Gap between eyebrow end and names start
-const T_NAMES = T_EYEBROW + blockDur(INTRO_EYEBROW) + 2.0 + 0.4; // ≈ eyebrow end + 2s pause + 0.4s
+// Names block: appears quickly after eyebrow with minimal pause
+const T_NAMES = T_EYEBROW + 1.2;                    // 1.9s — names fade in smoothly
 
 // Seal button: appears right after names stabilize
-const T_SEAL = T_NAMES + 1.0;                        // ≈ 6.1s
+const T_SEAL = T_NAMES + 0.5;                       // 2.4s — seal appears faster
 
 // Footer date
-const T_DATE = T_SEAL + 1.5;                        // ≈ 7.6s
+const T_DATE = T_SEAL + 0.6;                       // 3.0s — date appears quickly
 
 // =====================================================================
 // PARTICLES
@@ -277,14 +276,14 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         className="absolute inset-0 z-30 flex flex-col items-center justify-center px-8 text-center"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={mounted && !exiting ? { opacity: 1, scale: 1 } : { opacity: 0 }}
-        transition={{ duration: 2.4, ease: easeSmooth }}
+        transition={{ duration: 1.2, ease: easeSmooth }}
         style={{ pointerEvents: exiting ? "none" : "auto" }}
       >
         {/* Eyebrow */}
         <motion.p
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={mounted ? { opacity: 0.7, y: 0 } : { opacity: 0 }}
-          transition={{ delay: T_EYEBROW, duration: 1.5, ease }}
+          transition={{ delay: T_EYEBROW, duration: 0.8, ease }}
           className="mb-6 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:mb-8 sm:text-xs"
         >
           {INTRO_EYEBROW}
@@ -293,9 +292,9 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         {/* Names */}
         <motion.div
           className="mb-8 flex flex-col items-center gap-2 sm:mb-12"
-          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+          initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
           animate={mounted ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0 }}
-          transition={{ delay: T_NAMES, duration: 2.0, ease }}
+          transition={{ delay: T_NAMES, duration: 0.9, ease }}
         >
           <span
             className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
@@ -318,7 +317,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={mounted ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-          transition={{ delay: T_SEAL, duration: 1.0, ease }}
+          transition={{ delay: T_SEAL, duration: 0.6, ease }}
         >
           <WaxSealButton onClick={handleClick} visible={mounted && !exiting} />
         </motion.div>
@@ -327,7 +326,7 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         <motion.p
           initial={{ opacity: 0 }}
           animate={mounted ? { opacity: 0.35 } : { opacity: 0 }}
-          transition={{ delay: T_DATE, duration: 1.5, ease }}
+          transition={{ delay: T_DATE, duration: 0.6, ease }}
           className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
         >
           27 · 12 · 2026

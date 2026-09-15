@@ -7,14 +7,11 @@ import MonogramArt from "./MonogramArt";
 import LotusArt from "./LotusArt";
 import RingArt from "./RingArt";
 import {
-  CPS,
   charDur,
   charStag,
   lineStag,
   blockDur,
   CONTENT_START,
-  BLOCK_GAP,
-  fadeBlurProps,
   ease,
 } from "./animation";
 
@@ -282,7 +279,6 @@ interface DetailsSectionsProps {
   groomInit: string;
   brideInit: string;
   activeSection: number;
-  onSectionClick: (idx: number) => void;
 }
 
 export function DetailsSections({
@@ -357,7 +353,7 @@ export function DetailsSections({
         <div className="flex flex-col items-center gap-6 sm:gap-8">
 
           {/* Monogram: T & H */}
-          <MonogramArt theme="dark" size={260} delay={s2_t1} active={is2} />
+          <MonogramArt theme="dark" size={100} delay={s2_t1} active={is2} />
 
           {/* Eyebrow */}
           <FadeBlur active={is2} delay={s2_t1 + 0.1} duration={0.4}>
@@ -424,7 +420,7 @@ export function DetailsSections({
           </FadeBlur>
 
           {/* Lotus: Hoa sen — Kênh, Cẩm Bình */}
-          <LotusArt theme="light" size={220} delay={s3_t1 + 0.1} active={is3} />
+          <LotusArt theme="light" size={120} delay={s3_t1 + 0.1} active={is3} />
 
           {/* Tiêu đề chính */}
           <div className="text-center">
@@ -496,7 +492,7 @@ export function DetailsSections({
         <div className="flex flex-col items-center gap-5 sm:gap-7">
 
           {/* Ring Art: 2 Wedding Rings */}
-          <RingArt theme="dark" size={180} delay={0.5} active={is4} />
+          <RingArt theme="dark" size={120} delay={0.5} active={is4} />
 
           {/* Countdown */}
           <FadeBlur active={is4} delay={1.2} duration={0.7}>

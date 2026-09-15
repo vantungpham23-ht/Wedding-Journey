@@ -117,7 +117,6 @@ export default function Page() {
               groom="Tùng Phạm"
               bride="Thuý Hằng"
               activeSection={activeSection}
-              onSectionClick={scrollToSection}
             />
           </motion.div>
         )}
@@ -125,10 +124,10 @@ export default function Page() {
 
       {/* Page dots indicator */}
       {stage === "revealed" && (
-        <div className="fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4 sm:gap-3">
+        <div className="pointer-events-none fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4 sm:gap-3">
           {[0, 1, 2, 3].map((i) => {
             const isDark = i === 1 || i === 3; // Section 2 và 4 nền nâu
-            const activeColor = isDark ? "bg-[#c4a484]" : "bg-[#c4a484]";
+            const activeColor = "bg-[#c4a484] shadow-[0_0_8px_rgba(196,164,132,0.6)]";
             const inactiveColor = isDark
               ? "bg-[#fdfbf7]/30 hover:bg-[#fdfbf7]/60"
               : "bg-[#c4a484]/30 hover:bg-[#c4a484]/60";
@@ -136,7 +135,7 @@ export default function Page() {
               <button
                 key={i}
                 onClick={() => scrollToSection(i)}
-                className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                className={`pointer-events-auto h-2.5 w-2.5 rounded-full transition-all duration-500 ${
                   activeSection === i
                     ? `scale-125 ${activeColor}`
                     : inactiveColor
@@ -178,10 +177,17 @@ export default function Page() {
 
 function AudioPlayer() {
   useEffect(() => {
-    const audio = new Audio("/audio/golden-hour.mp3");
+    const audio = new Audio();
+    audio.src = "/audio/golden-hour.mp3";
     audio.loop = true;
     audio.volume = 0.5;
     audio.preload = "auto";
+
+    const onError = () => {
+      // Audio file missing or failed - silent fail for production resilience
+      console.warn("Audio: golden-hour.mp3 not available, continuing without music.");
+    };
+    audio.addEventListener("error", onError);
 
     const tryPlay = () => {
       const p = audio.play();
@@ -192,8 +198,8 @@ function AudioPlayer() {
             document.removeEventListener("click", resume);
             document.removeEventListener("touchstart", resume);
           };
-          document.addEventListener("click", resume);
-          document.addEventListener("touchstart", resume);
+          document.addEventListener("click", resume, { once: true });
+          document.addEventListener("touchstart", resume, { once: true });
         });
       }
     };
@@ -202,6 +208,7 @@ function AudioPlayer() {
     return () => {
       audio.pause();
       audio.src = "";
+      audio.removeEventListener("error", onError);
     };
   }, []);
 

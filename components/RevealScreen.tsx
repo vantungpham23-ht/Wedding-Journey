@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
-import { CPS, charDur, charStag, CONTENT_START, fadeBlurProps, ease, easeBack, blockDur } from "./animation";
+import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from "./animation";
 import ConstellationArt from "./ConstellationArt";
 
 // =====================================================================
@@ -245,51 +245,12 @@ export default function RevealScreen({ groom, bride, active = true }: RevealScre
           />
         </motion.div>
 
-        {/* --- MONOGRAM: T ❀ H --- */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={
-            active
-              ? { opacity: 1, y: 0, scale: 1, transition: { duration: 1.0, delay: T_MONO, ease: sharedEaseBack } }
-              : { opacity: 0, y: -15, transition: { duration: 0.6 } }
-          }
-          className="mb-5 flex items-center justify-center gap-2 sm:mb-7 sm:gap-3"
-        >
-          {/* T */}
-          <motion.span
-            className="font-[family-name:var(--font-playfair)] text-4xl text-[#c4a484] sm:text-5xl"
-            style={{ fontWeight: 500, letterSpacing: "-0.02em" }}
-            initial={{ opacity: 0, x: -20 }}
-            animate={active ? { opacity: 1, x: 0, transition: { duration: 0.7, delay: T_MONO + 0.1, ease: sharedEase } } : { opacity: 0 }}
-          >
-            T
-          </motion.span>
-
-          {/* Flourish */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={active ? { opacity: 1, scaleX: 1, transition: { duration: 0.8, delay: T_FLOURISH, ease: sharedEase } } : { opacity: 0 }}
-          >
-            <FlourishOrnament className="text-[#c4a484]" />
-          </motion.div>
-
-          {/* H */}
-          <motion.span
-            className="font-[family-name:var(--font-playfair)] text-4xl italic text-[#c4a484] sm:text-5xl"
-            style={{ fontWeight: 500, letterSpacing: "-0.02em" }}
-            initial={{ opacity: 0, x: 20 }}
-            animate={active ? { opacity: 1, x: 0, transition: { duration: 0.7, delay: T_MONO_H, ease: sharedEase } } : { opacity: 0 }}
-          >
-            H
-          </motion.span>
-        </motion.div>
-
         {/* --- CONSTELLATION: Bạch Dương ♈ & Xử Nữ ♍ --- */}
         <motion.div
-          {...itemAnim(active, T_FLOURISH + 0.3)}
-          className="mb-4 sm:mb-6"
+          {...itemAnim(active, T_MONO)}
+          className="mb-5 sm:mb-7"
         >
-          <ConstellationArt size={180} theme="dark" delay={T_FLOURISH + 0.3} active={active} />
+          <ConstellationArt size={140} theme="dark" delay={T_MONO} active={active} />
         </motion.div>
 
         {/* --- THE DATE: "27·12·2026" --- */}
