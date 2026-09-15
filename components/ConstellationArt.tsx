@@ -19,7 +19,7 @@ import { ease } from "./animation";
 // =====================================================================
 // Hình: 2 sừng cong + mặt tròn nhỏ + 2 mắt
 const ARIA_ICON_PATH = (
-  <svg viewBox="0 0 60 50" fill="none" className="w-full h-full">
+  <svg viewBox="0 0 60 50" fill="none" className="w-full h-full opacity-30">
     {/* Left horn */}
     <path
       d="M 18 28 Q 10 18 8 8 Q 14 14 20 22"
