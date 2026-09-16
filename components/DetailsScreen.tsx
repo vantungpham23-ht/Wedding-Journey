@@ -532,7 +532,7 @@ export function DetailsSections({
                 ),
               },
               {
-                href: "https://maps.app.goo.gl/P9oQwKuYT3QgMK4x9",
+                href: "https://maps.app.goo.gl/e4oAwHzgSMPdMJQMA",
                 title: "Địa điểm tổ chức",
                 desc: "Kênh · Cẩm Bình · Hà Tĩnh",
                 icon: (
