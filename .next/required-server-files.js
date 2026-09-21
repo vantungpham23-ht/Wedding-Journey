@@ -68,7 +68,7 @@ self.__SERVER_FILES_MANIFEST={
       "qualities": [
         75
       ],
-      "unoptimized": false,
+      "unoptimized": true,
       "customCacheHandler": false
     },
     "devIndicators": {
@@ -176,7 +176,7 @@ self.__SERVER_FILES_MANIFEST={
       "proxyPrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 1,
+      "cpus": 9,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptOperationCache": null,

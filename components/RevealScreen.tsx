@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
 import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from "./animation";
-import SaveTheDateOrnament from "./SaveTheDateOrnament";
+import WeddingLogo from "./WeddingLogo";
 
 // =====================================================================
 // REVEAL TIMING — smooth, liên tục, không delay thừa
@@ -215,17 +215,16 @@ export default function RevealScreen({ groom, bride, active = true }: RevealScre
       {/* ========== MAIN CONTENT ========== */}
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center">
 
-        {/* --- SAVE THE DATE ORNAMENT --- */}
+        {/* --- WEDDING LOGO --- */}
         <motion.div
           {...itemAnim(active, T_EYEBROW)}
-          className="mb-5 sm:mb-8"
+          className="mb-6 sm:mb-10"
         >
-          <SaveTheDateOrnament 
-            size={224} 
-            theme="dark" 
-            delay={T_EYEBROW} 
-            active={active} 
-            className="!w-[224px] !h-[179px] sm:!w-[252px] sm:!h-[202px]" 
+          <WeddingLogo
+            size={240}
+            active={active}
+            delay={T_EYEBROW}
+            className="!w-[240px] !h-[240px] sm:!w-[280px] sm:!h-[280px]"
           />
         </motion.div>
 
