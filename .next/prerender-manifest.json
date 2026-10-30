@@ -5,7 +5,7 @@
       "routeType": "page",
       "response": "complete",
       "compute": "static",
-      "htmlSize": 11381,
+      "htmlSize": 32508,
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -62,7 +62,7 @@
       "routeType": "page",
       "response": "complete",
       "compute": "static",
-      "htmlSize": 8552,
+      "htmlSize": 11555,
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -77,6 +77,34 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/_not-found",
       "dataRoute": "/_not-found.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/admin": {
+      "routeType": "page",
+      "response": "complete",
+      "compute": "static",
+      "htmlSize": 18425,
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/admin",
+      "dataRoute": "/admin.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -122,8 +150,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "010abb2598fbfe0eab1e7f79fe982ead",
-    "previewModeSigningKey": "a1877e16b019324f5da7e6c8f2f99b733b96e8fc5f89d5582782864e7e5e1a3f",
-    "previewModeEncryptionKey": "903240ca901ce72e524f034bc28da8d44a3930922231f065ea5bc7e8e2cec825"
+    "previewModeId": "b905ac785580211c59d82887cd7411a0",
+    "previewModeSigningKey": "383804e4f7e713afba4131117b65f916adbad4d60a9caba885c4966c9c8e746d",
+    "previewModeEncryptionKey": "1e16eec00b51b57152c9e91bde634e86d83431a32d9b2409c36be77af162b362"
   }
 }

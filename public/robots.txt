@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Trang quản lý khách mời — không nên xuất hiện trên Google
+Disallow: /admin
+Disallow: /admin/

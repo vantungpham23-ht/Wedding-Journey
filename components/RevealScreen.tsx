@@ -1,9 +1,12 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from "./animation";
 import WeddingLogo from "./WeddingLogo";
+import { SharedPetal } from "./JourneyThread";
+import { createRandom, PARTICLE_SEED } from "@/lib/random";
+import { deriveWeWord, honorificPrefix } from "@/lib/invite";
 
 // =====================================================================
 // REVEAL TIMING — smooth, liên tục, không delay thừa
@@ -78,14 +81,15 @@ interface Particle {
 }
 
 function generateParticles(count: number): Particle[] {
+  const random = createRandom(PARTICLE_SEED + 21);
   return Array.from({ length: count }, (_, i) => ({
     id: i,
-    x: Math.random() * 100,
-    size: 3 + Math.random() * 5,
-    duration: 20 + Math.random() * 30,
-    delay: Math.random() * 15,
-    drift: -20 + Math.random() * 40,
-    type: Math.random() > 0.4 ? "circle" : "leaf",
+    x: random() * 100,
+    size: 3 + random() * 5,
+    duration: 20 + random() * 30,
+    delay: random() * 15,
+    drift: -20 + random() * 40,
+    type: random() > 0.4 ? "circle" : "leaf",
   }));
 }
 
@@ -134,19 +138,43 @@ interface RevealScreenProps {
   groom: string;
   bride: string;
   active?: boolean;
+  /** Tên khách mời — nhắc lại ở section 1 cho mạch lạc */
+  guestTo?: string;
+  /** Danh xưng với khách: anh/chị/cô/chú/bác/em/bạn */
+  guestRel?: string;
+  /** Cách hai vợ chồng tự xưng: chúng mình/chúng em/... */
+  guestWe?: string;
 }
 
-export default function RevealScreen({ groom, bride, active = true }: RevealScreenProps) {
+export default function RevealScreen({
+  groom,
+  bride,
+  active = true,
+  guestTo = "",
+  guestRel = "",
+  guestWe = "",
+}: RevealScreenProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Số lượng particle phụ thuộc viewport → phải đo SAU khi mount,
+  // nếu đo lúc render thì server (24) ≠ client (12) → hydration mismatch.
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const particles = useMemo(
-    () => generateParticles(typeof window !== "undefined" && window.innerWidth < 768 ? 12 : 24),
-    []
+    () => generateParticles(isMobile ? 12 : 24),
+    [isMobile]
   );
 
   const groomChars = groom.split("");
   const brideChars = bride.split("");
   const dateChars = DATE.split("");
+  const weWord = (guestWe.trim() || deriveWeWord(guestRel)).toLowerCase();
 
   return (
     <section className="reveal-bg relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-4 py-12 sm:px-6 sm:py-20">
@@ -227,6 +255,14 @@ export default function RevealScreen({ groom, bride, active = true }: RevealScre
             className="!w-[240px] !h-[240px] sm:!w-[280px] sm:!h-[280px]"
           />
         </motion.div>
+
+        {/* --- Shared element: cánh hoa bay sang section kế tiếp --- */}
+        <SharedPetal
+          show={active}
+          className="left-1/2 top-[46%] -translate-x-1/2"
+          style={{ transform: "translate(-50%, -50%)" }}
+          size={16}
+        />
 
         {/* --- THE DATE: "27·12·2026" --- */}
         <motion.h1
@@ -319,6 +355,19 @@ export default function RevealScreen({ groom, bride, active = true }: RevealScre
           >
             Chủ Nhật · 27 Tháng 12 · 2026
           </motion.p>
+
+          {/* Nhắc lại tên khách mời */}
+          {guestTo && (
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={active ? { opacity: 1, y: 0 } : { opacity: 0 }}
+              transition={{ duration: 0.7, delay: T_LOCATION - 0.2, ease: sharedEase }}
+              className="mt-5 font-[family-name:var(--font-playfair)] text-base italic text-[#4a3525]/60 sm:mt-7 sm:text-lg"
+            >
+              Kính mời {honorificPrefix(guestRel)}
+              {guestTo} cùng {weWord}
+            </motion.p>
+          )}
 
           {/* Location */}
           <motion.p

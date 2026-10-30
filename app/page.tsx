@@ -5,14 +5,44 @@ import { motion, AnimatePresence } from "framer-motion";
 import IntroScreen from "@/components/IntroScreen";
 import RevealScreen from "@/components/RevealScreen";
 import { DetailsSections } from "@/components/DetailsScreen";
+import JourneyThread from "@/components/JourneyThread";
+import { installAudioUnlock, playShimmer } from "@/components/soundscape";
 
 type Stage = "intro" | "revealing" | "revealed";
+
+interface Guest {
+  to: string;
+  from: string;
+  rel: string;
+  we: string;
+}
 
 export default function Page() {
   const [stage, setStage] = useState<Stage>("intro");
   const [musicStarted, setMusicStarted] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
+  const [guest, setGuest] = useState<Guest>({
+    to: "",
+    from: "",
+    rel: "",
+    we: "",
+  });
+  const [showAdminLink, setShowAdminLink] = useState(false);
   const sectionsRef = useRef<HTMLDivElement>(null);
+
+  // ---- Đọc thông tin cá nhân hóa từ query string ----
+  // ?to=Tên khách &from=Người gửi &rel=anh &we=chúng em
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const to = (params.get("to") ?? "").trim();
+    const from = (params.get("from") ?? "").trim();
+    const rel = (params.get("rel") ?? "").trim();
+    const we = (params.get("we") ?? "").trim();
+    if (to || from || rel || we) setGuest({ to, from, rel, we });
+    if (params.get("admin") === "1") setShowAdminLink(true);
+  }, []);
+  // ---- Mở khoá AudioContext khi user tương tác lần đầu ----
+  useEffect(() => installAudioUnlock(), []);
 
   const handleUnlock = useCallback(() => {
     setStage("revealing");
@@ -50,6 +80,12 @@ export default function Page() {
     };
   }, [stage]);
 
+  // Âm thanh "shimmer" nhẹ khi đổi section
+  useEffect(() => {
+    if (stage !== "revealed" || activeSection === 0) return;
+    playShimmer();
+  }, [activeSection, stage]);
+
   const scrollToSection = (index: number) => {
     if (!sectionsRef.current) return;
     const target = sectionsRef.current.offsetHeight * index;
@@ -74,10 +110,21 @@ export default function Page() {
               onUnlock={handleUnlock}
               bride="Thuý Hằng"
               groom="Tùng Phạm"
+              guestTo={guest.to}
+              guestFrom={guest.from}
+              guestRel={guest.rel}
+              guestWe={guest.we}
             />
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Journey Thread — shared element xuyên suốt các section */}
+      <JourneyThread
+        activeSection={activeSection}
+        total={4}
+        enabled={stage === "revealed"}
+      />
 
       {/* Section snap scroll container */}
       <AnimatePresence>
@@ -106,6 +153,9 @@ export default function Page() {
               <RevealScreen
                 groom="Tùng Phạm"
                 bride="Thuý Hằng"
+                guestTo={guest.to}
+                guestRel={guest.rel}
+                guestWe={guest.we}
                 active={activeSection === 0}
               />
             </section>
@@ -171,6 +221,19 @@ export default function Page() {
 
       {/* Audio player */}
       {musicStarted && <AudioPlayer />}
+
+      {/* Link tới admin — chỉ hiện khi truy cập /?admin */}
+      {stage === "revealed" && showAdminLink && (
+        <motion.a
+          href="/admin"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="pointer-events-auto fixed bottom-4 left-4 z-40 rounded-full border border-[#c4a484]/25 bg-[#2d1f15]/60 px-3 py-1.5 font-sans text-[9px] uppercase tracking-[0.2em] text-[#c4a484]/70 backdrop-blur-sm transition-colors hover:border-[#c4a484]/50 hover:text-[#c4a484]"
+        >
+          Admin
+        </motion.a>
+      )}
     </main>
   );
 }

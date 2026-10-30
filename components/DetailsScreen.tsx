@@ -6,6 +6,7 @@ import ConstellationArt from "./ConstellationArt";
 import MonogramArt from "./MonogramArt";
 import LotusArt from "./LotusArt";
 import RingArt from "./RingArt";
+import { SharedPetal } from "./JourneyThread";
 import {
   charDur,
   charStag,
@@ -203,7 +204,7 @@ function Section({ active, children, theme = "light" }: SectionProps) {
       style={{ scrollSnapAlign: "start" }}
     >
       <motion.div
-        className="flex h-full w-full max-w-2xl flex-col justify-center"
+        className="relative flex h-full w-full max-w-2xl flex-col justify-center"
         initial={{ opacity: 0, y: 15 }}
         animate={
           active
@@ -347,7 +348,16 @@ export function DetailsSections({
         <div className="flex flex-col items-center gap-6 sm:gap-8">
 
           {/* Monogram: T & H */}
-          <MonogramArt theme="dark" size={100} delay={s2_t1} active={is2} />
+          <div className="relative">
+            <MonogramArt theme="dark" size={100} delay={s2_t1} active={is2} />
+            {/* Shared element: cánh hoa bay từ section 1 sang đây */}
+            <SharedPetal
+              show={is2}
+              className="-right-6 top-1/2"
+              style={{ transform: "translateY(-50%)" }}
+              size={15}
+            />
+          </div>
 
           {/* Eyebrow */}
           <FadeSlide active={is2} delay={s2_t1 + 0.1} duration={0.3}>
@@ -414,7 +424,16 @@ export function DetailsSections({
           </FadeSlide>
 
           {/* Lotus: Hoa sen — Kênh, Cẩm Bình */}
-          <LotusArt theme="light" size={120} delay={s3_t1 + 0.1} active={is3} />
+          <div className="relative">
+            <LotusArt theme="light" size={120} delay={s3_t1 + 0.1} active={is3} />
+            {/* Shared element: cánh hoa bay từ section 2 sang đây */}
+            <SharedPetal
+              show={is3}
+              className="-right-6 top-1/2"
+              style={{ transform: "translateY(-50%)" }}
+              size={15}
+            />
+          </div>
 
           {/* Tiêu đề chính */}
           <div className="text-center">
@@ -486,7 +505,16 @@ export function DetailsSections({
         <div className="flex flex-col items-center gap-5 sm:gap-7">
 
           {/* Ring Art: 2 Wedding Rings */}
-          <RingArt theme="dark" size={120} delay={0.5} active={is4} />
+          <div className="relative">
+            <RingArt theme="dark" size={120} delay={0.5} active={is4} />
+            {/* Shared element: cánh hoa bay từ section 3 sang đây */}
+            <SharedPetal
+              show={is4}
+              className="-right-6 top-1/2"
+              style={{ transform: "translateY(-50%)" }}
+              size={15}
+            />
+          </div>
 
           {/* Countdown */}
           <FadeSlide active={is4} delay={0.8} duration={0.5}>

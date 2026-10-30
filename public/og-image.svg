@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#5c432c"/>
+      <stop offset="55%" stop-color="#2d1f15"/>
+      <stop offset="100%" stop-color="#160e09"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c4a484" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#c4a484" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0dcbf"/>
+      <stop offset="100%" stop-color="#c4a484"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <ellipse cx="600" cy="300" rx="380" ry="260" fill="url(#glow)"/>
+
+  <!-- n¿p g¥p -->
+  <rect x="599" y="0" width="1.5" height="630" fill="#c4a484" opacity="0.28"/>
+
+  <!-- vòng tròn trang trí -->
+  <circle cx="600" cy="228" r="92" fill="none" stroke="#c4a484" stroke-opacity="0.35" stroke-width="1"/>
+  <circle cx="600" cy="228" r="104" fill="none" stroke="#c4a484" stroke-opacity="0.15" stroke-width="1"/>
+
+  <!-- monogram TH -->
+  <text x="600" y="252" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="82" font-style="italic" fill="url(#gold)" letter-spacing="2">TH</text>
+
+  <!-- divider -->
+  <g opacity="0.7">
+    <line x1="470" y1="352" x2="570" y2="352" stroke="#c4a484" stroke-width="1"/>
+    <circle cx="600" cy="352" r="3" fill="#c4a484"/>
+    <line x1="630" y1="352" x2="730" y2="352" stroke="#c4a484" stroke-width="1"/>
+  </g>
+
+  <text x="600" y="418" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="42" fill="#fdfbf7" letter-spacing="1">Tùng Ph¡m &amp; Thuý H±ng</text>
+
+  <text x="600" y="478" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="18" fill="#c4a484" letter-spacing="9">27 · 12 · 2026</text>
+
+  <text x="600" y="534" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="14" fill="#fdfbf7" fill-opacity="0.5" letter-spacing="6">KÊNH · C¨M BÌNH · HÀ T(NH</text>
+</svg>

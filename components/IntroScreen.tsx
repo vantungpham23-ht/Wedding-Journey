@@ -1,45 +1,100 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { CONTENT_START, ease } from "./animation";
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { charDur, charStag, ease } from "./animation";
+import PetalBurst from "./PetalBurst";
+import { playChime, playPaperRustle, playWaxThunk } from "./soundscape";
+import { createRandom, PARTICLE_SEED } from "@/lib/random";
+import { deriveWeWord, honorificPrefix } from "@/lib/invite";
 
 // =====================================================================
-// PACING — Intro content: smooth, quick transitions
+// INTRO SCREEN — "Thiệp cưới" opening
+// Giao diện giữ nguyên: eyebrow → tên → con dấu → hint → ngày
+// Chuyển động nâng cấp: nếp gấp thiệp, bronze light sweep,
+// wax seal "mở" ra, chữ hiện từng ký tự mượt mà.
 // =====================================================================
-// Eyebrow: "We are getting married" (22 chars) + duration 1.5s
+
+// Lời mời chung — dùng khi khách mở link không có tên
 const INTRO_EYEBROW = "We are getting married";
-const T_EYEBROW = CONTENT_START + 0.2;              // 0.7s — eyebrow appears
+// Lời mời có tên — gộp liền thành 1 câu cho mạch lạc
+const INVITE_PREFIX = "Kính mời";
+const INVITE_SUFFIX = "tới dự hôn lễ của";
 
-// Names block: appears quickly after eyebrow with minimal pause
-const T_NAMES = T_EYEBROW + 1.2;                    // 1.9s — names fade in smoothly
+// Timeline (giây)
+const T = {
+  backdrop: 0, // nền espresso + vignette
+  fold: 0.35, // nếp gấp thiệp cưới vẽ dọc
+  glow: 0.6, // quầng bronze ở giữa
+  eyebrow: 0.9, // "We are getting married"
+  names: 1.45, // TÙNG PHẠM & THÚY HẰNG
+  seal: 2.55, // con dấu wax bung ra
+  hint: 3.5, // "chạm để mở"
+  date: 3.9, // ngày
+};
 
-// Seal button: appears right after names stabilize
-const T_SEAL = T_NAMES + 0.5;                       // 2.4s — seal appears faster
+// Thời gian mở cửa
+const TIMING = {
+  doorOpenDuration: 3.6,
+  doorOpenDelay: 0.6,
+  totalExit: 4.5,
+};
 
-// Footer date
-const T_DATE = T_SEAL + 0.6;                       // 3.0s — date appears quickly
+const easeSmooth = [0.4, 0, 0.2, 1];
+
+const doorLeftVariants = {
+  initial: { x: "0%", rotate: 0 },
+  exit: {
+    x: "-110%",
+    rotate: -3,
+    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
+  },
+};
+
+const doorRightVariants = {
+  initial: { x: "0%", rotate: 0 },
+  exit: {
+    x: "110%",
+    rotate: 3,
+    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
+  },
+};
+
+// Ambient pulsing ring — báo hiệu có thể nhấn
+const outerRingVariants = {
+  animate: {
+    scale: [1, 1.14, 1],
+    opacity: [0.15, 0.32, 0.15],
+  },
+  transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+};
+
+const sealGlowVariants = {
+  animate: {
+    scale: [1, 1.08, 1],
+    opacity: [0.5, 0.8, 0.5],
+  },
+  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+};
 
 // =====================================================================
 // PARTICLES
 // =====================================================================
 function IntroParticles() {
-  const [particles, setParticles] = useState<
-    { id: number; x: number; y: number; size: number; duration: number; delay: number }[]
-  >([]);
-
-  useEffect(() => {
-    setParticles(
-      Array.from({ length: 18 }, (_, i) => ({
+  const particles = useMemo(
+    () => {
+      const random = createRandom(PARTICLE_SEED + 7);
+      return Array.from({ length: 18 }, (_, i) => ({
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 1.5 + Math.random() * 3,
-        duration: 20 + Math.random() * 24,
-        delay: Math.random() * 8,
-      }))
-    );
-  }, []);
+        x: random() * 100,
+        y: random() * 100,
+        size: 1.5 + random() * 3,
+        duration: 20 + random() * 24,
+        delay: random() * 8,
+      }));
+    },
+    []
+  );
 
   return (
     <>
@@ -62,85 +117,47 @@ function IntroParticles() {
 }
 
 // =====================================================================
-// TIMING CONSTANTS
+// WAX SEAL BUTTON — con dấu TH (mở ra mượt mà)
 // =====================================================================
-const TIMING = {
-  doorOpenDuration: 3.6,
-  doorOpenDelay: 0.6,
-  totalExit: 4.5,
-};
-
-const easeSmooth = [0.4, 0, 0.2, 1];
-
-// =====================================================================
-// DOOR ANIMATIONS
-// =====================================================================
-const doorLeftVariants = {
-  initial: { x: "0%", rotate: 0 },
-  exit: {
-    x: "-110%",
-    rotate: -3,
-    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
-  },
-};
-
-const doorRightVariants = {
-  initial: { x: "0%", rotate: 0 },
-  exit: {
-    x: "110%",
-    rotate: 3,
-    transition: { duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, ease: easeSmooth },
-  },
-};
-
-// Ambient glow ring around seal
-// Pulsing outer ring — báo hiệu có thể nhấn
-const outerRingVariants = {
-  animate: {
-    scale: [1, 1.15, 1],
-    opacity: [0.15, 0.3, 0.15],
-  },
-  transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
-};
-
-const sealGlowVariants = {
-  animate: {
-    scale: [1, 1.08, 1],
-    opacity: [0.5, 0.8, 0.5],
-  },
-  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-};
-
-// Bounce nhẹ cho icon mũi tên
-const arrowBounceVariants = {
-  animate: {
-    y: [0, 3, 0],
-  },
-  transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
-};
-
-// =====================================================================
-// WAX SEAL BUTTON
-// =====================================================================
-function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boolean }) {
+function WaxSealButton({
+  onClick,
+  visible,
+  interactive,
+}: {
+  onClick: () => void;
+  visible: boolean;
+  interactive: boolean;
+}) {
   return (
     <motion.button
       onClick={onClick}
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-      whileHover={visible ? { scale: 1.08, y: -3 } : {}}
-      whileTap={visible ? { scale: 0.95, y: 2 } : {}}
-      transition={{ duration: 0.8, ease }}
+      initial={{ opacity: 0 }}
+      animate={visible ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.5, ease }}
       className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full sm:h-36 sm:w-36"
       aria-label="Mở thiệp mời"
     >
-      {/* Outer pulsing ring — báo hiệu có thể nhấn */}
+      {/* Vòng sóng nhựa — lan ra như sáp nóng chảy */}
+      <motion.span
+        className="absolute inset-0 rounded-full"
+        style={{ border: "1px solid rgba(196, 164, 132, 0.5)" }}
+        initial={{ opacity: 0, scale: 0.65 }}
+        animate={
+          visible
+            ? {
+                opacity: [0, 0.6, 0],
+                scale: [0.65, 1.35, 1.7],
+                transition: { duration: 2.4, ease: easeSmooth },
+              }
+            : { opacity: 0, scale: 0.65 }
+        }
+      />
+
+      {/* Outer pulsing ring */}
       <motion.span
         variants={outerRingVariants}
         className="absolute inset-0 rounded-full"
-        style={{
-          border: "1px solid rgba(196, 164, 132, 0.4)",
-        }}
+        style={{ border: "1px solid rgba(196, 164, 132, 0.4)" }}
       />
 
       {/* Glow ring */}
@@ -153,16 +170,22 @@ function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boo
         }}
       />
 
-      {/* Wax seal body — layered gradients for engraved depth */}
-      <div
+      {/* Thân con dấu — bung ra + xoay nhẹ như được ấn */}
+      <motion.div
         className="relative flex h-full w-full items-center justify-center rounded-full"
         style={{
           background: "linear-gradient(145deg, #8b6f47 0%, #6b5235 20%, #4a3525 50%, #3d2a1c 80%, #2d1f15 100%)",
           boxShadow:
             "inset 0 2px 4px rgba(255, 240, 220, 0.12), inset 0 -2px 4px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3)",
         }}
+        initial={{ scale: 0.55, rotate: -14 }}
+        animate={
+          visible
+            ? { scale: 1, rotate: 0, transition: { duration: 1.1, ease } }
+            : { scale: 0.55, rotate: -14 }
+        }
       >
-        {/* Inner engraved ring */}
+        {/* Vòng khắc trong */}
         <div
           className="absolute rounded-full"
           style={{
@@ -173,7 +196,7 @@ function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boo
           }}
         />
 
-        {/* Second inner ring (groove) */}
+        {/* Vòng khắc trong 2 */}
         <div
           className="absolute rounded-full"
           style={{
@@ -183,7 +206,19 @@ function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boo
         />
 
         {/* Monogram: T & H */}
-        <div className="relative z-10 flex flex-col items-center">
+        <motion.div
+          className="relative z-10 flex flex-col items-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={
+            visible
+              ? {
+                  opacity: 1,
+                  scale: 1,
+                  transition: { duration: 0.7, delay: 0.35, ease },
+                }
+              : { opacity: 0, scale: 0.8 }
+          }
+        >
           <span
             className="font-[family-name:var(--font-playfair)] text-3xl leading-none text-[#c4a484] sm:text-4xl"
             style={{
@@ -205,8 +240,8 @@ function WaxSealButton({ onClick, visible }: { onClick: () => void; visible: boo
           >
             H
           </span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </motion.button>
   );
 }
@@ -218,33 +253,179 @@ interface IntroScreenProps {
   onUnlock: () => void;
   bride: string;
   groom: string;
+  /** Tên khách mời — lấy từ query `?to=` */
+  guestTo?: string;
+  /** Người gửi lời mời — lấy từ query `?from=` */
+  guestFrom?: string;
+  /** Cách xưng với khách — lấy từ query `?rel=` (anh/chị/cô/chú/bác/em/bạn) */
+  guestRel?: string;
+  /** Cách hai vợ chồng tự xưng — lấy từ query `?we=` (chúng mình/chúng em/...) */
+  guestWe?: string;
 }
 
-export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps) {
+export default function IntroScreen({
+  onUnlock,
+  bride,
+  groom,
+  guestTo = "",
+  guestFrom = "",
+  guestRel = "",
+  guestWe = "",
+}: IntroScreenProps) {
   const [mounted, setMounted] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const [burst, setBurst] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 100);
+    const timer = setTimeout(() => setMounted(true), 80);
     return () => clearTimeout(timer);
   }, []);
+
+  // Chuông kêu đúng khoảnh khắc tên hiện xong
+  useEffect(() => {
+    if (!mounted) return;
+    const timer = setTimeout(() => playChime(), 2200);
+    return () => clearTimeout(timer);
+  }, [mounted]);
 
   const handleClick = () => {
     if (exiting) return;
     setExiting(true);
+    setBurst(true);
+
+    // Haptics — rung nhẹ kiểu "chạm sáp"
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try {
+        navigator.vibrate?.([0, 18, 45, 22]);
+      } catch {
+        /* không hỗ trợ rung */
+      }
+    }
+
+    // Âm thanh: ấn sáp ngay, tiếng giấy sau 0.35s
+    playWaxThunk();
+    setTimeout(() => playPaperRustle(1.6), 320);
+
     setTimeout(() => onUnlock(), TIMING.totalExit * 1000);
   };
 
+  const groomChars = useMemo(() => groom.split(""), [groom]);
+  const brideChars = useMemo(() => bride.split(""), [bride]);
+  const interactive = mounted && !exiting;
+
+  // Cách hai vợ chồng tự xưng — suy ra từ danh xưng nếu không chỉ định
+  const weWord = useMemo(
+    () => (guestWe.trim() || deriveWeWord(guestRel)).toLowerCase(),
+    [guestWe, guestRel]
+  );
+
+  // Nhịp cho ký tự "&" nằm sau tên chú rể
+  const ampDelay = T.names + groomChars.length * charStag() + 0.12;
+  const brideStart = ampDelay + 0.28;
+
   return (
     <div className="intro-bg relative h-screen w-full overflow-hidden">
+      {/* ============ BACKDROP espresso ============ */}
+      <motion.div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 42%, rgba(92, 67, 44, 0.5) 0%, rgba(45, 31, 21, 0.92) 55%, rgba(22, 14, 9, 1) 100%)",
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: mounted ? 1 : 0 }}
+        transition={{ duration: 1.3, ease: easeSmooth }}
+      />
+
+      {/* Vignette */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 38%, rgba(14, 9, 6, 0.78) 100%)",
+        }}
+      />
 
       {/* Ambient particles */}
       <IntroParticles />
 
+      {/* ============ NẾP GẤP THIỆP CƯỚI ============ */}
+      <motion.div
+        className="pointer-events-none absolute top-0 left-1/2 z-[5] w-px -translate-x-1/2"
+        style={{
+          height: "100%",
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(196, 164, 132, 0.1) 14%, rgba(196, 164, 132, 0.5) 50%, rgba(196, 164, 132, 0.1) 86%, transparent 100%)",
+          transformOrigin: "top center",
+        }}
+        initial={{ scaleY: 0, opacity: 0 }}
+        animate={
+          mounted
+            ? {
+                scaleY: 1,
+                opacity: 1,
+                transition: { duration: 1.7, delay: T.fold, ease: easeSmooth },
+              }
+            : { scaleY: 0, opacity: 0 }
+        }
+      />
+
+      {/* Ánh sáng lướt dọc theo nếp gấp */}
+      <motion.div
+        className="pointer-events-none absolute left-1/2 top-0 z-[5] h-28 w-px -translate-x-1/2"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(255, 232, 196, 0.95) 50%, transparent 100%)",
+          boxShadow: "0 0 14px 3px rgba(255, 226, 180, 0.35)",
+        }}
+        initial={{ y: "-12%", opacity: 0 }}
+        animate={
+          mounted
+            ? {
+                y: ["-12%", "108%"],
+                opacity: [0, 1, 0],
+                transition: {
+                  duration: 2,
+                  delay: T.fold + 1.2,
+                  repeat: prefersReducedMotion ? 0 : Infinity,
+                  repeatDelay: 4,
+                  ease: "easeInOut",
+                },
+              }
+            : { opacity: 0 }
+        }
+      />
+
+      {/* Quầng bronze ở giữa */}
+      <motion.div
+        className="pointer-events-none absolute left-1/2 top-1/2 z-[6] h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(196, 164, 132, 0.13) 0%, rgba(139, 111, 71, 0.06) 45%, transparent 72%)",
+          filter: "blur(10px)",
+        }}
+        initial={{ opacity: 0, scale: 0.75 }}
+        animate={
+          mounted
+            ? {
+                opacity: 1,
+                scale: 1,
+                transition: { duration: 2.4, delay: T.glow, ease: easeSmooth },
+              }
+            : { opacity: 0, scale: 0.75 }
+        }
+      />
+
+      {/* ============ PETAL / GOLD DUST BURST ============ */}
+      <PetalBurst active={burst} />
+
       {/* Background hint — nội dung bên trong lộ ra khi cửa bay */}
       <motion.div
         className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(ellipse at center, #fdfbf7 0%, #f5ebd9 50%, #e8d4b8 100%)" }}
+        style={{
+          background: "radial-gradient(ellipse at center, #fdfbf7 0%, #f5ebd9 50%, #e8d4b8 100%)",
+        }}
         initial={{ opacity: 0 }}
         animate={exiting ? { opacity: 1 } : { opacity: 0 }}
         transition={{ duration: 1.5, delay: TIMING.doorOpenDelay + 0.7, ease: easeSmooth }}
@@ -254,16 +435,26 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
       <motion.div
         className="pointer-events-none absolute top-0 left-1/2 z-[5] h-full w-1/2 -translate-x-1/2"
         style={{
-          background: "linear-gradient(90deg, transparent 0%, rgba(255, 248, 220, 0.25) 50%, transparent 100%)",
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(255, 248, 220, 0.25) 50%, transparent 100%)",
           filter: "blur(30px)",
         }}
         initial={{ opacity: 0, scaleX: 0 }}
-        animate={exiting ? { opacity: [0, 1, 0.5], scaleX: [0, 1.5, 3] } : { opacity: 0, scaleX: 0 }}
-        transition={{ duration: TIMING.doorOpenDuration, delay: TIMING.doorOpenDelay, times: [0, 0.4, 1], ease: easeSmooth }}
+        animate={
+          exiting
+            ? { opacity: [0, 1, 0.5], scaleX: [0, 1.5, 3] }
+            : { opacity: 0, scaleX: 0 }
+        }
+        transition={{
+          duration: TIMING.doorOpenDuration,
+          delay: TIMING.doorOpenDelay,
+          times: [0, 0.4, 1],
+          ease: easeSmooth,
+        }}
       />
 
       {/* ====== TWO PAPER DOORS ====== */}
-      <div className="absolute inset-0" style={{ zIndex: 10, pointerEvents: "none" }}>
+      <div className="absolute inset-0" style={{ zIndex: 20, pointerEvents: "none" }}>
         <motion.div
           className="gpu absolute top-0 left-0 h-full w-1/2"
           variants={doorLeftVariants}
@@ -290,83 +481,199 @@ export default function IntroScreen({ onUnlock, bride, groom }: IntroScreenProps
         />
       </div>
 
-      {/* Center seam line */}
-      <motion.div
-        className="absolute top-0 left-1/2 z-20 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#c4a484]/40 to-transparent"
-        animate={{ opacity: exiting ? 0 : mounted ? 0.6 : 0 }}
-        transition={{ duration: 0.6 }}
-      />
-
       {/* ====== CENTER CONTENT ====== */}
       <motion.div
         className="absolute inset-0 z-30 flex flex-col items-center justify-center px-8 text-center"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={mounted && !exiting ? { opacity: 1, scale: 1 } : { opacity: 0 }}
-        transition={{ duration: 1.2, ease: easeSmooth }}
+        initial={{ opacity: 0 }}
+        animate={mounted && !exiting ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: easeSmooth }}
         style={{ pointerEvents: exiting ? "none" : "auto" }}
       >
-        {/* Eyebrow */}
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={mounted ? { opacity: 0.7, y: 0 } : { opacity: 0 }}
-          transition={{ delay: T_EYEBROW, duration: 0.8, ease }}
-          className="mb-6 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:mb-8 sm:text-xs"
-        >
-          {INTRO_EYEBROW}
-        </motion.p>
+        {/* ---------- LỜI MỜI ----------
+            Có tên:  "Kính mời Anh <Tên> tới dự hôn lễ của chúng em"
+            Không tên: "We are getting married"
+        */}
+        {guestTo ? (
+          <motion.p
+            className="mb-6 max-w-md font-[family-name:var(--font-playfair)] text-lg italic leading-relaxed text-[#fdfbf7]/85 sm:mb-8 sm:text-2xl"
+            initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
+            animate={
+              mounted
+                ? {
+                    opacity: 1,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: { duration: 1.1, delay: T.eyebrow, ease },
+                  }
+                : { opacity: 0, y: 12, filter: "blur(6px)" }
+            }
+          >
+            {INVITE_PREFIX} {honorificPrefix(guestRel) && (
+              <span className="not-italic text-[#fdfbf7]/85">{honorificPrefix(guestRel)}</span>
+            )}
+            <span className="not-italic text-[#c4a484]">{guestTo}</span> {INVITE_SUFFIX}{" "}
+            <span className="not-italic text-[#fdfbf7]/85">{weWord}</span>
+          </motion.p>
+        ) : (
+          <motion.p
+            className="mb-6 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484]/70 sm:mb-8 sm:text-xs"
+            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+            animate={
+              mounted
+                ? {
+                    opacity: 0.7,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: { duration: 1, delay: T.eyebrow, ease },
+                  }
+                : { opacity: 0, y: 10, filter: "blur(4px)" }
+            }
+          >
+            {INTRO_EYEBROW}
+          </motion.p>
+        )}
 
-        {/* Names */}
+        {/* ---------- NAMES ---------- */}
         <motion.div
           className="mb-8 flex flex-col items-center gap-2 sm:mb-12"
-          initial={{ opacity: 0, y: 12 }}
-          animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0 }}
-          transition={{ delay: T_NAMES, duration: 0.6, ease }}
+          initial={{ opacity: 0 }}
+          animate={mounted ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.3, delay: T.names }}
         >
-          <span
-            className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
-            style={{ letterSpacing: "-0.01em" }}
-          >
-            {groom}
+          <span className="flex flex-wrap items-center justify-center">
+            {groomChars.map((char, i) => (
+              <motion.span
+                key={`g-${i}`}
+                className="inline-block font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
+                style={{ letterSpacing: "-0.01em" }}
+                initial={{ opacity: 0, y: 26, filter: "blur(6px)" }}
+                animate={
+                  mounted
+                    ? {
+                        opacity: 1,
+                        y: 0,
+                        filter: "blur(0px)",
+                        transition: {
+                          duration: charDur() * 7,
+                          delay: T.names + i * charStag(),
+                          ease,
+                        },
+                      }
+                    : { opacity: 0, y: 26, filter: "blur(6px)" }
+                }
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            ))}
           </span>
-          <span className="font-[family-name:var(--font-playfair)] text-2xl italic text-[#c4a484] sm:text-3xl">
+
+          <motion.span
+            className="font-[family-name:var(--font-playfair)] text-2xl italic text-[#c4a484] sm:text-3xl"
+            initial={{ opacity: 0, scale: 0.5, filter: "blur(3px)" }}
+            animate={
+              mounted
+                ? {
+                    opacity: 1,
+                    scale: 1,
+                    filter: "blur(0px)",
+                    transition: { duration: 0.7, delay: ampDelay, ease },
+                  }
+                : { opacity: 0, scale: 0.5, filter: "blur(3px)" }
+            }
+          >
             &
-          </span>
-          <span
-            className="font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
-            style={{ letterSpacing: "-0.01em" }}
-          >
-            {bride}
+          </motion.span>
+
+          <span className="flex flex-wrap items-center justify-center">
+            {brideChars.map((char, i) => (
+              <motion.span
+                key={`b-${i}`}
+                className="inline-block font-[family-name:var(--font-playfair)] text-4xl font-medium leading-tight text-[#fdfbf7] sm:text-5xl md:text-6xl"
+                style={{ letterSpacing: "-0.01em" }}
+                initial={{ opacity: 0, y: 26, filter: "blur(6px)" }}
+                animate={
+                  mounted
+                    ? {
+                        opacity: 1,
+                        y: 0,
+                        filter: "blur(0px)",
+                        transition: {
+                          duration: charDur() * 7,
+                          delay: brideStart + i * charStag(),
+                          ease,
+                        },
+                      }
+                    : { opacity: 0, y: 26, filter: "blur(6px)" }
+                }
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            ))}
           </span>
         </motion.div>
 
-        {/* Wax Seal Button */}
+        {/* ---------- WAX SEAL ---------- */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={mounted ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
-          transition={{ delay: T_SEAL, duration: 0.6, ease }}
+          initial={{ opacity: 0 }}
+          animate={mounted ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.3, delay: T.seal }}
         >
-          <WaxSealButton onClick={handleClick} visible={mounted && !exiting} />
+          <WaxSealButton
+            onClick={handleClick}
+            visible={mounted && !exiting}
+            interactive={interactive}
+          />
 
-          {/* Hint text — "chạm để mở" */}
+          {/* Hint — "chạm để mở" */}
           <motion.p
-            initial={{ opacity: 0, y: 5 }}
-            animate={mounted ? { opacity: 0.4, y: 0 } : { opacity: 0, y: 5 }}
-            transition={{ delay: T_SEAL + 0.4, duration: 0.5, ease }}
-            className="mt-4 text-center font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/50 sm:text-[11px]"
+            initial={{ opacity: 0, y: 6, filter: "blur(3px)" }}
+            animate={
+              mounted
+                ? {
+                    opacity: 0.45,
+                    y: 0,
+                    filter: "blur(0px)",
+                    transition: { duration: 0.9, delay: T.hint, ease },
+                  }
+                : { opacity: 0, y: 6, filter: "blur(3px)" }
+            }
+            className="mt-4 text-center font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/60 sm:text-[11px]"
           >
             Chạm để mở
           </motion.p>
         </motion.div>
 
-        {/* Hint text below seal */}
+        {/* ---------- DATE ---------- */}
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={mounted ? { opacity: 0.35 } : { opacity: 0 }}
-          transition={{ delay: T_DATE, duration: 0.6, ease }}
+          initial={{ opacity: 0, y: 4 }}
+          animate={
+            mounted
+              ? { opacity: 0.35, y: 0, transition: { duration: 1, delay: T.date, ease } }
+              : { opacity: 0, y: 4 }
+          }
           className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
         >
           27 · 12 · 2026
         </motion.p>
+
+        {/* ---------- NGƯỜI GỬI ---------- */}
+        {guestFrom && (
+          <motion.p
+            initial={{ opacity: 0, y: 4 }}
+            animate={
+              mounted
+                ? {
+                    opacity: 0.45,
+                    y: 0,
+                    transition: { duration: 1, delay: T.date + 0.15, ease },
+                  }
+                : { opacity: 0, y: 4 }
+            }
+            className="absolute bottom-[4.2rem] font-sans text-[9px] uppercase tracking-[0.3em] text-[#c4a484]/70 sm:bottom-[4.5rem] sm:text-[10px]"
+          >
+            {guestFrom}
+          </motion.p>
+        )}
       </motion.div>
     </div>
   );
