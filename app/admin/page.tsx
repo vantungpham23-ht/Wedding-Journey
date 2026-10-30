@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ease } from "@/components/animation";
 import { buildInviteLink, buildInviteText, buildInviteSentence, deriveWeWord, honorificPrefix, RELATIONS, WE_WORDS } from "@/lib/invite";
 import { WEDDING_DATE_DISPLAY, WEDDING_DATE_LUNAR_TEXT } from "@/lib/weddingDate";
-import { normalizeGuest, type Guest } from "@/lib/guests";
+import { newGuestId, normalizeGuest, normalizeGuestList, type Guest } from "@/lib/guests";
 
 /**
  * ADMIN — Quản lý danh sách khách mời
@@ -31,6 +31,29 @@ type AuthState = "checking" | "unauthenticated" | "authenticated";
 /** Trạng thái lưu dữ liệu */
 type SaveState = "idle" | "saving" | "saved" | "error";
 
+/** Key lưu danh sách khách trong localStorage (chế độ dự phòng) */
+const LOCAL_KEY = "wedding:guests";
+
+/** Đọc danh sách khách từ localStorage */
+function readLocalGuests(): Guest[] {
+  try {
+    const raw = window.localStorage.getItem(LOCAL_KEY);
+    if (!raw) return [];
+    return normalizeGuestList(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+/** Ghi danh sách khách vào localStorage */
+function writeLocalGuests(guests: Guest[]): void {
+  try {
+    window.localStorage.setItem(LOCAL_KEY, JSON.stringify(guests));
+  } catch {
+    /* hết quota hoặc bị chặn → bỏ qua */
+  }
+}
+
 export default function AdminPage() {
   const [auth, setAuth] = useState<AuthState>("checking");
   const [password, setPassword] = useState("");
@@ -39,6 +62,12 @@ export default function AdminPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  /**
+   * `true` = đang lưu trong localStorage (server chưa cấu hình KV).
+   * `false` = đang lưu trên Cloudflare KV.
+   */
+  const [localMode, setLocalMode] = useState(false);
 
   /**
    * Bản nháp đang sửa của từng khách.
@@ -113,21 +142,37 @@ export default function AdminPage() {
 
   // ------------------------------------------------------------------
   // Load danh sách
+  //
+  // Có 2 chế độ lưu trữ:
+  //   • "server" — Cloudflare KV (nhiều thiết bị, không mất khi xoá cache)
+  //   • "local"  — localStorage của trình duyệt (dự phòng khi server
+  //                chưa cấu hình KV / ADMIN_PASSWORD)
+  //
+  // Khi API trả lỗi cấu hình (500) hoặc không gọi được server (0),
+  // tự động chuyển sang chế độ "local" để trang /admin vẫn dùng được.
   // ------------------------------------------------------------------
   const loadGuests = useCallback(async () => {
     const res = await api<{ ok: boolean; guests?: Guest[] }>("/api/guests");
     if (!alive.current) return;
 
     if (res.status === 401) {
+      // Server đã cấu hình đúng và yêu cầu đăng nhập → hiện màn login.
+      setLocalMode(false);
       setAuth("unauthenticated");
       setLoaded(true);
       return;
     }
+
     if (!res.ok) {
+      // Server chưa sẵn sàng → chuyển sang lưu local.
+      setLocalMode(true);
+      setGuests(readLocalGuests());
+      setAuth("authenticated");
       setLoaded(true);
       return;
     }
 
+    setLocalMode(false);
     setGuests(Array.isArray(res.data.guests) ? res.data.guests : []);
     setAuth("authenticated");
     setLoaded(true);
@@ -155,6 +200,14 @@ export default function AdminPage() {
       setPassword("");
       setAuth("authenticated");
       await loadGuests();
+    } else if (res.status >= 500 || res.status === 0) {
+      // Server chưa cấu hình ADMIN_PASSWORD / ADMIN_SECRET
+      // → chuyển sang chế độ lưu cục bộ thay vì chặn người dùng.
+      setLocalMode(true);
+      setGuests(readLocalGuests());
+      setPassword("");
+      setAuth("authenticated");
+      setAuthError("");
     } else {
       setAuthError(
         res.data?.error ??
@@ -166,6 +219,10 @@ export default function AdminPage() {
   };
 
   const logout = async () => {
+    // ── Chế độ local: không có phiên server, dữ liệu vẫn nằm trong
+    //    localStorage của trình duyệt này → giữ nguyên.
+    if (localMode) return;
+
     await api("/api/auth", { method: "DELETE" });
     setGuests([]);
     setAuth("unauthenticated");
@@ -191,6 +248,30 @@ export default function AdminPage() {
     if (!n) return;
 
     setSaveState("saving");
+
+    // ── Chế độ local (server chưa cấu hình KV) ──
+    if (localMode) {
+      const guest: Guest = {
+        id: newGuestId(),
+        name: n,
+        note: note.trim(),
+        table: table.trim(),
+        rel: rel.trim(),
+        we: we.trim(),
+        createdAt: Date.now(),
+      };
+      const next = [guest, ...guests];
+      setGuests(next);
+      writeLocalGuests(next);
+      setName("");
+      setNote("");
+      setTable("");
+      setRel("");
+      setWe("");
+      flashSaved();
+      return;
+    }
+
     const res = await api<{ ok: boolean; guests?: Guest[] }>("/api/guests", {
       method: "POST",
       body: JSON.stringify({ name: n, note, table, rel, we }),
@@ -213,6 +294,17 @@ export default function AdminPage() {
   /** Sửa khách — ghi xong mới cập nhật UI (tránh ghi đè khi gõ nhanh) */
   const updateGuest = useCallback(
     async (id: string, patch: Partial<Guest>) => {
+      // ── Chế độ local ──
+      if (localMode) {
+        setGuests((prev) => {
+          const next = prev.map((g) => (g.id === id ? { ...g, ...patch } : g));
+          writeLocalGuests(next);
+          return next;
+        });
+        flashSaved();
+        return;
+      }
+
       setSaveState("saving");
       const res = await api<{ ok: boolean; guest?: Guest }>(
         `/api/guests?id=${encodeURIComponent(id)}`,
@@ -228,7 +320,7 @@ export default function AdminPage() {
         setSaveState("error");
       }
     },
-    [api, flashSaved]
+    [api, flashSaved, localMode]
   );
 
   /**
@@ -296,6 +388,16 @@ export default function AdminPage() {
   const removeGuest = useCallback(
     async (id: string) => {
       const snapshot = guests;
+
+      // ── Chế độ local ──
+      if (localMode) {
+        const next = guests.filter((g) => g.id !== id);
+        setGuests(next);
+        writeLocalGuests(next);
+        flashSaved();
+        return;
+      }
+
       // Cập nhật UI ngay cho mượt (optimistic), rollback nếu API lỗi
       setGuests((prev) => prev.filter((g) => g.id !== id));
 
@@ -312,11 +414,20 @@ export default function AdminPage() {
         flashSaved();
       }
     },
-    [api, flashSaved, guests]
+    [api, flashSaved, guests, localMode]
   );
 
   const removeAll = async () => {
     if (!confirm("Xoá toàn bộ danh sách?")) return;
+
+    // ── Chế độ local ──
+    if (localMode) {
+      setGuests([]);
+      writeLocalGuests([]);
+      flashSaved();
+      return;
+    }
+
     const snapshot = guests;
     setGuests([]);
     const res = await api<{ ok: boolean }>("/api/guests", { method: "DELETE" });
@@ -454,6 +565,17 @@ export default function AdminPage() {
       }
 
       setSaveState("saving");
+
+      // ── Chế độ local ──
+      if (localMode) {
+        const localItems = items.map((g) => ({ ...g, id: newGuestId() }));
+        const next = [...localItems, ...guests];
+        setGuests(next);
+        writeLocalGuests(next);
+        flashSaved();
+        return;
+      }
+
       const res = await api<{ ok: boolean; guests?: Guest[] }>("/api/guests", {
         method: "POST",
         body: JSON.stringify(items),
@@ -572,12 +694,23 @@ export default function AdminPage() {
               Quản lý khách mời
             </h1>
             <p className="mt-2 max-w-lg text-sm text-[#fdfbf7]/55">
-              Mỗi khách nhận một link thiệp riêng có tên của họ. Dữ liệu lưu
-              trên máy chủ — dùng được trên mọi thiết bị.
+              Mỗi khách nhận một link thiệp riêng có tên của họ.{" "}
+              {localMode
+                ? "Đang lưu tạm trên trình duyệt này — server chưa cấu hình KV."
+                : "Dữ liệu lưu trên máy chủ — dùng được trên mọi thiết bị."}
             </p>
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            {/* Chế độ lưu */}
+            {localMode && (
+              <span
+                title="Server chưa cấu hình KV binding / ADMIN_PASSWORD. Dữ liệu đang lưu trong localStorage của trình duyệt này."
+                className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-2 font-sans text-[9px] uppercase tracking-[0.2em] text-amber-200/80"
+              >
+                Chế độ cục bộ
+              </span>
+            )}
             {/* Trạng thái lưu */}
             <span
               className={`rounded-full border px-3 py-2 font-sans text-[9px] uppercase tracking-[0.2em] transition-colors ${
@@ -604,12 +737,14 @@ export default function AdminPage() {
             >
               ← Về trang thiệp
             </a>
-            <button
-              onClick={logout}
-              className="rounded-full border border-[#c4a484]/20 px-4 py-2.5 font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/40 transition-colors hover:border-[#c4a484]/50 hover:text-[#c4a484]"
-            >
-              Thoát
-            </button>
+            {!localMode && (
+              <button
+                onClick={logout}
+                className="rounded-full border border-[#c4a484]/20 px-4 py-2.5 font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/40 transition-colors hover:border-[#c4a484]/50 hover:text-[#c4a484]"
+              >
+                Thoát
+              </button>
+            )}
           </div>
         </motion.header>
 
