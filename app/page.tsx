@@ -16,6 +16,7 @@ type Stage = "intro" | "revealing" | "revealed";
 
 interface Guest {
   to: string;
+  to2: string;
   from: string;
   rel: string;
   we: string;
@@ -27,6 +28,7 @@ export default function Page() {
   const [activeSection, setActiveSection] = useState(0);
   const [guest, setGuest] = useState<Guest>({
     to: "",
+    to2: "",
     from: "",
     rel: "",
     we: "",
@@ -35,14 +37,15 @@ export default function Page() {
   const sectionsRef = useRef<HTMLDivElement>(null);
 
   // ---- Đọc thông tin cá nhân hóa từ query string ----
-  // ?to=Tên khách &from=Người gửi &rel=anh &we=chúng em
+  // ?to=Tên khách &to2=Tên người 2 &from=Người gửi &rel=anh &we=chúng em
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const to = (params.get("to") ?? "").trim();
+    const to2 = (params.get("to2") ?? "").trim();
     const from = (params.get("from") ?? "").trim();
     const rel = (params.get("rel") ?? "").trim();
     const we = (params.get("we") ?? "").trim();
-    if (to || from || rel || we) setGuest({ to, from, rel, we });
+    if (to || to2 || from || rel || we) setGuest({ to, to2, from, rel, we });
     if (params.get("admin") === "1") setShowAdminLink(true);
   }, []);
   // ---- Mở khoá AudioContext khi user tương tác lần đầu ----
@@ -115,6 +118,7 @@ export default function Page() {
               bride="Thuý Hằng"
               groom="Tùng Phạm"
               guestTo={guest.to}
+              guestTo2={guest.to2}
               guestFrom={guest.from}
               guestRel={guest.rel}
               guestWe={guest.we}
@@ -161,6 +165,7 @@ export default function Page() {
                 groom="Tùng Phạm"
                 bride="Thuý Hằng"
                 guestTo={guest.to}
+                guestTo2={guest.to2}
                 guestRel={guest.rel}
                 guestWe={guest.we}
                 active={activeSection === 0}
@@ -174,6 +179,8 @@ export default function Page() {
               groom="Tùng Phạm"
               bride="Thuý Hằng"
               activeSection={activeSection}
+              guestRel={guest.rel}
+              guestWe={guest.we}
             />
           </motion.div>
         )}

@@ -8,6 +8,8 @@
 export interface Guest {
   id: string;
   name: string;
+  /** Tên người thứ hai — dùng khi mời cặp anh chị */
+  name2?: string;
   note: string;
   table?: string;
   /** Cách xưng với khách: anh/chị/cô/chú/bác/em/bạn */
@@ -55,6 +57,7 @@ export function normalizeGuest(raw: unknown): Guest | null {
   return {
     id,
     name,
+    name2: String(g.name2 ?? "").trim().slice(0, MAX_NAME_LEN),
     note: String(g.note ?? "").trim().slice(0, MAX_NOTE_LEN),
     table: String(g.table ?? "").trim().slice(0, MAX_TABLE_LEN),
     rel: String(g.rel ?? "").trim().slice(0, 20),

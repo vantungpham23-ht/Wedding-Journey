@@ -6,7 +6,7 @@ import { charDur, charStag, ease } from "./animation";
 import PetalBurst from "./PetalBurst";
 import { playChime, playPaperRustle, playWaxThunk } from "./soundscape";
 import { createRandom, PARTICLE_SEED } from "@/lib/random";
-import { deriveWeWord, honorificPrefix } from "@/lib/invite";
+import { deriveWeWord, nameSegments } from "@/lib/invite";
 import {
   WEDDING_DATE_DISPLAY,
   WEDDING_DATE_LUNAR_TEXT,
@@ -259,6 +259,8 @@ interface IntroScreenProps {
   groom: string;
   /** Tên khách mời — lấy từ query `?to=` */
   guestTo?: string;
+  /** Tên người thứ hai — lấy từ query `?to2=` (mời cặp anh chị) */
+  guestTo2?: string;
   /** Người gửi lời mời — lấy từ query `?from=` */
   guestFrom?: string;
   /** Cách xưng với khách — lấy từ query `?rel=` (anh/chị/cô/chú/bác/em/bạn) */
@@ -272,6 +274,7 @@ export default function IntroScreen({
   bride,
   groom,
   guestTo = "",
+  guestTo2 = "",
   guestFrom = "",
   guestRel = "",
   guestWe = "",
@@ -495,9 +498,10 @@ export default function IntroScreen({
       >
         {/* ---------- LỜI MỜI ----------
             Có tên:  "Kính mời Anh <Tên> tới dự hôn lễ của chúng em"
+            Cặp:    "Kính mời Anh <Tên 1> & Chị <Tên 2> tới dự hôn lễ của chúng em"
             Không tên: "We are getting married"
         */}
-        {guestTo ? (
+        {guestTo || guestTo2 ? (
           <motion.p
             className="mb-6 max-w-md font-[family-name:var(--font-playfair)] text-lg italic leading-relaxed text-[#fdfbf7]/85 sm:mb-8 sm:text-2xl"
             initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
@@ -512,10 +516,19 @@ export default function IntroScreen({
                 : { opacity: 0, y: 12, filter: "blur(6px)" }
             }
           >
-            {INVITE_PREFIX} {honorificPrefix(guestRel) && (
-              <span className="not-italic text-[#fdfbf7]/85">{honorificPrefix(guestRel)}</span>
-            )}
-            <span className="not-italic text-[#c4a484]">{guestTo}</span> {INVITE_SUFFIX}{" "}
+            {INVITE_PREFIX} {nameSegments(guestTo, guestTo2, guestRel).map((seg, i) => (
+              <span
+                key={i}
+                className={
+                  seg.kind === "name"
+                    ? "not-italic text-[#c4a484]"
+                    : "not-italic text-[#fdfbf7]/85"
+                }
+              >
+                {seg.text}
+              </span>
+            ))}{" "}
+            {INVITE_SUFFIX}{" "}
             <span className="not-italic text-[#fdfbf7]/85">{weWord}</span>
           </motion.p>
         ) : (

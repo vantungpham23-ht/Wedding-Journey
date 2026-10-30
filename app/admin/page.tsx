@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ease } from "@/components/animation";
-import { buildInviteLink, buildInviteText, buildInviteSentence, deriveWeWord, honorificPrefix, RELATIONS, WE_WORDS } from "@/lib/invite";
+import { buildInviteLink, buildInviteText, buildInviteSentence, deriveWeWord, COUPLE_REL, RELATIONS, WE_WORDS } from "@/lib/invite";
 import { WEDDING_DATE_DISPLAY, WEDDING_DATE_LUNAR_TEXT } from "@/lib/weddingDate";
 import { newGuestId, normalizeGuest, normalizeGuestList, type Guest } from "@/lib/guests";
 
@@ -81,6 +81,7 @@ export default function AdminPage() {
   const [drafts, setDrafts] = useState<Record<string, Partial<Guest>>>({});
 
   const [name, setName] = useState("");
+  const [name2, setName2] = useState("");
   const [note, setNote] = useState("");
   const [table, setTable] = useState("");
   const [rel, setRel] = useState("");
@@ -254,6 +255,7 @@ export default function AdminPage() {
       const guest: Guest = {
         id: newGuestId(),
         name: n,
+        name2: name2.trim() || undefined,
         note: note.trim(),
         table: table.trim(),
         rel: rel.trim(),
@@ -264,6 +266,7 @@ export default function AdminPage() {
       setGuests(next);
       writeLocalGuests(next);
       setName("");
+      setName2("");
       setNote("");
       setTable("");
       setRel("");
@@ -274,13 +277,14 @@ export default function AdminPage() {
 
     const res = await api<{ ok: boolean; guests?: Guest[] }>("/api/guests", {
       method: "POST",
-      body: JSON.stringify({ name: n, note, table, rel, we }),
+      body: JSON.stringify({ name: n, name2, note, table, rel, we }),
     });
     if (!alive.current) return;
 
     if (res.ok && res.data.guests?.length) {
       setGuests((prev) => [...res.data.guests!, ...prev]);
       setName("");
+      setName2("");
       setNote("");
       setTable("");
       setRel("");
@@ -339,7 +343,7 @@ export default function AdminPage() {
 
       const patch: Record<string, string> = {};
       let changed = false;
-      for (const key of ["name", "note", "table", "rel", "we"] as const) {
+      for (const key of ["name", "name2", "note", "table", "rel", "we"] as const) {
         const next = draft[key];
         if (next === undefined) continue;
         if ((next ?? "") !== (current[key] ?? "")) {
@@ -377,7 +381,7 @@ export default function AdminPage() {
   const setDraft = useCallback(
     (
       id: string,
-      key: "name" | "note" | "table" | "rel" | "we",
+      key: "name" | "name2" | "note" | "table" | "rel" | "we",
       value: string
     ) => {
       setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], [key]: value } }));
@@ -446,7 +450,7 @@ export default function AdminPage() {
   const linkFor = useCallback(
     (g: Guest) =>
       buildInviteLink(
-        { name: g.name, note: g.note, rel: g.rel, we: g.we },
+        { name: g.name, name2: g.name2, note: g.note, rel: g.rel, we: g.we },
         site
       ),
     [site]
@@ -455,7 +459,7 @@ export default function AdminPage() {
   const messageFor = useCallback(
     (g: Guest) =>
       buildInviteText(
-        { name: g.name, note: g.note, rel: g.rel, we: g.we },
+        { name: g.name, name2: g.name2, note: g.note, rel: g.rel, we: g.we },
         site
       ),
     [site]
@@ -508,16 +512,17 @@ export default function AdminPage() {
 
   const exportCsv = () => {
     const rows = [
-      ["Tên", "Người gửi / Ghi chú", "Bàn", "Xưng", "Chúng tự xưng", "Lời mời", "Link thiệp"],
+      ["Tên", "Tên 2", "Người gửi / Ghi chú", "Bàn", "Xưng", "Chúng tự xưng", "Lời mời", "Link thiệp"],
       ...guests.map((g) => {
         const v = viewOf(g);
         return [
           v.name,
+          v.name2 ?? "",
           v.note,
           v.table ?? "",
           v.rel ?? "",
           v.we || deriveWeWord(v.rel),
-          buildInviteSentence(v.name, v.rel, v.we),
+          buildInviteSentence(v.name, v.rel, v.we, v.name2),
           linkFor(v),
         ];
       }),
@@ -760,9 +765,20 @@ export default function AdminPage() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tên khách (vd: Nguyễn Văn Minh)"
+              placeholder={
+                rel === COUPLE_REL ? "Tên anh (vd: Nguyễn Văn Minh)" : "Tên khách (vd: Nguyễn Văn Minh)"
+              }
               className="rounded-xl border border-[#c4a484]/25 bg-[#fdfbf7]/5 px-4 py-3 font-sans text-sm text-[#fdfbf7] outline-none transition-colors placeholder:text-[#fdfbf7]/30 focus:border-[#c4a484]/60"
             />
+            {/* Tên người thứ hai — chỉ hiện khi mời cặp anh chị */}
+            {rel === COUPLE_REL && (
+              <input
+                value={name2}
+                onChange={(e) => setName2(e.target.value)}
+                placeholder="Tên chị (vd: Nguyễn Thị Hân)"
+                className="rounded-xl border border-[#c4a484]/25 bg-[#fdfbf7]/5 px-4 py-3 font-sans text-sm text-[#fdfbf7] outline-none transition-colors placeholder:text-[#fdfbf7]/30 focus:border-[#c4a484]/60"
+              />
+            )}
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -832,7 +848,7 @@ export default function AdminPage() {
                 Xem trước
               </label>
               <p className="rounded-xl border border-[#c4a484]/15 bg-black/20 px-4 py-3 font-[family-name:var(--font-playfair)] text-sm italic leading-snug text-[#fdfbf7]/75">
-                {buildInviteSentence(name || "[Tên khách]", rel, we)}
+                {buildInviteSentence(name || "[Tên khách]", rel, we, name2)}
               </p>
             </div>
           </div>
@@ -931,13 +947,24 @@ export default function AdminPage() {
                       onBlur={() => commitDraft(g.id)}
                       className="mt-1 w-full bg-transparent font-sans text-xs text-[#c4a484]/80 outline-none placeholder:text-[#fdfbf7]/25"
                     />
+                    {/* Tên người thứ hai — chỉ hiện khi khách là cặp anh chị */}
+                    {(drafts[g.id]?.rel ?? g.rel) === COUPLE_REL && (
+                      <input
+                        value={drafts[g.id]?.name2 ?? g.name2 ?? ""}
+                        placeholder="Tên chị…"
+                        onChange={(e) => setDraft(g.id, "name2", e.target.value)}
+                        onBlur={() => commitDraft(g.id)}
+                        className="mt-1 w-full bg-transparent font-[family-name:var(--font-playfair)] text-base text-[#fdfbf7]/90 outline-none placeholder:text-[#fdfbf7]/25"
+                      />
+                    )}
                     {/* Preview câu mời — dùng bản nháp nếu đang sửa */}
                     {(drafts[g.id]?.name ?? g.name).trim() && (
                       <p className="mt-1.5 truncate font-[family-name:var(--font-playfair)] text-[11px] italic text-[#fdfbf7]/40">
                         {buildInviteSentence(
                           drafts[g.id]?.name ?? g.name,
                           drafts[g.id]?.rel ?? g.rel,
-                          drafts[g.id]?.we ?? g.we
+                          drafts[g.id]?.we ?? g.we,
+                          drafts[g.id]?.name2 ?? g.name2
                         )}
                       </p>
                     )}
@@ -1063,6 +1090,11 @@ export default function AdminPage() {
               <b className="text-[#c4a484]">Chúng tự xưng</b> bằng tay.
             </li>
             <li>
+              Mời <b className="text-[#c4a484]">cặp anh chị</b> → chọn xưng{" "}
+              <i>&ldquo;Anh chị (cặp)&rdquo;</i>, sẽ hiện thêm ô nhập tên chị. Lời mời
+              thành <i>&ldquo;Kính mời Anh Phú &amp; Chị Hân tới dự hôn lễ của chúng em&rdquo;</i>.
+            </li>
+            <li>
               Bấm <b className="text-[#c4a484]">Tin nhắn</b> để copy sẵn nội dung rồi dán
               vào Zalo / Messenger.
             </li>
@@ -1087,6 +1119,13 @@ export default function AdminPage() {
             <code className="block break-all font-mono text-xs text-[#fdfbf7]/70">
               {site || "https://..."}
               /?to=Nguyễn%20Văn%20Minh&amp;from=Gia%20đình%20Nguyễn&amp;rel=anh&amp;we=chúng%20em
+            </code>
+            <p className="mb-2 mt-3 font-sans text-[10px] uppercase tracking-[0.3em] text-[#c4a484]/70">
+              Mẫu link — cặp anh chị
+            </p>
+            <code className="block break-all font-mono text-xs text-[#fdfbf7]/70">
+              {site || "https://..."}
+              /?to=Nguyễn%20Văn%20Phú&amp;to2=Nguyễn%20Thị%20Hân&amp;rel=anh%20chị
             </code>
           </div>
         </motion.section>

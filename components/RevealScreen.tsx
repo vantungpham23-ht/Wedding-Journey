@@ -6,7 +6,7 @@ import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from 
 import WeddingLogo from "./WeddingLogo";
 import ShatterLogo from "./ShatterLogo";
 import { createRandom, PARTICLE_SEED } from "@/lib/random";
-import { deriveWeWord, honorificPrefix } from "@/lib/invite";
+import { deriveWeWord, nameSegments } from "@/lib/invite";
 import { WEDDING_DATE_LUNAR_TEXT, WEDDING_DATE_FULL } from "@/lib/weddingDate";
 
 // =====================================================================
@@ -141,6 +141,8 @@ interface RevealScreenProps {
   active?: boolean;
   /** Tên khách mời — nhắc lại ở section 1 cho mạch lạc */
   guestTo?: string;
+  /** Tên người thứ hai — mời cặp anh chị */
+  guestTo2?: string;
   /** Danh xưng với khách: anh/chị/cô/chú/bác/em/bạn */
   guestRel?: string;
   /** Cách hai vợ chồng tự xưng: chúng mình/chúng em/... */
@@ -152,6 +154,7 @@ export default function RevealScreen({
   bride,
   active = true,
   guestTo = "",
+  guestTo2 = "",
   guestRel = "",
   guestWe = "",
 }: RevealScreenProps) {
@@ -429,16 +432,25 @@ export default function RevealScreen({
             {WEDDING_DATE_FULL} ({WEDDING_DATE_LUNAR_TEXT})
           </motion.p>
 
-          {/* Nhắc lại tên khách mời */}
-          {guestTo && (
+          {/* Nhắc lại lời mời — "Kính mời ... tới dự hôn lễ của ..."
+              (trước đây là "cùng chúng em" — nghe cụt, không có nghĩa) */}
+          {(guestTo || guestTo2) && (
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={active ? { opacity: 1, y: 0 } : { opacity: 0 }}
               transition={{ duration: 0.7, delay: T_LOCATION - 0.2, ease: sharedEase }}
               className="mt-5 font-[family-name:var(--font-playfair)] text-base italic text-[#4a3525]/60 sm:mt-7 sm:text-lg"
             >
-              Kính mời {honorificPrefix(guestRel)}
-              {guestTo} cùng {weWord}
+              Trân trọng mời{" "}
+              {nameSegments(guestTo, guestTo2, guestRel).map((seg, i) => (
+                <span
+                  key={i}
+                  className={seg.kind === "name" ? "not-italic" : undefined}
+                >
+                  {seg.text}
+                </span>
+              ))}{" "}
+              tới dự hôn lễ của {weWord}
             </motion.p>
           )}
 

@@ -145,6 +145,7 @@ export const onRequestPut: PagesFunction = async (ctx) => {
   const merged = normalizeGuest({
     ...current[index],
     name: payload.name ?? current[index].name,
+    name2: payload.name2 ?? current[index].name2,
     note: payload.note ?? current[index].note,
     table: payload.table ?? current[index].table,
     rel: payload.rel ?? current[index].rel,

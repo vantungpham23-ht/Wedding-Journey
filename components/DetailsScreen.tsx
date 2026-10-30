@@ -17,6 +17,10 @@ import {
   ease,
 } from "./animation";
 import {
+  deriveWeWord,
+  subjectWord,
+} from "@/lib/invite";
+import {
   WEDDING_DATE_DISPLAY,
   WEDDING_DATE_LUNAR_TEXT,
 } from "@/lib/weddingDate";
@@ -266,6 +270,10 @@ interface DetailsSectionsProps {
   groomInit: string;
   brideInit: string;
   activeSection: number;
+  /** Danh xưng với khách — để đổi "bạn" → "anh"/"chị"… */
+  guestRel?: string;
+  /** Cách hai vợ chồng tự xưng — để đổi "chúng mình" → "chúng em"… */
+  guestWe?: string;
 }
 
 export function DetailsSections({
@@ -274,6 +282,8 @@ export function DetailsSections({
   groomInit,
   brideInit,
   activeSection,
+  guestRel = "",
+  guestWe = "",
 }: DetailsSectionsProps) {
   // ============ COUNTDOWN STATE ============
   const WEDDING_DATE = new Date("2026-12-27T11:00:00+07:00");
@@ -301,17 +311,47 @@ export function DetailsSections({
   const pad = (n: number) => String(n).padStart(2, "0");
 
   // =================================================================
+  // NGÔI XƯNG ĐỘNG
+  //
+  // Mọi câu trong Section 2-4 thay "bạn" bằng subjectWord(rel) và
+  // "chúng mình" bằng weWord → lời mời đồng bộ với chức danh đã chọn.
+  //
+  // ⚠️  blockDur() phải tính trên CHÍNH CHUỖI ĐỘNG.
+  //     Nếu để nguyên chuỗi literal ("Hẹn gặp bạn" = 12 ký tự) trong
+  //     khi render ra "Hẹn gặp anh chị" (14 ký tự) → timeline lệch →
+  //     chữ chưa hiện hết đã sang block kế tiếp, hoặc chờ thừa.
+  // =================================================================
+  const sub = subjectWord(guestRel); // "bạn" / "anh" / "chị" / "anh chị"
+  const we = (guestWe.trim() || deriveWeWord(guestRel)).toLowerCase();
+
+  const S2_TITLE = `Vì ${sub} là một phần của hành trình`;
+  const S2_BODY =
+    "Có những người không xuất hiện trong mọi khoảnh khắc, nhưng luôn có một vị trí rất riêng trong câu chuyện của " +
+    we +
+    ".";
+  const S2_QUOTE = `Và ${sub} là một trong những người như thế.`;
+
+  const S3_TITLE = `Hẹn gặp ${sub}`;
+  const S3_QUOTE = `Sự hiện diện của ${sub} sẽ khiến ngày đặc biệt ấy trở nên ấm áp và ý nghĩa hơn với ${we}.`;
+  const S3_LINES = [
+    `Hẹn gặp ${sub} trong ngày ${we}`,
+    "chính thức về chung một nhà.",
+  ];
+
+  const S4_QUOTE = `Sự hiện diện của ${sub} là món quà quý giá nhất`;
+
+  // =================================================================
   // PACING — mỗi section dùng blockDuration() để tính timeline
   // Section fade-in ( CONTENT_START = 0.5s )
   // rồi mỗi block tiếp theo bắt đầu ngay khi block trước ổn định.
   // =================================================================
-  const S2a = blockDur("Vì bạn là một phần của hành trình");     // ≈ 1.04s
-  const S2b = blockDur("Có những người không xuất hiện trong mọi khoảnh khắc, nhưng luôn có một vị trí rất riêng trong câu chuyện của chúng mình."); // ≈ 6.5s
-  const S2c = blockDur("Và bạn là một trong những người như thế."); // ≈ 1.26s
+  const S2a = blockDur(S2_TITLE);     // ≈ 1.04s
+  const S2b = blockDur(S2_BODY);       // ≈ 6.5s
+  const S2c = blockDur(S2_QUOTE);      // ≈ 1.26s
 
-  const S3a = blockDur("Hẹn gặp bạn");                           // ≈ 0.47s
-  const S3b = blockDur("Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy trở nên ấm áp và ý nghĩa hơn với chúng mình."); // ≈ 2.7s
-  const S3c = blockDur("Hẹn gặp bạn trong ngày chúng mình chính thức về chung một nhà."); // ≈ 2.7s
+  const S3a = blockDur(S3_TITLE);      // ≈ 0.47s
+  const S3b = blockDur(S3_QUOTE);      // ≈ 2.7s
+  const S3c = blockDur(S3_LINES.join(" ")); // ≈ 2.7s
 
   const GAP = 0.12; // khoảng trống nhẹ giữa các block
 
@@ -355,7 +395,7 @@ export function DetailsSections({
           <div className="text-center">
             <LetterpressText
               as="h2"
-              text="Vì bạn là một phần của hành trình"
+              text={S2_TITLE}
               active={is2}
               delay={s2_t2}
               className="font-serif text-2xl font-bold leading-snug text-[#fdfbf7] sm:text-3xl md:text-4xl"
@@ -367,13 +407,13 @@ export function DetailsSections({
             <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#c4a484]/50 to-transparent" />
           </FadeSlide>
 
-          {/* Nội dung — 3 dòng */}
+          {/* Nội dung — 3 dòng (dòng cuối có "chúng X" động) */}
           <div className="max-w-md space-y-0 text-center">
             <LineReveal
               lines={[
                 "Có những người không xuất hiện trong mọi khoảnh khắc,",
                 "nhưng luôn có một vị trí rất riêng",
-                "trong câu chuyện của chúng mình.",
+                `trong câu chuyện của ${we}.`,
               ]}
               active={is2}
               delay={s2_t3}
@@ -384,7 +424,7 @@ export function DetailsSections({
           {/* Quote */}
           <FadeSlide active={is2} delay={s2_t4} duration={0.4}>
             <p className="max-w-sm font-serif text-base italic text-[#fdfbf7] sm:text-lg">
-              Và bạn là một trong những người như thế.
+              {S2_QUOTE}
             </p>
           </FadeSlide>
 
@@ -404,7 +444,7 @@ export function DetailsSections({
           {/* Eyebrow + Constellation */}
           <FadeSlide active={is3} delay={s3_t1} duration={0.3}>
             <p className="mb-3 font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
-              Gửi đến bạn
+              {`Gửi đến ${sub}`}
             </p>
           </FadeSlide>
 
@@ -417,7 +457,7 @@ export function DetailsSections({
           <div className="text-center">
             <SplitText
               as="h2"
-              text="Hẹn gặp bạn"
+              text={S3_TITLE}
               active={is3}
               delay={s3_t2}
               className="font-serif text-3xl font-bold text-[#4a3525] sm:text-4xl md:text-5xl"
@@ -453,19 +493,14 @@ export function DetailsSections({
           {/* Quote */}
           <FadeSlide active={is3} delay={s3_t3} duration={0.4}>
             <p className="max-w-md text-center font-serif text-base italic leading-relaxed text-[#4a3525]/80 sm:text-lg">
-              Sự hiện diện của bạn sẽ khiến ngày đặc biệt ấy
-              <br />
-              trở nên ấm áp và ý nghĩa hơn với chúng mình.
+              {S3_QUOTE}
             </p>
           </FadeSlide>
 
           {/* Hai dòng kết */}
           <div className="max-w-md text-center">
             <LineReveal
-              lines={[
-                "Hẹn gặp bạn trong ngày chúng mình",
-                "chính thức về chung một nhà.",
-              ]}
+              lines={S3_LINES}
               active={is3}
               delay={s3_t4}
               className="space-y-3 font-serif text-base italic text-[#c4a484] sm:text-lg"
@@ -529,7 +564,7 @@ export function DetailsSections({
               {
                 href: "https://cuoithoi.pages.dev/",
                 title: "Xác nhận tham dự",
-                desc: "Giúp chúng mình chuẩn bị chu đáo",
+                desc: `Giúp ${we} chuẩn bị chu đáo`,
                 icon: (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c4a484" strokeWidth="1.6">
                     <path d="M9 12l2 2 4-4" />
@@ -596,7 +631,7 @@ export function DetailsSections({
 
           <SplitText
             as="p"
-            text="Sự hiện diện của bạn là món quà quý giá nhất"
+            text={S4_QUOTE}
             active={is4}
             delay={2.4}
             className="text-center font-serif text-lg italic text-[#fdfbf7] sm:text-xl"
