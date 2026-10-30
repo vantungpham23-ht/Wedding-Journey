@@ -1,34 +1,42 @@
-# Cloudflare Pages — cấu hình cho `wrangler pages dev` (local)
+# Cloudflare Pages — cấu hình build
 #
-# ⚠️  CẤU HÌNH PRODUCTION KHÔNG NẰM Ở FILE NÀY.
+# ⚠️  KHÔNG khai báo KV binding ở đây.
 #
-# Với dự án Pages nối qua Git, binding KV và biến môi trường được cấu
-# hình trong Cloudflare Dashboard (Settings → Functions / Environment
-# variables). File này chỉ phục vụ việc chạy local.
+# Lý do: Pages project (tạo qua Git integration) nằm ở một Cloudflare
+# account khác với account mà `wrangler` CLI local đăng nhập. Nếu để
+# `id` của namespace thuộc account khác, bước "publish Function" sẽ
+# fail với:
+#     Error 8000022: Invalid KV namespace ID
+#
+# → Binding KV phải set trong Cloudflare Dashboard (bước bên dưới).
+#
+# ── Cấu hình trong Cloudflare Dashboard (bắt buộc) ──
+#   Pages → project "wedding-journey" → Settings → Functions
+#
+#   1. KV namespace:
+#        Variable name : GUESTS_KV
+#        KV namespace  : wedding_guests   (tạo mới nếu chưa có)
+#
+#   2. Secrets (mục "Encrypt" / "Secrets"):
+#        ADMIN_PASSWORD = <mật khẩu đăng nhập trang /admin>
+#        ADMIN_SECRET   = <chuỗi ngẫu nhiên dài ≥ 32 ký tự>
+#
+#      Sinh ADMIN_SECRET:
+#        npx wrangler pages secret put ADMIN_SECRET --project-name wedding-journey
 #
 # ── Chạy local ──
 #   npm run build
 #   npx wrangler pages dev dist
-#
-# ── Tạo KV namespace ──
-#   npx wrangler kv namespace create wedding_guests
-#   → lấy `id` trả về, điền vào `id` bên dưới
+#   (biến local đặt trong file `.dev.vars`, đã nằm trong .gitignore)
+#     ADMIN_PASSWORD="mat-khau-cua-ban"
+#     ADMIN_SECRET="chuoi-ngau-nhien-64-ky-tu"
 
 name = "wedding-journey"
 compatibility_date = "2026-01-01"
 pages_build_output_dir = "dist"
 
-# Binding KV cho môi trường local.
-# `id` lấy từ lệnh `npx wrangler kv namespace create wedding_guests`.
-[[kv_namespaces]]
-binding = "GUESTS_KV"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
-
-# ── Secrets (KHÔNG commit giá trị thật) ──
-# Đặt bằng lệnh:
-#   npx wrangler pages secret put ADMIN_PASSWORD --project-name wedding-journey
-#   npx wrangler pages secret put ADMIN_SECRET    --project-name wedding-journey
-#
-# Hoặc tạo file `.dev.vars` (đã nằm trong .gitignore) chứa:
-#   ADMIN_PASSWORD="mat-khau-cua-ban"
-#   ADMIN_SECRET="chuoi-ngau-nhien-64-ky-tu"
+# Binding KV cho môi trường local (chỉ dùng `wrangler pages dev`).
+# Uncomment + thay id khi chạy local với namespace thuộc đúng account.
+# [[kv_namespaces]]
+# binding = "GUESTS_KV"
+# id = "<32-hex-characters>"
