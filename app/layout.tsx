@@ -22,7 +22,7 @@ const inter = Inter({
  * Domain chính thức — dùng cho OG / share card.
  * ĐỔI Ở ĐÂY nếu deploy tên miền riêng (vd: https://tung-hang.wedding).
  */
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wedding-journey.pages.dev";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tunghangwedding.life";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -44,14 +44,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "vi_VN",
+    url: "/",
     title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026 (tức 19.11.2026 âm lịch)",
     description:
       "Trân trọng mời bạn đến chung vui trong ngày trọng đại của chúng mình — 27 Tháng 12, 2026 (tức 19.11.2026 âm lịch) tại Kênh, Cẩm Bình, Hà Tĩnh.",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
+        type: "image/png",
         alt: "Thiệp mời cưới Tùng & Hằng — 27.12.2026 (tức 19.11.2026 âm lịch)",
       },
     ],
@@ -61,9 +63,10 @@ export const metadata: Metadata = {
     title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026 (tức 19.11.2026 âm lịch)",
     description:
       "Trân trọng mời bạn đến chung vui trong ngày trọng đại của chúng mình.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({

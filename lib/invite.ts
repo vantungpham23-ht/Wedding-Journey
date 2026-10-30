@@ -88,7 +88,7 @@ export function buildInviteLink(target: InviteTarget, origin?: string): string {
   const base =
     origin ||
     (typeof window !== "undefined" ? window.location.origin : "") ||
-    "https://wedding-journey.pages.dev";
+    "https://tunghangwedding.life";
   const url = new URL(base);
   const name = target.name.trim();
   if (name) url.searchParams.set("to", name);
