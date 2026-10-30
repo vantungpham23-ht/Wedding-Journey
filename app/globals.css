@@ -38,12 +38,10 @@ body {
 }
 
 /* ========== INTRO SCREEN ========== */
+/* Nền intro phẳng — bỏ các ellipse lệch góc (gây vệt sáng ở góc
+   dưới-phải không đồng bộ với phần còn lại của trang). */
 .intro-bg {
   background-color: #2d1f15;
-  background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(74, 53, 37, 0.8) 0%, transparent 70%),
-    radial-gradient(ellipse at 80% 80%, rgba(61, 42, 28, 0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 20% 90%, rgba(74, 53, 37, 0.5) 0%, transparent 40%);
 }
 
 /* Subtle floating particles for intro */
@@ -56,43 +54,140 @@ body {
 
 /* ========== SECTION THEMES ========== */
 /* Light section: nền be, text nâu */
+/* ============================================================
+   NỀN CÁC SECTION.
+
+   Nền được gán TRỰC TIẾP trên từng <section> (inline style trong
+   DetailsScreen.tsx / page.tsx):
+     • theme "light" → #fdfbf7
+     • theme "dark"  → #2d1f15
+
+   KHÔNG được đặt gradient/ellipse ở đây. Gradient toả tròn tạo ra
+   "vùng sáng hơn" lệch góc (đặc biệt góc dưới-phải) → nhìn nền
+   bị bẩn, màu không đồng bộ giữa các section.
+
+   Các class dưới giữ ngữ nghĩa (để rule `.section-bg-dark .info-card`
+   còn áp dụng) nhưng nền trong suốt — màu thật đến từ section.
+   ============================================================ */
 .section-bg-light {
-  background-color: #fdfbf7;
-  background-image:
-    radial-gradient(ellipse at 50% 30%, rgba(196, 164, 132, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 80%, rgba(74, 53, 37, 0.02) 0%, transparent 40%);
+  background-color: transparent;
 }
 
-/* Dark section: nền nâu, text be */
 .section-bg-dark {
-  background-color: #2d1f15;
-  background-image:
-    radial-gradient(ellipse at 50% 20%, rgba(196, 164, 132, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 80%, rgba(74, 53, 37, 0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 20% 90%, rgba(196, 164, 132, 0.05) 0%, transparent 40%);
+  background-color: transparent;
 }
 
 /* ========== REVEAL SCREEN ========== */
 .reveal-bg {
-  background-color: #fdfbf7;
-  background-image:
-    radial-gradient(ellipse at 50% 30%, rgba(196, 164, 132, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 80%, rgba(74, 53, 37, 0.03) 0%, transparent 40%),
-    radial-gradient(ellipse at 80% 20%, rgba(196, 164, 132, 0.05) 0%, transparent 50%);
+  background-color: transparent;
 }
 
-/* Warm glow behind date */
+/* Warm glow behind date — dùng radial-gradient tĩnh, KHÔNG dùng blur
+   (blur tạo vệt sáng toả lệch, nhìn nền bị bẩn). */
 .date-glow {
-  background: radial-gradient(ellipse at center, rgba(196, 164, 132, 0.15) 0%, transparent 70%);
-  filter: blur(60px);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(196, 164, 132, 0.13) 0%,
+    rgba(196, 164, 132, 0.04) 45%,
+    transparent 72%
+  );
+  filter: none;
 }
 
-/* Floating particles in reveal */
+/* Floating particles in reveal — CSS keyframes (0 JS/frame) */
 .reveal-particle {
   position: absolute;
   background: rgba(196, 164, 132, 0.4);
   border-radius: 50%;
   pointer-events: none;
+  will-change: transform, opacity;
+  animation-name: revealParticle;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* ========== CONTINUITY LAYER — hạt bụi xuyên suốt 4 section ==========
+   Dùng CSS @keyframes (compositor) thay vì JS animate → 0 chi phí/frame.
+   --drift: biên độ trôi ngang, set inline từ component. */
+.continuity-dust {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(196, 164, 132, 0.55);
+  box-shadow: 0 0 6px 1px rgba(196, 164, 132, 0.35);
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation-name: continuityFloat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+}
+
+/* ========== SPARKLE — lặp vô hạn bằng CSS (không tốn JS/frame) ==========
+   --sparkle-delay: độ trễ, --sparkle-dur: thời lượng 1 chu kỳ. */
+.sparkle {
+  pointer-events: none;
+  animation: sparklePulse var(--sparkle-dur, 4.1s) ease-in-out infinite;
+  animation-delay: var(--sparkle-delay, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes sparklePulse {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  14% {
+    transform: scale(1.25) rotate(90deg);
+    opacity: 0.9;
+  }
+  38% {
+    transform: scale(0.9) rotate(180deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Nhấp nháy dạng chấm (dùng cho twinkle dots) */
+.twinkle {
+  animation: twinklePulse var(--twinkle-dur, 2s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+  will-change: transform, opacity;
+}
+
+@keyframes twinklePulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes continuityFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(calc(var(--drift, 0px) * 1), -45vh, 0) scale(1.25);
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(calc(var(--drift, 0px) * -0.4), -90vh, 0) scale(0.7);
+    opacity: 0;
+  }
 }
 
 .leaf-particle {
@@ -184,4 +279,33 @@ a:focus-visible {
   transform: translateZ(0);
   will-change: transform, opacity, filter;
   backface-visibility: hidden;
+}
+
+/* ============================================================
+   REDUCED MOTION — tắt toàn bộ chuyển động lặp vô hạn.
+   Motion one-shot (vỡ logo, dập chữ, nở hoa) vẫn chạy vì đó là
+   ngữ nghĩa chính — nhưng chuyển động trang trí liên tục thì tắt.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .continuity-dust,
+  .reveal-particle,
+  .sparkle,
+  .twinkle,
+  .title-glow {
+    animation: none !important;
+  }
+
+  .reveal-particle {
+    opacity: 0.25;
+  }
+
+  .title-glow {
+    text-shadow:
+      0 0 20px rgba(196, 164, 132, 0.3),
+      0 0 40px rgba(196, 164, 132, 0.15);
+  }
+
+  * {
+    scroll-behavior: auto !important;
+  }
 }

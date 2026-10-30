@@ -30,7 +30,25 @@ export const BLOCK_GAP = 0.1;
 
 const ease = [0.16, 1, 0.3, 1];   // Cinematic ease
 const easeBack = [0.34, 1.56, 0.64, 1]; // Back out — bounce nhẹ
-export { ease, easeBack };
+/** Chậm ở đầu → nhanh ở cuối (SHATTER, FLY-IN) */
+const easeSlowFast = [0.62, 0.02, 0.2, 1];
+/** Nhanh ở đầu → chậm ở cuối (LETTERPRESS) */
+const easeFastSlow = [0.32, 0, 0.18, 1];
+export { ease, easeBack, easeSlowFast, easeFastSlow };
+
+// =====================================================================
+// SIGNATURE TỪNG SECTION — gom 1 chỗ để chỉnh nhịp cho cả web
+// =====================================================================
+export const SECTION_SIG = {
+  /** S0 — logo vỡ thành mảnh, bay từ ngoài vào */
+  shatter: { stagger: 0.028, ease: easeSlowFast },
+  /** S1 — chữ dập nổ, tách đôi rồi khép lại */
+  letterpress: { stagger: 0.05, ease: easeFastSlow },
+  /** S2 — hoa sen nở từ tâm, section sáng dần */
+  bloom: { stagger: 0.11, ease: easeBack },
+  /** S3 — nhẫn bay tới từ xa, đồng hồ lật cơ */
+  flyIn: { stagger: 0.18, ease: easeSlowFast },
+} as const;
 
 // =====================================================================
 // REUSABLE ANIMATION HELPERS

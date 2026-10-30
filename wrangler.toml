@@ -1,0 +1,34 @@
+# Cloudflare Pages — cấu hình cho `wrangler pages dev` (local)
+#
+# ⚠️  CẤU HÌNH PRODUCTION KHÔNG NẰM Ở FILE NÀY.
+#
+# Với dự án Pages nối qua Git, binding KV và biến môi trường được cấu
+# hình trong Cloudflare Dashboard (Settings → Functions / Environment
+# variables). File này chỉ phục vụ việc chạy local.
+#
+# ── Chạy local ──
+#   npm run build
+#   npx wrangler pages dev dist
+#
+# ── Tạo KV namespace ──
+#   npx wrangler kv namespace create wedding_guests
+#   → lấy `id` trả về, điền vào `id` bên dưới
+
+name = "wedding-journey"
+compatibility_date = "2026-01-01"
+pages_build_output_dir = "dist"
+
+# Binding KV cho môi trường local.
+# `id` lấy từ lệnh `npx wrangler kv namespace create wedding_guests`.
+[[kv_namespaces]]
+binding = "GUESTS_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# ── Secrets (KHÔNG commit giá trị thật) ──
+# Đặt bằng lệnh:
+#   npx wrangler pages secret put ADMIN_PASSWORD --project-name wedding-journey
+#   npx wrangler pages secret put ADMIN_SECRET    --project-name wedding-journey
+#
+# Hoặc tạo file `.dev.vars` (đã nằm trong .gitignore) chứa:
+#   ADMIN_PASSWORD="mat-khau-cua-ban"
+#   ADMIN_SECRET="chuoi-ngau-nhien-64-ky-tu"

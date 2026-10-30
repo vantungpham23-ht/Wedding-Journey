@@ -7,6 +7,8 @@
  * Link gốc (không có param) vẫn hoạt động bình thường.
  */
 
+import { WEDDING_DATE_WITH_LUNAR } from "./weddingDate";
+
 export interface InviteTarget {
   name: string;
   note?: string;
@@ -123,7 +125,7 @@ export function buildInviteText(target: InviteTarget, origin?: string): string {
 
   lines.push(
     "",
-    "Tùng Phạm & Thuý Hằng — 27.12.2026",
+    `Tùng Phạm & Thuý Hằng — ${WEDDING_DATE_WITH_LUNAR}`,
     "Kênh · Cẩm Bình · Hà Tĩnh",
     link
   );

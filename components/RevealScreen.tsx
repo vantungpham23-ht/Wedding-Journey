@@ -4,9 +4,10 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useMemo, useEffect, useState } from "react";
 import { CPS, charDur, charStag, CONTENT_START, ease, easeBack, blockDur } from "./animation";
 import WeddingLogo from "./WeddingLogo";
-import { SharedPetal } from "./JourneyThread";
+import ShatterLogo from "./ShatterLogo";
 import { createRandom, PARTICLE_SEED } from "@/lib/random";
 import { deriveWeWord, honorificPrefix } from "@/lib/invite";
+import { WEDDING_DATE_LUNAR_TEXT, WEDDING_DATE_FULL } from "@/lib/weddingDate";
 
 // =====================================================================
 // REVEAL TIMING — smooth, liên tục, không delay thừa
@@ -177,92 +178,154 @@ export default function RevealScreen({
   const weWord = (guestWe.trim() || deriveWeWord(guestRel)).toLowerCase();
 
   return (
-    <section className="reveal-bg relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-4 py-12 sm:px-6 sm:py-20">
+    <section
+      className="reveal-bg relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-4 py-12 sm:px-6 sm:py-20"
+      style={{ background: "transparent" }}
+    >
 
       {/* ========== BACKGROUND LAYERS ========== */}
+      {/* Không dùng vignette/ellipse ở đây — gradient toả tạo vùng tối
+          lệch góc, phá vỡ sự đồng bộ của nền giữa các section. */}
 
-      {/* Vignette */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: "radial-gradient(ellipse at center, transparent 30%, rgba(74, 53, 37, 0.04) 100%)",
-        }}
-      />
-
-      {/* Floating particles */}
+      {/* Floating particles — CSS keyframes (0 JS/frame) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {particles.map((p, i) => (
-          <motion.span
+          <span
             key={p.id}
             className={`reveal-particle ${p.type === "leaf" ? "leaf-particle" : ""}`}
-            style={{ left: `${p.x}%`, width: p.size, height: p.size }}
-            initial={{ opacity: 0, y: "100vh", x: 0 }}
-            animate={
-              prefersReducedMotion
-                ? { opacity: 0.3, y: "-20vh", x: p.drift }
-                : { opacity: [0, 0.7, 0.5, 0], y: "-20vh", x: p.drift, rotate: [0, 180, 360], scale: [0.8, 1.2, 0.9] }
-            }
-            transition={{ duration: p.duration, delay: p.delay + (i % 5) * 0.3, repeat: Infinity, ease: "linear" }}
+            style={{
+              left: `${p.x}%`,
+              width: p.size,
+              height: p.size,
+              ["--drift" as string]: `${p.drift}px`,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay + (i % 5) * 0.3}s`,
+            }}
           />
         ))}
       </div>
 
-      {/* Glow behind content */}
-      <motion.div
+      {/* Glow behind content — CSS keyframes */}
+      <div
         className="date-glow pointer-events-none absolute left-1/2 top-1/2 h-[60vh] w-[60vw] -translate-x-1/2 -translate-y-1/2"
-        animate={active ? { scale: [1, 1.08, 1], opacity: [0.5, 0.8, 0.5] } : { scale: 1, opacity: 0 }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          animation: active
+            ? "dateGlow 14s ease-in-out infinite"
+            : "none",
+          opacity: active ? 0.6 : 0,
+        }}
       />
 
-      {/* Top light rays */}
+      {/* Top light rays — gradient tĩnh, không blur (blur gây vệt sáng lệch) */}
       <motion.div
         className="pointer-events-none absolute top-0 left-1/2 h-[40vh] w-[100vw] -translate-x-1/2"
-        style={{ background: "linear-gradient(180deg, rgba(255, 240, 220, 0.08) 0%, transparent 100%)", filter: "blur(40px)" }}
+        style={{ background: "linear-gradient(180deg, rgba(255, 240, 220, 0.06) 0%, transparent 100%)" }}
         {...(active
           ? { animate: { opacity: 1, y: 0 }, transition: { duration: 2, delay: T_EYEBROW, ease: sharedEase } }
           : { animate: { opacity: 0 }, transition: { duration: 1 } }
         )}
       />
 
-      {/* Floating bokeh */}
-      {[20, 50, 80].map((pos, i) => (
-        <motion.div
+      {/* Floating bokeh — CSS keyframes
+          Vị trí phân bố ĐỐI XỨNG (trái↔phải, trên↔dưới) để không tạo
+          vùng sáng lệch góc. Trước đây 3 bokeh lệch hết sang phải-dưới
+          → nền bị 1 vệt sáng ở góc dưới-phải, không đồng bộ. */}
+      {[
+        { left: "18%", top: "22%" },
+        { left: "82%", top: "22%" },
+        { left: "50%", top: "76%" },
+      ].map((pos, i) => (
+        <div
           key={`bokeh-${i}`}
           className="pointer-events-none absolute"
           style={{
-            left: `${pos}%`, top: `${20 + i * 25}%`,
-            width: 60 + i * 20, height: 60 + i * 20,
-            background: "radial-gradient(circle, rgba(196, 164, 132, 0.15) 0%, transparent 70%)",
-            borderRadius: "50%", filter: "blur(20px)",
+            left: pos.left,
+            top: pos.top,
+            width: 60 + i * 20,
+            height: 60 + i * 20,
+            background: "radial-gradient(circle, rgba(196, 164, 132, 0.12) 0%, transparent 70%)",
+            borderRadius: "50%",
+            filter: "blur(20px)",
+            animation: active
+              ? `bokehFloat ${16 + i * 4}s ease-in-out ${i * 1.6}s infinite`
+              : "none",
+            opacity: active ? 0.35 : 0,
           }}
-          animate={active ? { y: [0, -30, 0], opacity: [0.3, 0.6, 0.3], scale: [1, 1.2, 1] } : { opacity: 0 }}
-          transition={{ duration: 16 + i * 4, repeat: Infinity, delay: i * 1.6, ease: "easeInOut" }}
         />
       ))}
+
+      <style>{`
+        @keyframes dateGlow {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+          50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.8; }
+        }
+        @keyframes bokehFloat {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+          50% { transform: translateY(-30px) scale(1.2); opacity: 0.6; }
+        }
+        @keyframes revealParticle {
+          0% { transform: translate3d(0, 100vh, 0) rotate(0deg) scale(0.8); opacity: 0; }
+          12% { opacity: 0.7; }
+          50% { opacity: 0.5; }
+          100% { transform: translate3d(var(--drift, 0px), -20vh, 0) rotate(360deg) scale(0.9); opacity: 0; }
+        }
+      `}</style>
 
       {/* ========== MAIN CONTENT ========== */}
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center text-center">
 
-        {/* --- WEDDING LOGO --- */}
+        {/* --- WEDDING LOGO ---
+            Narrative 2 tầng:
+              1. ShatterLogo: 40 mảnh vỡ bay từ NGOÀI màn hình vào → lắp khớp
+              2. WeddingLogo: nét chính vẽ tay (pathLength) đè lên, mảnh vụn tan
+                 → cảm giác "logo được tinh lọc từ những mảnh vỡ".
+            Cả 2 cùng tồn tại → giữ đúng ý bạn: giữ logo, thêm chuyển động. */}
         <motion.div
           {...itemAnim(active, T_EYEBROW)}
-          className="mb-6 sm:mb-10"
+          className="relative mb-6 h-[240px] w-[240px] sm:mb-10 sm:h-[280px] sm:w-[280px]"
         >
-          <WeddingLogo
-            size={240}
-            active={active}
-            delay={T_EYEBROW}
-            className="!w-[240px] !h-[240px] sm:!w-[280px] sm:!h-[280px]"
-          />
-        </motion.div>
+          {/* Lớp 1 — mảnh vỡ bay vào (bên dưới) */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={
+              active
+                ? {
+                    opacity: [0, 1, 1, 0],
+                    transition: {
+                      duration: 2.5,
+                      times: [0, 0.08, 0.55, 1],
+                      delay: T_EYEBROW - 0.1,
+                      ease: "linear",
+                    },
+                  }
+                : { opacity: 0, transition: { duration: 0.25 } }
+            }
+          >
+            <ShatterLogo active={active} delay={T_EYEBROW - 0.1} />
+          </motion.div>
 
-        {/* --- Shared element: cánh hoa bay sang section kế tiếp --- */}
-        <SharedPetal
-          show={active}
-          className="left-1/2 top-[46%] -translate-x-1/2"
-          style={{ transform: "translate(-50%, -50%)" }}
-          size={16}
-        />
+          {/* Lớp 2 — nét chính vẽ tay (bên trên) */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={
+              active
+                ? {
+                    opacity: 1,
+                    transition: { duration: 0.5, delay: T_EYEBROW + 0.7 },
+                  }
+                : { opacity: 0, transition: { duration: 0.25 } }
+            }
+          >
+            <WeddingLogo
+              size={280}
+              active={active}
+              delay={T_EYEBROW + 0.75}
+              className="!h-full !w-full"
+            />
+          </motion.div>
+        </motion.div>
 
         {/* --- THE DATE: "27·12·2026" --- */}
         <motion.h1
@@ -297,6 +360,16 @@ export default function RevealScreen({
           transition={{ duration: 1.5, delay: T_DATE + 0.5, ease: sharedEase }}
           style={{ maxWidth: "380px" }}
         />
+
+        {/* --- Ngày âm lịch (19.11.2026) --- */}
+        <motion.p
+          className="mt-3 font-sans text-[11px] uppercase tracking-[0.25em] text-[#4a3525]/55 sm:mt-4 sm:text-xs"
+          initial={{ opacity: 0, y: 8 }}
+          animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+          transition={{ duration: 0.9, delay: T_DATE + 0.75, ease: sharedEase }}
+        >
+          {WEDDING_DATE_LUNAR_TEXT}
+        </motion.p>
 
         {/* --- NAMES: Tùng Phạm & Thuý Hằng --- */}
         <motion.div
@@ -353,7 +426,7 @@ export default function RevealScreen({
             transition={{ duration: 0.6, delay: T_NAMES + blockDur(NAMES_TEXT) + 0.2, ease: sharedEase }}
             className="mt-4 font-sans text-[9px] uppercase tracking-[0.3em] text-[#4a3525]/50 sm:mt-6 sm:text-xs sm:tracking-[0.4em]"
           >
-            Chủ Nhật · 27 Tháng 12 · 2026
+            {WEDDING_DATE_FULL} ({WEDDING_DATE_LUNAR_TEXT})
           </motion.p>
 
           {/* Nhắc lại tên khách mời */}

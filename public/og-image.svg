@@ -42,6 +42,9 @@
   <text x="600" y="478" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
         font-size="18" fill="#c4a484" letter-spacing="9">27 · 12 · 2026</text>
 
+  <text x="600" y="506" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+        font-size="12" fill="#c4a484" fill-opacity="0.6" letter-spacing="5">T?C 19 · 11 · 2026 ÂM L?CH</text>
+
   <text x="600" y="534" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
         font-size="14" fill="#fdfbf7" fill-opacity="0.5" letter-spacing="6">KÊNH · C¨M BÌNH · HÀ T(NH</text>
 </svg>

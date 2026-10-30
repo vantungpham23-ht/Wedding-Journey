@@ -7,6 +7,10 @@ import PetalBurst from "./PetalBurst";
 import { playChime, playPaperRustle, playWaxThunk } from "./soundscape";
 import { createRandom, PARTICLE_SEED } from "@/lib/random";
 import { deriveWeWord, honorificPrefix } from "@/lib/invite";
+import {
+  WEDDING_DATE_DISPLAY,
+  WEDDING_DATE_LUNAR_TEXT,
+} from "@/lib/weddingDate";
 
 // =====================================================================
 // INTRO SCREEN — "Thiệp cưới" opening
@@ -653,7 +657,7 @@ export default function IntroScreen({
           }
           className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
         >
-          27 · 12 · 2026
+          {WEDDING_DATE_DISPLAY} · {WEDDING_DATE_LUNAR_TEXT}
         </motion.p>
 
         {/* ---------- NGƯỜI GỬI ---------- */}

@@ -26,9 +26,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://wedding-journey.pa
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Tùng & Hằng — Save The Date · 27.12.26",
+  title: "Tùng & Hằng — Save The Date · 27.12.26 (tức 19.11.2026 âm lịch)",
   description:
-    "Thiệp mời cưới của Tùng Phạm & Thuý Hằng — 27 Tháng 12, 2026 tại Kênh, Cẩm Bình, Hà Tĩnh.",
+    "Thiệp mời cưới của Tùng Phạm & Thuý Hằng — 27 Tháng 12, 2026 (tức 19.11.2026 âm lịch) tại Kênh, Cẩm Bình, Hà Tĩnh.",
   keywords: [
     "wedding",
     "thiệp mời cưới",
@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     "Tùng Phạm",
     "Thuý Hằng",
     "27.12.2026",
+    "19.11.2026 âm lịch",
     "Cẩm Bình",
     "Hà Tĩnh",
   ],
@@ -43,21 +44,21 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "vi_VN",
-    title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026",
+    title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026 (tức 19.11.2026 âm lịch)",
     description:
-      "Trân trọng mời bạn đến chung vui trong ngày trọng đại của chúng mình — 27 Tháng 12, 2026 tại Kênh, Cẩm Bình, Hà Tĩnh.",
+      "Trân trọng mời bạn đến chung vui trong ngày trọng đại của chúng mình — 27 Tháng 12, 2026 (tức 19.11.2026 âm lịch) tại Kênh, Cẩm Bình, Hà Tĩnh.",
     images: [
       {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "Thiệp mời cưới Tùng & Hằng — 27.12.2026",
+        alt: "Thiệp mời cưới Tùng & Hằng — 27.12.2026 (tức 19.11.2026 âm lịch)",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026",
+    title: "Tùng & Hằng — Thiệp mời cưới · 27.12.2026 (tức 19.11.2026 âm lịch)",
     description:
       "Trân trọng mời bạn đến chung vui trong ngày trọng đại của chúng mình.",
     images: ["/og-image.svg"],

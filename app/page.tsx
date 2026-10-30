@@ -5,8 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import IntroScreen from "@/components/IntroScreen";
 import RevealScreen from "@/components/RevealScreen";
 import { DetailsSections } from "@/components/DetailsScreen";
-import JourneyThread from "@/components/JourneyThread";
+import ContinuityLayer from "@/components/ContinuityLayer";
 import { installAudioUnlock, playShimmer } from "@/components/soundscape";
+import {
+  WEDDING_DATE_SHORT,
+  WEDDING_DATE_LUNAR_TEXT,
+} from "@/lib/weddingDate";
 
 type Stage = "intro" | "revealing" | "revealed";
 
@@ -119,12 +123,15 @@ export default function Page() {
         )}
       </AnimatePresence>
 
-      {/* Journey Thread — shared element xuyên suốt các section */}
-      <JourneyThread
-        activeSection={activeSection}
-        total={4}
-        enabled={stage === "revealed"}
-      />
+      {/* ============ TẦNG 1 — CONTINUITY LAYER ============
+          Nền + hạt bụi + quầng sáng chạy XUYEN SUỐT 4 section.
+          Nhờ vậy khi đổi section không có gì bị "cắt" → chuyển cảnh mượt. */}
+      {stage === "revealed" && (
+        <ContinuityLayer
+          scrollRef={sectionsRef}
+          activeSection={activeSection}
+        />
+      )}
 
       {/* Section snap scroll container */}
       <AnimatePresence>
@@ -137,7 +144,7 @@ export default function Page() {
               opacity: 1,
               transition: { duration: 2.4, ease: "easeOut" },
             }}
-            className="reveal-bg snap-scroll-container absolute inset-0 overflow-x-hidden"
+            className="snap-scroll-container absolute inset-0 z-[10] overflow-x-hidden"
             style={{
               scrollSnapType: "y mandatory",
               scrollBehavior: "smooth",
@@ -148,7 +155,7 @@ export default function Page() {
             {/* SECTION 1: Reveal / Save the Date */}
             <section
               className="flex h-screen w-full items-center justify-center"
-              style={{ scrollSnapAlign: "start" }}
+              style={{ scrollSnapAlign: "start", backgroundColor: "#fdfbf7" }}
             >
               <RevealScreen
                 groom="Tùng Phạm"
@@ -213,7 +220,7 @@ export default function Page() {
               Tùng & Hằng
             </span>
             <span className={`font-serif text-[10px] uppercase tracking-[0.3em] sm:text-xs ${accentColor}`}>
-              27·12·2026
+              {WEDDING_DATE_SHORT} · {WEDDING_DATE_LUNAR_TEXT}
             </span>
           </div>
         );

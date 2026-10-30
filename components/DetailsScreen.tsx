@@ -6,7 +6,8 @@ import ConstellationArt from "./ConstellationArt";
 import MonogramArt from "./MonogramArt";
 import LotusArt from "./LotusArt";
 import RingArt from "./RingArt";
-import { SharedPetal } from "./JourneyThread";
+import LetterpressText from "./LetterpressText";
+import FlipClock from "./FlipClock";
 import {
   charDur,
   charStag,
@@ -15,6 +16,10 @@ import {
   CONTENT_START,
   ease,
 } from "./animation";
+import {
+  WEDDING_DATE_DISPLAY,
+  WEDDING_DATE_LUNAR_TEXT,
+} from "@/lib/weddingDate";
 
 // ============== SPLIT TEXT — smooth, no blur ==============
 interface SplitTextProps {
@@ -164,30 +169,6 @@ function FadeSlide({
 
 // ============== UI COMPONENTS ==============
 
-function CountdownBox({
-  label,
-  value,
-  theme = "light",
-}: {
-  label: string;
-  value: string;
-  theme?: "light" | "dark";
-}) {
-  const valueClass = "text-[#c4a484]";
-  const labelClass =
-    theme === "dark" ? "text-[#fdfbf7]/70" : "text-[#4a3525]/60";
-  return (
-    <div className="info-card flex min-w-[52px] flex-col items-center rounded-xl px-2 py-3 sm:min-w-[68px] sm:px-3 sm:py-4">
-      <span className={`font-serif text-xl font-bold sm:text-3xl ${valueClass}`}>
-        {value}
-      </span>
-      <span className={`mt-1 font-sans text-[8px] uppercase tracking-[0.25em] sm:text-[9px] sm:tracking-[0.3em] ${labelClass}`}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
 // ============== SECTION WRAPPER — smooth, no blur ==============
 interface SectionProps {
   active: boolean;
@@ -196,12 +177,23 @@ interface SectionProps {
 }
 
 function Section({ active, children, theme = "light" }: SectionProps) {
-  const bgClass = theme === "dark" ? "section-bg-dark" : "section-bg-light";
+  // Nền được gán TRỰC TIẾP lên chính section này.
+  //
+  // LÝ DO (sửa lỗi nền bị lệch màu — ảnh 1 & 3):
+  //   Trước đây nền do 1 lớp `fixed` ở ContinuityLayer đảm nhiệm và
+  //   cross-fade be ↔ nâu. Cross-fade 2 màu không liên quan đi qua màu
+  //   trung gian rgb(149,141,134) — XÁM XANH LỤC. Đó là màu nền
+  //   "Hẹn gặp bạn" bị xấu, và cũng là vệt sáng lệch góc dưới-phải.
+  //
+  //   Gán nền theo từng section → mỗi section luôn đúng 1 màu chuẩn,
+  //   nền đi theo content nên không bao giờ lệch, không có màu trung
+  //   gian, và đồng bộ tuyệt đối giữa các section.
+  const bgColor = theme === "dark" ? "#2d1f15" : "#fdfbf7";
 
   return (
     <section
-      className={`flex h-screen w-full items-center justify-center px-6 py-16 sm:px-8 ${bgClass}`}
-      style={{ scrollSnapAlign: "start" }}
+      className="relative flex h-screen w-full items-center justify-center px-6 py-16 sm:px-8"
+      style={{ scrollSnapAlign: "start", backgroundColor: bgColor }}
     >
       <motion.div
         className="relative flex h-full w-full max-w-2xl flex-col justify-center"
@@ -350,13 +342,6 @@ export function DetailsSections({
           {/* Monogram: T & H */}
           <div className="relative">
             <MonogramArt theme="dark" size={100} delay={s2_t1} active={is2} />
-            {/* Shared element: cánh hoa bay từ section 1 sang đây */}
-            <SharedPetal
-              show={is2}
-              className="-right-6 top-1/2"
-              style={{ transform: "translateY(-50%)" }}
-              size={15}
-            />
           </div>
 
           {/* Eyebrow */}
@@ -366,9 +351,9 @@ export function DetailsSections({
             </p>
           </FadeSlide>
 
-          {/* Tiêu đề */}
+          {/* Tiêu đề — DẬP NỔ (letterpress) */}
           <div className="text-center">
-            <SplitText
+            <LetterpressText
               as="h2"
               text="Vì bạn là một phần của hành trình"
               active={is2}
@@ -426,13 +411,6 @@ export function DetailsSections({
           {/* Lotus: Hoa sen — Kênh, Cẩm Bình */}
           <div className="relative">
             <LotusArt theme="light" size={120} delay={s3_t1 + 0.1} active={is3} />
-            {/* Shared element: cánh hoa bay từ section 2 sang đây */}
-            <SharedPetal
-              show={is3}
-              className="-right-6 top-1/2"
-              style={{ transform: "translateY(-50%)" }}
-              size={15}
-            />
           </div>
 
           {/* Tiêu đề chính */}
@@ -453,6 +431,9 @@ export function DetailsSections({
               <div className="flex flex-col items-center">
                 <span className="font-serif text-2xl font-bold text-[#4a3525] sm:text-3xl">27</span>
                 <span className="font-sans text-[9px] uppercase tracking-widest text-[#c4a484]">Tháng 12</span>
+                <span className="mt-0.5 font-sans text-[9px] tracking-wide text-[#8a6f52]">
+                  {WEDDING_DATE_LUNAR_TEXT}
+                </span>
               </div>
               <div className="h-10 w-px bg-[#c4a484]/30" />
               {/* Time */}
@@ -507,13 +488,6 @@ export function DetailsSections({
           {/* Ring Art: 2 Wedding Rings */}
           <div className="relative">
             <RingArt theme="dark" size={120} delay={0.5} active={is4} />
-            {/* Shared element: cánh hoa bay từ section 3 sang đây */}
-            <SharedPetal
-              show={is4}
-              className="-right-6 top-1/2"
-              style={{ transform: "translateY(-50%)" }}
-              size={15}
-            />
           </div>
 
           {/* Countdown */}
@@ -522,28 +496,32 @@ export function DetailsSections({
               <p className="font-sans text-[10px] uppercase tracking-[0.5em] text-[#c4a484] sm:text-xs">
                 Đếm ngược
               </p>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <CountdownBox label="Ngày" value={pad(timeLeft.days)} theme="dark" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <FlipClock value={pad(timeLeft.days)} label="Ngày" theme="dark" delay={0.85} />
                 <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
-                <CountdownBox label="Giờ" value={pad(timeLeft.hours)} theme="dark" />
+                <FlipClock value={pad(timeLeft.hours)} label="Giờ" theme="dark" delay={0.95} />
                 <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
-                <CountdownBox label="Phút" value={pad(timeLeft.mins)} theme="dark" />
+                <FlipClock value={pad(timeLeft.mins)} label="Phút" theme="dark" delay={1.05} />
                 <span className="font-serif text-2xl text-[#c4a484]/40 sm:text-3xl">:</span>
-                <CountdownBox label="Giây" value={pad(timeLeft.secs)} theme="dark" />
+                <FlipClock value={pad(timeLeft.secs)} label="Giây" theme="dark" delay={1.15} />
               </div>
               <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/50 sm:text-xs">
-                27 · 12 · 2026 — 11:00
+                {WEDDING_DATE_DISPLAY} — 11:00
+              </p>
+              <p className="font-sans text-[9px] uppercase tracking-[0.3em] text-[#fdfbf7]/35 sm:text-[10px]">
+                {WEDDING_DATE_LUNAR_TEXT}
               </p>
             </div>
           </FadeSlide>
 
-          {/* CTA Cards — 2 cột trên desktop */}
+          {/* CTA Cards — 2 cột trên desktop
+              Bay lên từ dưới + xoay nhẹ theo trục X (nở ra như quạt) */}
           <motion.div
             initial="hidden"
             animate={is4 ? "visible" : "hidden"}
             variants={{
               hidden: {},
-              visible: { transition: { staggerChildren: 0.15, delayChildren: 1.5 } },
+              visible: { transition: { staggerChildren: 0.18, delayChildren: 1.6 } },
             }}
             className="flex w-full max-w-lg flex-col gap-3 sm:flex-row"
           >
@@ -579,9 +557,16 @@ export function DetailsSections({
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.98 }}
                 variants={{
-                  hidden: { opacity: 0, y: 15 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
+                  hidden: { opacity: 0, y: 42, rotateX: -32, scale: 0.92 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    rotateX: 0,
+                    scale: 1,
+                    transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                  },
                 }}
+                style={{ perspective: "800px", transformOrigin: "50% 100%" }}
                 className="info-card group flex flex-1 items-center gap-3 rounded-2xl p-4 transition-all duration-700 sm:gap-4 sm:p-5"
               >
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#fdfbf7] ring-1 ring-[#c4a484]/30 sm:h-12 sm:w-12">
@@ -623,7 +608,10 @@ export function DetailsSections({
                 {groomInit} <span className="text-[#c4a484]">&</span> {brideInit}
               </p>
               <p className="font-sans text-[10px] uppercase tracking-[0.4em] text-[#fdfbf7]/50 sm:text-xs">
-                27 · 12 · 2026
+                {WEDDING_DATE_DISPLAY}
+              </p>
+              <p className="font-sans text-[9px] uppercase tracking-[0.3em] text-[#fdfbf7]/35 sm:text-[10px]">
+                {WEDDING_DATE_LUNAR_TEXT}
               </p>
             </div>
           </FadeSlide>
