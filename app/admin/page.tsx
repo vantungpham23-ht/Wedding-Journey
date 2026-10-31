@@ -6,23 +6,28 @@ import { ease } from "@/components/animation";
 import { buildInviteLink, buildInviteText, buildInviteSentence, deriveWeWord, COUPLE_REL, RELATIONS, WE_WORDS } from "@/lib/invite";
 import { WEDDING_DATE_DISPLAY, WEDDING_DATE_LUNAR_TEXT } from "@/lib/weddingDate";
 import { newGuestId, normalizeGuest, normalizeGuestList, type Guest } from "@/lib/guests";
+import { apiCall, hasSession } from "@/lib/guestsSupabase";
+import { supabase } from "@/lib/supabase";
 
 /**
  * ADMIN — Quản lý danh sách khách mời
  *
  * ── LƯU TRỮ DỮ LIỆU ──
- * Dữ liệu nằm trên Cloudflare KV (đọc/ghi qua Pages Functions):
+ * Dữ liệu nằm trên Supabase (bảng `guests`, Row Level Security):
  *   - GET    /api/guests        → lấy danh sách
  *   - POST   /api/guests        → thêm khách
  *   - PUT    /api/guests?id=xx  → sửa khách
  *   - DELETE /api/guests?id=xx  → xoá khách
  *
+ * Lớp `lib/guestsSupabase.ts` mô phỏng đúng hợp đồng trên, nên UI gọi
+ * thống nhất qua `api()` — không còn Cloudflare Pages Functions.
+ *
  * → Danh sách dùng được trên MỌI thiết bị, không mất khi xoá cache.
  *
  * ── ĐĂNG NHẬP ──
- * POST /api/auth với mật khẩu → server set cookie phiên `HttpOnly`.
- * Mỗi request sau tự đính kèm cookie, server kiểm tra chữ ký.
- * Nếu cookie hết hạn → API trả 401 → hiện lại màn đăng nhập.
+ * POST /api/auth với mật khẩu → Supabase xác thực, trả session token
+ * lưu trong localStorage. Mỗi request sau tự đính kèm token, RLS kiểm tra.
+ * Nếu session hết hạn → API trả 401 → hiện lại màn đăng nhập.
  */
 
 /** Trạng thái đăng nhập */
@@ -101,42 +106,21 @@ export default function AdminPage() {
 
   // ------------------------------------------------------------------
   // Gọi API
+  //
+  // `apiCall` trong `lib/guestsSupabase.ts` mô phỏng đúng hợp đồng của
+  // Cloudflare Pages Functions cũ (trả `{ ok, status, data }`) → toàn bộ
+  // UI bên dưới không phải sửa dòng nào.
   // ------------------------------------------------------------------
   const api = useCallback(
-    async <T,>(
-      path: string,
-      init?: RequestInit
-    ): Promise<{ ok: boolean; status: number; data: T }> => {
-      try {
-        const res = await fetch(path, {
-          credentials: "same-origin",
-          ...init,
-          headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers ?? {}),
-          },
-        });
+    async <T,>(path: string, init?: RequestInit) => {
+      const res = await apiCall<T>(path, init);
 
-        let data: T;
-        try {
-          data = (await res.json()) as T;
-        } catch {
-          data = {} as T;
-        }
-
-        // 401 = phiên hết hạn → quay lại màn đăng nhập
-        if (res.status === 401) {
-          setAuth("unauthenticated");
-        }
-
-        return { ok: res.ok, status: res.status, data };
-      } catch {
-        return {
-          ok: false,
-          status: 0,
-          data: { error: "Không kết nối được tới server" } as T,
-        };
+      // 401 = phiên hết hạn → quay lại màn đăng nhập
+      if (res.status === 401) {
+        setAuth("unauthenticated");
       }
+
+      return res;
     },
     []
   );
@@ -145,19 +129,28 @@ export default function AdminPage() {
   // Load danh sách
   //
   // Có 2 chế độ lưu trữ:
-  //   • "server" — Cloudflare KV (nhiều thiết bị, không mất khi xoá cache)
-  //   • "local"  — localStorage của trình duyệt (dự phòng khi server
-  //                chưa cấu hình KV / ADMIN_PASSWORD)
+  //   • "server" — Supabase (nhiều thiết bị, không mất khi xoá cache)
+  //   • "local"  — localStorage của trình duyệt (dự phòng khi mạng
+  //                lỗi / Supabase project bị pause)
   //
   // Khi API trả lỗi cấu hình (500) hoặc không gọi được server (0),
   // tự động chuyển sang chế độ "local" để trang /admin vẫn dùng được.
   // ------------------------------------------------------------------
   const loadGuests = useCallback(async () => {
+    // Chưa có session → không thử gọi API (tiết kiệm 1 request).
+    if (!(await hasSession())) {
+      if (!alive.current) return;
+      setLocalMode(false);
+      setAuth("unauthenticated");
+      setLoaded(true);
+      return;
+    }
+
     const res = await api<{ ok: boolean; guests?: Guest[] }>("/api/guests");
     if (!alive.current) return;
 
     if (res.status === 401) {
-      // Server đã cấu hình đúng và yêu cầu đăng nhập → hiện màn login.
+      // Session hết hạn → hiện màn login.
       setLocalMode(false);
       setAuth("unauthenticated");
       setLoaded(true);
@@ -185,6 +178,35 @@ export default function AdminPage() {
   }, [loadGuests]);
 
   // ------------------------------------------------------------------
+  // Realtime — đồng bộ giữa nhiều thiết bị
+  //
+  // Khi 1 thiết bị thêm/sửa/xoá khách, Supabase đẩy thay đổi qua
+  // websocket → các thiết bị khác tự load lại danh sách.
+  //
+  // Nhờ vậy không còn tình trạng "sửa trên điện thoại, PC vẫn hiện
+  // dữ liệu cũ" như khi dùng Cloudflare KV (eventual consistency).
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (auth !== "authenticated" || localMode) return;
+
+    const channel = supabase
+      .channel("guests-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "guests" },
+        () => {
+          // Có thay đổi ở thiết bị khác → load lại danh sách.
+          loadGuests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [auth, localMode, loadGuests]);
+
+  // ------------------------------------------------------------------
   // Đăng nhập
   // ------------------------------------------------------------------
   const login = async (e: React.FormEvent) => {
@@ -202,7 +224,7 @@ export default function AdminPage() {
       setAuth("authenticated");
       await loadGuests();
     } else if (res.status >= 500 || res.status === 0) {
-      // Server chưa cấu hình ADMIN_PASSWORD / ADMIN_SECRET
+      // Không gọi được Supabase (mạng lỗi / project bị pause)
       // → chuyển sang chế độ lưu cục bộ thay vì chặn người dùng.
       setLocalMode(true);
       setGuests(readLocalGuests());
@@ -710,7 +732,7 @@ export default function AdminPage() {
             {/* Chế độ lưu */}
             {localMode && (
               <span
-                title="Server chưa cấu hình KV binding / ADMIN_PASSWORD. Dữ liệu đang lưu trong localStorage của trình duyệt này."
+                title="Không kết nối được Supabase. Dữ liệu đang lưu trong localStorage của trình duyệt này."
                 className="rounded-full border border-amber-400/40 bg-amber-400/10 px-3 py-2 font-sans text-[9px] uppercase tracking-[0.2em] text-amber-200/80"
               >
                 Chế độ cục bộ

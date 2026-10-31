@@ -1,8 +1,13 @@
 /**
- * Kiểu Guest + helper đọc/ghi danh sách khách trong KV.
+ * Kiểu Guest + helper chuẩn hoá dữ liệu khách mời.
  *
- * Dùng chung giữa backend (`functions/`) và frontend (`app/admin/`)
- * để đảm bảo cấu trúc dữ liệu luôn giống nhau.
+ * ── LƯU Ý ──
+ * Trước đây file này phục vụ CẢ backend (Cloudflare KV) lẫn frontend.
+ * Nay backend đã chuyển sang Supabase (`lib/guestsSupabase.ts`), nên ở
+ * đây chỉ giữ lại phần frontend cần dùng:
+ *   - `Guest`          — kiểu dữ liệu dùng chung
+ *   - `normalizeGuest` — chuẩn hoá khi import JSON / đọc từ Supabase
+ *   - `newGuestId`     — sinh id cho chế độ lưu cục bộ (dự phòng)
  */
 
 export interface Guest {
@@ -18,9 +23,6 @@ export interface Guest {
   we?: string;
   createdAt: number;
 }
-
-/** Key lưu danh sách khách trong KV */
-export const GUESTS_KEY = "guests:list";
 
 /** Giới hạn an toàn — chống payload quá lớn */
 export const MAX_GUESTS = 5000;
@@ -76,29 +78,4 @@ export function normalizeGuestList(raw: unknown): Guest[] {
     if (out.length >= MAX_GUESTS) break;
   }
   return out;
-}
-
-/**
- * Đọc danh sách khách từ KV.
- * Trả về mảng rỗng nếu chưa có dữ liệu hoặc dữ liệu hỏng.
- */
-export async function readGuests(
-  kv: { get(key: string, type?: "text"): Promise<string | null> }
-): Promise<Guest[]> {
-  try {
-    const raw = await kv.get(GUESTS_KEY, "text");
-    if (!raw) return [];
-    return normalizeGuestList(JSON.parse(raw));
-  } catch {
-    return [];
-  }
-}
-
-/** Ghi danh sách khách vào KV */
-export async function writeGuests(
-  kv: { put(key: string, value: string): Promise<void> },
-  guests: Guest[]
-): Promise<void> {
-  const safe = normalizeGuestList(guests).slice(0, MAX_GUESTS);
-  await kv.put(GUESTS_KEY, JSON.stringify(safe));
 }
