@@ -11,22 +11,18 @@ import { createClient } from "@supabase/supabase-js";
  * Với Supabase:
  *   - `anon` key là public (ai xem source cũng thấy) — KHÔNG phải bí mật.
  *   - An toàn nhờ Row Level Security: bảng `guests` chỉ mở cho
- *     role `authenticated`. Không đăng nhập → không đọc/ghi được gì.
+ *     những tài khoản đã đăng nhập (và chỉ đúng tài khoản admin).
  *   - Vì vậy cố ý KHÔNG dùng biến môi trường → không phải set env var
  *     trong Cloudflare Dashboard → xoá hẳn nguồn rắc rối cấu hình.
  *
- * ── MẬT KHẨU ──
- * Mật khẩu admin KHÔNG nằm trong code. Người dùng nhập mật khẩu ở
- * form đăng nhập → `signInWithPassword` đối chiếu ở phía Supabase.
- * Email được hardcode vì chỉ có đúng 1 tài khoản quản trị.
+ * ── THÔNG TIN ĐĂNG NHẬP ──
+ * Email và mật khẩu KHÔNG nằm trong code. Người dùng nhập ở form
+ * đăng nhập → `signInWithPassword` đối chiếu ở phía Supabase.
  */
 
 const SUPABASE_URL = "https://qlqfyyzevlleksuepsxh.supabase.co";
 const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFscWZ5eXpldmxsZWtzdWVwc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0Mjc4MDEsImV4cCI6MjEwOTAwMzgwMX0.ubqjs0p4ZREG8m8y3VXt8ZE8rPaSydlnC5s-bZITe9w";
-
-/** Email của tài khoản quản trị duy nhất (dùng chung cho PC và điện thoại) */
-export const ADMIN_EMAIL = "admin@wedding.local";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpczMiOiJzdXBhYmFzZSIsInJlZiI6InFscWZ5eXpldmxsZWtzdWVwc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0Mjc4MDEsImV4cCI6MjEwOTAwMzgwMX0.ubqjs0p4ZREG8m8y3VXt8ZE8rPaSydlnC5s-bZITe9w";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

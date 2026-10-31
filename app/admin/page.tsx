@@ -25,9 +25,9 @@ import { supabase } from "@/lib/supabase";
  * → Danh sách dùng được trên MỌI thiết bị, không mất khi xoá cache.
  *
  * ── ĐĂNG NHẬP ──
- * POST /api/auth với mật khẩu → Supabase xác thực, trả session token
- * lưu trong localStorage. Mỗi request sau tự đính kèm token, RLS kiểm tra.
- * Nếu session hết hạn → API trả 401 → hiện lại màn đăng nhập.
+ * POST /api/auth với email + mật khẩu → Supabase xác thực, trả session
+ * token lưu trong localStorage. Mỗi request sau tự đính kèm token, RLS
+ * kiểm tra. Nếu session hết hạn → API trả 401 → hiện lại màn đăng nhập.
  */
 
 /** Trạng thái đăng nhập */
@@ -61,6 +61,7 @@ function writeLocalGuests(guests: Guest[]): void {
 
 export default function AdminPage() {
   const [auth, setAuth] = useState<AuthState>("checking");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
 
@@ -212,9 +213,16 @@ export default function AdminPage() {
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError("");
+
+    const mail = email.trim();
+    if (!mail || !password) {
+      setAuthError("Vui lòng nhập email và mật khẩu.");
+      return;
+    }
+
     const res = await api<{ ok: boolean; error?: string }>("/api/auth", {
       method: "POST",
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ email: mail, password }),
     });
 
     if (!alive.current) return;
@@ -667,13 +675,26 @@ export default function AdminPage() {
           </h1>
 
           <label className="mb-1.5 block font-sans text-[9px] uppercase tracking-[0.3em] text-[#c4a484]/60">
+            Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            autoFocus
+            placeholder="email@wedding.local"
+            className="w-full rounded-xl border border-[#c4a484]/25 bg-[#fdfbf7]/5 px-4 py-3 font-sans text-sm text-[#fdfbf7] outline-none transition-colors placeholder:text-[#fdfbf7]/30 focus:border-[#c4a484]/60"
+          />
+
+          <label className="mb-1.5 mt-4 block font-sans text-[9px] uppercase tracking-[0.3em] text-[#c4a484]/60">
             Mật khẩu
           </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoFocus
+            autoComplete="current-password"
             placeholder="Nhập mật khẩu quản trị"
             className="w-full rounded-xl border border-[#c4a484]/25 bg-[#fdfbf7]/5 px-4 py-3 font-sans text-sm text-[#fdfbf7] outline-none transition-colors placeholder:text-[#fdfbf7]/30 focus:border-[#c4a484]/60"
           />

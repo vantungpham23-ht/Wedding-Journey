@@ -12,7 +12,7 @@
  * (`Guest.table` ↔ cột `table_name`, vì `table` là từ khoá SQL).
  */
 
-import { supabase, ADMIN_EMAIL } from "./supabase";
+import { supabase } from "./supabase";
 import { newGuestId, normalizeGuest, type Guest } from "./guests";
 
 /** Kết quả chuẩn hoá — giống hệt hàm `api()` cũ */
@@ -90,7 +90,7 @@ function errData(message: string): { ok: false; error: string } {
 function friendlyError(message: string, status: number): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login credentials")) {
-    return "Mật khẩu không đúng";
+    return "Email hoặc mật khẩu không đúng";
   }
   if (m.includes("email not confirmed")) {
     return "Tài khoản chưa được xác nhận. Hãy bật Auto Confirm User trong Supabase.";
@@ -108,18 +108,19 @@ function friendlyError(message: string, status: number): string {
 // AUTH
 // =====================================================================
 
-/** Đăng nhập bằng mật khẩu admin */
+/** Đăng nhập bằng email + mật khẩu */
 export async function signIn(
+  email: string,
   password: string
 ): Promise<ApiResult<{ ok: boolean; error?: string }>> {
   try {
     const { error } = await supabase.auth.signInWithPassword({
-      email: ADMIN_EMAIL,
+      email: email.trim(),
       password,
     });
 
     if (error) {
-      // Sai mật khẩu → 401 (không phải 5xx) → UI hiện lại màn đăng nhập.
+      // Sai email/mật khẩu → 401 (không phải 5xx) → UI hiện lại màn đăng nhập.
       const status = /invalid login credentials/i.test(error.message) ? 401 : 400;
       return {
         ok: false,
@@ -285,7 +286,7 @@ export async function deleteGuests(
  *   PUT    /api/guests?id=xx  → updateGuest(id, body)
  *   DELETE /api/guests?id=xx  → deleteGuests(id)
  *   DELETE /api/guests        → deleteGuests() (xoá tất cả)
- *   POST   /api/auth          → signIn(body.password)
+ *   POST   /api/auth          → signIn(body.email, body.password)
  *   DELETE /api/auth          → signOut()
  */
 export async function apiCall<T = unknown>(
@@ -307,8 +308,14 @@ export async function apiCall<T = unknown>(
 
   if (path === "/api/auth") {
     if (method === "POST") {
-      const password = (body as { password?: unknown } | undefined)?.password;
-      return (await signIn(typeof password === "string" ? password : "")) as ApiResult<T>;
+      const { email, password } = (body ?? {}) as {
+        email?: unknown;
+        password?: unknown;
+      };
+      return (await signIn(
+        typeof email === "string" ? email : "",
+        typeof password === "string" ? password : ""
+      )) as ApiResult<T>;
     }
     if (method === "DELETE") {
       return (await signOut()) as ApiResult<T>;

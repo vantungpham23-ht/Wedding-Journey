@@ -42,28 +42,29 @@ drop policy if exists "guests_admin_only"      on public.guests;
 
 
 -- ---------------------------------------------------------------------
--- 3. Policy: CHỈ tài khoản admin được đọc/ghi
+-- 3. Policy: tài khoản đã đăng nhập được đọc/ghi
 --
--- Vì sao không dùng policy "authenticated_all"?
---   → Vì Supabase mặc định MỞ signup công khai. Nếu policy chỉ kiểm tra
---     `authenticated` thì bất kỳ ai đăng ký 1 tài khoản mới cũng đọc/ghi
---     được bảng `guests` (tên + bàn của khách mời).
+-- Form đăng nhập cho phép nhập email TỰ DO → không thể khoá policy theo
+-- 1 email cứng. Thay vào đó:
 --
--- Cách đúng: khoá theo CHÍNH email admin. Kể cả khi ai đó đăng ký thêm
--- tài khoản, họ vẫn không chạm được vào bảng.
+--   • RLS chặn toàn bộ anonymous (chưa đăng nhập) → dữ liệu luôn an toàn
+--     kể cả khi ai đó xem được anon key trong bundle.
+--   • Để CHỈ tài khoản admin truy cập được, phải TẮT signup công khai
+--     trong Supabase (Authentication → Sign In / Providers → Email →
+--     bỏ "Allow new users to sign up"). Xem phần BƯỚC 2 trong README.
+--
+-- Nếu bạn muốn siết chặt hơn, thay policy dưới bằng:
+--
+--   using ((select auth.jwt() ->> 'email') = 'admin@wedding.local')
 --
 -- Lưu ý: email trong JWT là claim `email` (Supabase luôn kèm mặc định).
 -- ---------------------------------------------------------------------
-create policy "guests_admin_only"
+create policy "guests_authenticated_all"
   on public.guests
   for all
   to authenticated
-  using (
-    (select auth.jwt() ->> 'email') = 'admin@wedding.local'
-  )
-  with check (
-    (select auth.jwt() ->> 'email') = 'admin@wedding.local'
-  );
+  using (true)
+  with check (true);
 
 
 -- ---------------------------------------------------------------------
@@ -110,21 +111,27 @@ create index if not exists guests_created_at_idx
 
 do $$
 declare
+  r record;
   keep_id uuid;
 begin
-  -- Giữ lại user ĐÃ có identity + confirmed; nếu không có thì giữ user
-  -- tạo gần nhất. Xoá các bản ghi trùng còn lại.
-  select id into keep_id
-  from auth.users
-  where email = 'admin@wedding.local'
-  order by (email_confirmed_at is not null) desc, created_at desc
-  limit 1;
+  -- Duyệt TỪNG email bị trùng → xoá các bản ghi thừa, giữ lại đúng 1
+  -- (ưu tiên bản ghi đã confirm, nếu không thì bản ghi tạo gần nhất),
+  -- rồi confirm email cho user được giữ lại.
+  for r in
+    select email from auth.users
+    group by email
+    having count(*) > 1
+  loop
+    -- Giữ lại 1 user
+    select id into keep_id
+    from auth.users
+    where email = r.email
+    order by (email_confirmed_at is not null) desc, created_at desc
+    limit 1;
 
-  if keep_id is not null then
-    -- Xoá các bản ghi trùng email (giữ lại keep_id)
+    -- Xoá các bản ghi trùng còn lại
     delete from auth.users
-    where email = 'admin@wedding.local'
-      and id <> keep_id;
+    where email = r.email and id <> keep_id;
 
     -- Xác nhận email → cho phép đăng nhập bằng mật khẩu ngay
     update auth.users
@@ -144,7 +151,7 @@ begin
         keep_id,
         jsonb_build_object(
           'sub', keep_id::text,
-          'email', 'admin@wedding.local',
+          'email', r.email,
           'email_verified', true,
           'phone_verified', false
         ),
@@ -153,10 +160,8 @@ begin
       );
     end if;
 
-    raise notice 'Admin user: % (đã confirm, đã xoá bản ghi trùng)', keep_id;
-  else
-    raise notice 'Chưa có user admin@wedding.local — hãy tạo trong Authentication → Users';
-  end if;
+    raise notice 'Đã dọn email trùng: % (giữ user %, đã confirm)', r.email, keep_id;
+  end loop;
 end $$;
 
 

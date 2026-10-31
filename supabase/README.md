@@ -16,48 +16,56 @@ File này idempotent (chạy lại nhiều lần vẫn OK) và làm 4 việc:
 
 1. Tạo bảng `public.guests` (cột `table_name` thay cho `table` vì `table` là từ khoá SQL)
 2. Bật Row Level Security
-3. Tạo policy `guests_admin_only` — **chỉ email `admin@wedding.local`** được đọc/ghi
-4. Bật realtime (để mọi thiết bị tự đồng bộ)
+3. Tạo policy `guests_authenticated_all` — **chỉ tài khoản đã đăng nhập** được đọc/ghi
+4. Bật realtime (để mọi thiết bị tự đồng bộ) + dọn user trùng email
 
 ---
 
-## Bước 2 — Tài khoản admin
+## Bước 2 — Tạo tài khoản admin
 
-Tài khoản `admin@wedding.local` **đã được tạo** (qua API signup), nhưng đang ở
-trạng thái **chưa xác nhận email** → chưa đăng nhập được.
+Trang `/admin` có form **email + mật khẩu**. Bạn tự quyết định email nào,
+nên cần tạo user trong Supabase:
 
-> ⚠️ **Lỗi "Invalid login credentials" dù mật khẩu đúng**
+**Authentication → Users → Add user → Create new user**
+
+1. **Email**: email bạn muốn dùng (vd. email của bạn)
+2. **Password**: mật khẩu bạn muốn đặt
+3. ✅ Tick **Auto Confirm User** ← **quan trọng**, nếu không sẽ không đăng nhập được
+4. Bấm **Create user**
+
+> 💡 Dùng **email thật** sẽ tiện hơn vì:
+> - Không cần confirm email thủ công
+> - Nếu sau này bật "Reset password" thì Supabase gửi mail được
 >
-> Khi signup mà user chưa confirm, Supabase vẫn tạo user **MỚI** dù email đã
-> tồn tại. Do đã gọi signup nhiều lần nên có nhiều row trùng email →
-> `signInWithPassword` không biết user nào cần soát mật khẩu → báo sai.
+> Email `.local` (vd. `admin@wedding.local`) **không nhận được mail** → phải
+> confirm thủ công trong Dashboard.
+
+### Nếu bị lỗi "Invalid login credentials" dù mật khẩu đúng
+
+Khi signup mà user chưa confirm, Supabase vẫn tạo user **MỚI** dù email đã
+tồn tại → nhiều row trùng email → `signInWithPassword` không biết user nào
+cần soát mật khẩu → báo sai.
+
+**Cách sửa:** chạy script ở Bước 1 (phần 6 trong `schema.sql`) — nó tự xoá
+user trùng, giữ lại đúng 1 và **confirm email** cho user đó.
+
+Hoặc làm thủ công: **Authentication → Users** → xoá các bản ghi trùng email,
+**chỉ giữ lại 1** → bấm **⋮** → **Confirm email**.
+
+### Tắt signup công khai (khuyến nghị)
+
+Form đăng nhập cho phép nhập email tự do, nên policy RLS chỉ chặn được
+anonymous. Để **chỉ tài khoản admin** truy cập được bảng `guests`:
+
+**Authentication → Sign In / Providers → Email → bỏ "Allow new users to sign up"**
+
+> Sau khi tắt signup, khi đăng nhập sai sẽ báo "Invalid login credentials" —
+> đúng như mong đợi.
 >
-> **Cách sửa:** chạy script ở Bước 1 (phần 6 trong `schema.sql`) — nó tự xoá
-> user trùng, giữ lại đúng 1 và **confirm email** cho user đó.
-
-### Cách 1 (khuyến nghị) — dùng email thật
-
-Nếu bạn muốn dùng email thật (vd. email của bạn):
-
-1. **Authentication → Users → Add user → Create new user**
-2. Điền email + mật khẩu
-3. ✅ Tick **Auto Confirm User**
-4. Xong
-
-Sau đó cập nhật `ADMIN_EMAIL` trong `lib/supabase.ts` **và** email trong
-policy (`supabase/schema.sql` → chạy lại script để áp policy mới).
-
-### Cách 2 — dùng lại `admin@wedding.local`
-
-Script ở Bước 1 đã tự xử lý (xoá trùng + confirm). Nếu script báo lỗi,
-làm thủ công trong Dashboard:
-
-1. **Authentication → Users** → tìm `admin@wedding.local`
-2. Xoá các bản ghi trùng, **chỉ giữ lại 1**
-3. Bấm **⋮** (menu) → **Confirm email**
-
-> Email `.local` không nhận được mail nên không thể bấm link xác nhận qua
-> email → phải xác nhận thủ công, hoặc dùng email thật (Cách 1).
+> Muốn siết chặt hơn nữa → sửa policy trong `schema.sql` thành:
+> ```sql
+> using ((select auth.jwt() ->> 'email') = 'email-của-bạn')
+> ```
 
 ### Đổi mật khẩu
 
