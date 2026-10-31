@@ -103,7 +103,11 @@ create index if not exists guests_created_at_idx
 --   Khi đó `signInWithPassword` không biết user nào cần soát mật khẩu
 --   → báo "Invalid login credentials" dù mật khẩu đúng.
 --
---   → Xoá hết user trùng, giữ lại ĐÚNG 1, và confirm email cho nó.
+--   Ngoài ra: user đơn lẻ (không trùng) mà chưa confirm cũng không
+--   đăng nhập được → báo "Email not confirmed".
+--
+--   → Với MỌI email: xoá bản ghi trùng, giữ đúng 1, confirm email,
+--     và bảo đảm có identity (bản ghi trong auth.identities).
 --
 -- ⚠️  `auth.users` là bảng của Supabase Auth — chỉ chạy được trong
 --     SQL Editor của project (không chạy được qua anon key).
@@ -114,19 +118,19 @@ declare
   r record;
   keep_id uuid;
 begin
-  -- Duyệt TỪNG email bị trùng → xoá các bản ghi thừa, giữ lại đúng 1
-  -- (ưu tiên bản ghi đã confirm, nếu không thì bản ghi tạo gần nhất),
-  -- rồi confirm email cho user được giữ lại.
+  -- Duyệt TỪNG email có trong auth.users (kể cả email không trùng)
   for r in
-    select email from auth.users
-    group by email
-    having count(*) > 1
+    select email from auth.users group by email
   loop
-    -- Giữ lại 1 user
+    -- Giữ lại 1 user: ưu tiên bản ghi đã confirm, nếu không thì bản ghi
+    -- có identity, nếu không thì bản ghi tạo gần nhất.
     select id into keep_id
     from auth.users
     where email = r.email
-    order by (email_confirmed_at is not null) desc, created_at desc
+    order by
+      (email_confirmed_at is not null) desc,
+      (exists (select 1 from auth.identities i where i.user_id = auth.users.id)) desc,
+      created_at desc
     limit 1;
 
     -- Xoá các bản ghi trùng còn lại
@@ -160,7 +164,7 @@ begin
       );
     end if;
 
-    raise notice 'Đã dọn email trùng: % (giữ user %, đã confirm)', r.email, keep_id;
+    raise notice 'Đã chuẩn hoá user: % (giữ %, đã confirm)', r.email, keep_id;
   end loop;
 end $$;
 
