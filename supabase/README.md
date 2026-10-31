@@ -21,12 +21,19 @@ File này idempotent (chạy lại nhiều lần vẫn OK) và làm 4 việc:
 
 ---
 
-## Bước 2 — Tạo / sửa tài khoản admin
-
-**Authentication → Users**
+## Bước 2 — Tài khoản admin
 
 Tài khoản `admin@wedding.local` **đã được tạo** (qua API signup), nhưng đang ở
 trạng thái **chưa xác nhận email** → chưa đăng nhập được.
+
+> ⚠️ **Lỗi "Invalid login credentials" dù mật khẩu đúng**
+>
+> Khi signup mà user chưa confirm, Supabase vẫn tạo user **MỚI** dù email đã
+> tồn tại. Do đã gọi signup nhiều lần nên có nhiều row trùng email →
+> `signInWithPassword` không biết user nào cần soát mật khẩu → báo sai.
+>
+> **Cách sửa:** chạy script ở Bước 1 (phần 6 trong `schema.sql`) — nó tự xoá
+> user trùng, giữ lại đúng 1 và **confirm email** cho user đó.
 
 ### Cách 1 (khuyến nghị) — dùng email thật
 
@@ -37,22 +44,26 @@ Nếu bạn muốn dùng email thật (vd. email của bạn):
 3. ✅ Tick **Auto Confirm User**
 4. Xong
 
-Sau đó cập nhật `ADMIN_EMAIL` trong `lib/supabase.ts` và `email` trong policy
-(`supabase/schema.sql` → chạy lại script để áp policy mới).
+Sau đó cập nhật `ADMIN_EMAIL` trong `lib/supabase.ts` **và** email trong
+policy (`supabase/schema.sql` → chạy lại script để áp policy mới).
 
-### Cách 2 — xác nhận tài khoản `admin@wedding.local` sẵn có
+### Cách 2 — dùng lại `admin@wedding.local`
 
-Trong danh sách Users, tìm `admin@wedding.local` → bấm **⋮** (menu) → **Confirm email**
+Script ở Bước 1 đã tự xử lý (xoá trùng + confirm). Nếu script báo lỗi,
+làm thủ công trong Dashboard:
 
-> ⚠️ **Lưu ý**: email `.local` không nhận được mail, nên không thể bấm link
-> xác nhận qua email. Phải xác nhận thủ công trong Dashboard (Cách 2) hoặc
-> dùng email thật (Cách 1).
+1. **Authentication → Users** → tìm `admin@wedding.local`
+2. Xoá các bản ghi trùng, **chỉ giữ lại 1**
+3. Bấm **⋮** (menu) → **Confirm email**
 
-### Có thể xoá user cũ trùng email
+> Email `.local` không nhận được mail nên không thể bấm link xác nhận qua
+> email → phải xác nhận thủ công, hoặc dùng email thật (Cách 1).
 
-Do gọi signup nhiều lần, có thể có vài user cùng email `admin@wedding.local`.
-Trong danh sách Users, xoá hết các bản ghi trùng, **chỉ giữ lại 1** và
-**Confirm email** cho user đó.
+### Đổi mật khẩu
+
+**Authentication → Users → chọn user → ⋮ → Reset password / Edit user**
+
+Mật khẩu **không** nằm trong code → an toàn khi bundle bị ai đó xem.
 
 ---
 
@@ -80,16 +91,39 @@ curl "https://qlqfyyzevlleksuepsxh.supabase.co/rest/v1/guests?select=id" \
 
 ---
 
-## Bước 5 — Migrate dữ liệu cũ
+## Bước 5 — Migrate dữ liệu cũ từ Cloudflare KV
 
-Dữ liệu cũ vẫn nằm trên Cloudflare KV. Trước khi deploy bản mới:
+> ⚠️ **Bản mới ĐÃ deploy** → endpoint `/api/guests` cũ trả 404, nên **không
+> xuất JSON được từ trang `/admin` nữa**. Phải lấy dữ liệu trực tiếp từ KV.
 
-1. Vào trang `/admin` trên bản **hiện tại** (production cũ) → bấm **Xuất JSON**
-   → có file `khach-moi-YYYY-MM-DD.json`
-2. Deploy bản mới
-3. Vào `/admin` bản mới → bấm **Nhập JSON** → chọn file đó
+### Cách 1 — Cloudflare Dashboard (không cần CLI)
+
+1. **Cloudflare Dashboard → Workers & Pages → wedding-journey → Settings → Functions → KV**
+2. Chọn namespace `wedding_guests` → **KV Values** → tìm key `guests:list`
+3. Bấm **View** → copy toàn bộ nội dung JSON
+
+### Cách 2 — Cloudflare CLI (nhanh hơn)
+
+```bash
+npx wrangler kv key get "guests:list" \
+  --namespace-id <NAMESPACE_ID> \
+  --remote > khach-moi.json
+```
+
+> Nếu lệnh trên báo lỗi quyền → CLI của bạn đang đăng nhập **account khác**
+> với project (xem `npx wrangler whoami`). Khi đó dùng Cách 1.
+
+### Import vào Supabase
+
+1. Đảm bảo đã đăng nhập thành công ở `/admin` (bước 1–3 xong)
+2. Vào `/admin` → bấm **Nhập JSON** → chọn file `khach-moi.json`
 
 `id` được sinh lại khi import → không trùng với dữ liệu cũ.
+
+### Nếu không còn dữ liệu cũ
+
+Không sao — bạn có thể nhập tay từ đầu, hoặc dùng **Xuất CSV** từ bản cũ
+nếu còn file.
 
 ---
 
@@ -103,3 +137,6 @@ Sau khi deploy bản mới và xác nhận hoạt động:
 - Xoá **Secrets**: `ADMIN_PASSWORD`, `ADMIN_SECRET`
 
 Cloudflare giờ chỉ còn làm hosting static — không còn binding, không còn secret.
+
+> ⚠️ **Chỉ xoá KV binding SAU khi đã migrate xong dữ liệu** (Bước 5) — xoá
+> binding là mất dữ liệu cũ (KV vẫn còn namespace nhưng app không gọi tới).

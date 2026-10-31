@@ -93,8 +93,75 @@ create index if not exists guests_created_at_idx
   on public.guests (created_at desc);
 
 
+-- =====================================================================
+-- 6. TÀI KHOẢN ADMIN — xoá user trùng & xác nhận email
+--
+-- VÌ SAO CẦN ĐOẠN NÀY?
+--   Khi signup mà user chưa confirm, GoTrue vẫn tạo user MỚI dù email
+--   đã tồn tại. Gọi signup nhiều lần → nhiều row trùng email.
+--   Khi đó `signInWithPassword` không biết user nào cần soát mật khẩu
+--   → báo "Invalid login credentials" dù mật khẩu đúng.
+--
+--   → Xoá hết user trùng, giữ lại ĐÚNG 1, và confirm email cho nó.
+--
+-- ⚠️  `auth.users` là bảng của Supabase Auth — chỉ chạy được trong
+--     SQL Editor của project (không chạy được qua anon key).
+-- =====================================================================
+
+do $$
+declare
+  keep_id uuid;
+begin
+  -- Giữ lại user ĐÃ có identity + confirmed; nếu không có thì giữ user
+  -- tạo gần nhất. Xoá các bản ghi trùng còn lại.
+  select id into keep_id
+  from auth.users
+  where email = 'admin@wedding.local'
+  order by (email_confirmed_at is not null) desc, created_at desc
+  limit 1;
+
+  if keep_id is not null then
+    -- Xoá các bản ghi trùng email (giữ lại keep_id)
+    delete from auth.users
+    where email = 'admin@wedding.local'
+      and id <> keep_id;
+
+    -- Xác nhận email → cho phép đăng nhập bằng mật khẩu ngay
+    update auth.users
+    set email_confirmed_at = coalesce(email_confirmed_at, now())
+    where id = keep_id;
+
+    -- Đảm bảo user có identity (bản ghi trong auth.identities)
+    if not exists (
+      select 1 from auth.identities where user_id = keep_id
+    ) then
+      insert into auth.identities (
+        id, user_id, provider_id, identity_data, provider,
+        last_sign_in_at, created_at, updated_at
+      ) values (
+        keep_id,
+        keep_id,
+        keep_id,
+        jsonb_build_object(
+          'sub', keep_id::text,
+          'email', 'admin@wedding.local',
+          'email_verified', true,
+          'phone_verified', false
+        ),
+        'email',
+        now(), now(), now()
+      );
+    end if;
+
+    raise notice 'Admin user: % (đã confirm, đã xoá bản ghi trùng)', keep_id;
+  else
+    raise notice 'Chưa có user admin@wedding.local — hãy tạo trong Authentication → Users';
+  end if;
+end $$;
+
+
 -- ---------------------------------------------------------------------
--- 6. Kiểm tra (chạy từng lệnh sau khi script)
+-- 7. Kiểm tra (chạy từng lệnh sau khi script)
 --
 -- RLS đang chặn anonymous:
 --   curl "https://<ref>.supabase.co/rest/v1/guests?select=id" \
@@ -104,4 +171,9 @@ create index if not exists guests_created_at_idx
 -- Realtime đã bật:
 --   select * from pg_publication_tables where tablename = 'guests';
 --   → kết quả: 1 dòng
+--
+-- Admin user đã sạch & confirmed:
+--   select email, email_confirmed_at, created_at
+--   from auth.users where email = 'admin@wedding.local';
+--   → kết quả: ĐÚNG 1 dòng, email_confirmed_at khác null
 -- ---------------------------------------------------------------------
