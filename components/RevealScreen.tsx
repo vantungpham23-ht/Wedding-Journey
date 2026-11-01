@@ -8,6 +8,7 @@ import ShatterLogo from "./ShatterLogo";
 import { createRandom, PARTICLE_SEED } from "@/lib/random";
 import { deriveWeWord, nameSegments } from "@/lib/invite";
 import { WEDDING_DATE_LUNAR_TEXT, WEDDING_DATE_FULL } from "@/lib/weddingDate";
+import { COUPLE_NAME } from "@/lib/weddingNames";
 
 // =====================================================================
 // REVEAL TIMING — smooth, liên tục, không delay thừa
@@ -25,7 +26,7 @@ const DATE = "27·12·2026";
 const T_DATE = T_EYEBROW + 0.35;          // 1.0s
 
 // Names: liền sau date
-const NAMES_TEXT = "Tùng Phạm & Thuý Hằng";
+const NAMES_TEXT = COUPLE_NAME;
 const T_NAMES = T_DATE + 0.5;             // 1.5s
 
 // Location: liền sau names

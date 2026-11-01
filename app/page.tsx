@@ -11,6 +11,7 @@ import {
   WEDDING_DATE_SHORT,
   WEDDING_DATE_LUNAR_TEXT,
 } from "@/lib/weddingDate";
+import { BRIDE_NAME, GROOM_NAME } from "@/lib/weddingNames";
 
 type Stage = "intro" | "revealing" | "revealed";
 
@@ -115,8 +116,8 @@ export default function Page() {
           >
             <IntroScreen
               onUnlock={handleUnlock}
-              bride="Thuý Hằng"
-              groom="Tùng Phạm"
+              bride={BRIDE_NAME}
+              groom={GROOM_NAME}
               guestTo={guest.to}
               guestTo2={guest.to2}
               guestFrom={guest.from}
@@ -162,8 +163,8 @@ export default function Page() {
               style={{ scrollSnapAlign: "start", backgroundColor: "#fdfbf7" }}
             >
               <RevealScreen
-                groom="Tùng Phạm"
-                bride="Thuý Hằng"
+                groom={GROOM_NAME}
+                bride={BRIDE_NAME}
                 guestTo={guest.to}
                 guestTo2={guest.to2}
                 guestRel={guest.rel}
@@ -176,8 +177,8 @@ export default function Page() {
             <DetailsSections
               groomInit="T"
               brideInit="H"
-              groom="Tùng Phạm"
-              bride="Thuý Hằng"
+              groom={GROOM_NAME}
+              bride={BRIDE_NAME}
               activeSection={activeSection}
               guestRel={guest.rel}
               guestWe={guest.we}

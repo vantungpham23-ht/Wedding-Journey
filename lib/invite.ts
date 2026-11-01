@@ -8,6 +8,7 @@
  */
 
 import { WEDDING_DATE_WITH_LUNAR } from "./weddingDate";
+import { COUPLE_NAME } from "./weddingNames";
 
 export interface InviteTarget {
   name: string;
@@ -156,6 +157,9 @@ export function nameSegments(
 /**
  * Câu mời hoàn chỉnh:
  *   "Kính mời Anh Châu Pew tới dự hôn lễ của chúng em"
+ *
+ * Dùng đồng nhất 2 cách xưng: `subjectWord(rel)` gọi khách,
+ * `weWord` là cách hai vợ chồng tự xưng.
  */
 export function buildInviteSentence(
   name: string,
@@ -195,7 +199,26 @@ export function buildInviteLink(target: InviteTarget, origin?: string): string {
   return url.toString();
 }
 
-/** Nội dung tin nhắn sẵn để paste vào Zalo / Messenger. */
+/**
+ * Nội dung tin nhắn sẵn để paste vào Zalo / Messenger.
+ *
+ * ── CẤU TRÚC ──
+ *   💍 <chức danh + tên khách>, <tên cặp đôi> trân trọng mời <đại từ>
+ *      tới dự hôn lễ của <chúng em / chúng mình / ...>
+ *
+ * Ví dụ:
+ *   "💍 Anh Phú & Chị Hân, Tùng Phạm & Thuý Hằng trân trọng mời anh chị
+ *    tới dự hôn lễ của chúng em."
+ *
+ * Mỗi vai chỉ dùng **1** cách xưng:
+ *   • Gọi khách   = chức danh + tên ("Anh Phú", "Cô Bác", ...)
+ *   • Đại từ     = `subjectWord(rel)` ("anh" / "chị" / "bạn")
+ *   • Chủ ngữ    = `COUPLE_NAME` ("Tùng Phạm & Thuý Hằng")
+ *   • Tự xưng   = `weWord` ("chúng em" / "chúng mình" / ...)
+ *
+ * Trước đây câu này trộn 3 cách xưng ("chúng mình ... mời bạn ... của
+ * chúng em") nên đọc rất lủng củng. Giờ mỗi vai có đúng 1 cách xưng.
+ */
 export function buildInviteText(target: InviteTarget, origin?: string): string {
   const name = target.name.trim();
   const name2 = target.name2?.trim();
@@ -203,16 +226,21 @@ export function buildInviteText(target: InviteTarget, origin?: string): string {
   const link = buildInviteLink(target, origin);
   const weWord = (target.we?.trim() || deriveWeWord(target.rel)).toLowerCase();
 
+  // Cặp "anh chị" → displayName đã gắn sẵn "Anh "/"Chị " rồi.
+  const isCouple = target.rel === COUPLE_REL;
+  const prefix = isCouple ? "" : honorificPrefix(target.rel);
+  const you = subjectWord(target.rel);
+
   const lines: string[] = [];
 
   if (name) {
-    const who = displayName(name, name2, target.rel);
-    const prefix = target.rel === COUPLE_REL ? "" : honorificPrefix(target.rel);
     lines.push(
-      `💍 ${prefix}${who}, chúng mình trân trọng mời bạn tới dự hôn lễ của ${weWord}.`
+      `💍 ${prefix}${displayName(name, name2, target.rel)}, ${COUPLE_NAME} trân trọng mời ${you} tới dự hôn lễ của ${weWord}.`
     );
   } else {
-    lines.push(`💍 Trân trọng mời bạn tới dự hôn lễ của ${weWord}.`);
+    lines.push(
+      `💍 ${COUPLE_NAME} trân trọng mời ${you} tới dự hôn lễ của ${weWord}.`
+    );
   }
 
   if (note) {
@@ -221,7 +249,7 @@ export function buildInviteText(target: InviteTarget, origin?: string): string {
 
   lines.push(
     "",
-    `Tùng Phạm & Thuý Hằng — ${WEDDING_DATE_WITH_LUNAR}`,
+    `${COUPLE_NAME} — ${WEDDING_DATE_WITH_LUNAR}`,
     "Kênh · Cẩm Bình · Hà Tĩnh",
     link
   );
