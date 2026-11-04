@@ -1,0 +1,128 @@
+
+--- 2026-11-03T23:30:51.320Z debug
+🪵  Writing logs to "/Users/aidenpham/Documents/Wedding-Journey/.wrangler/logs/wrangler.log"
+---
+
+--- 2026-11-03T23:30:51.319Z warn
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+---
+
+--- 2026-11-03T23:30:51.335Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:30:51.335Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:30:51.340Z log
+
+ ⛅️ wrangler 4.156.0 (update available 4.157.0)
+───────────────────────────────────────────────
+---
+
+--- 2026-11-03T23:30:51.350Z log
+No Functions. Shimming...
+---
+
+--- 2026-11-03T23:30:51.454Z debug
+Metrics dispatcher: Posting data {"deviceId":"e987ca08-4b7f-4a0a-bb25-a5c3f87a2f31","event":"wrangler command started","timestamp":1793748651454,"properties":{"amplitude_session_id":1793748651340,"amplitude_event_id":0,"wranglerVersion":"4.156.0","wranglerMajorVersion":4,"wranglerMinorVersion":156,"wranglerPatchVersion":0,"osPlatform":"Mac OS","osVersion":"Darwin Kernel Version 27.0.0: Tue Aug 11 21:20:40 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6020","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":null,"argsUsed":["ip","port"],"argsCombination":"ip, port","sanitizedCommand":"pages dev","sanitizedArgs":{},"currentAgentSkillsInstalled":null}}
+---
+
+--- 2026-11-03T23:30:51.486Z debug
+setting config
+---
+
+--- 2026-11-03T23:30:51.486Z debug
+Updating config... undefined undefined
+---
+
+--- 2026-11-03T23:30:51.508Z debug
+Metrics dispatcher: Failed to send request: fetch failed
+---
+
+--- 2026-11-03T23:31:29.146Z debug
+🪵  Writing logs to "/Users/aidenpham/Documents/Wedding-Journey/.wrangler/logs/wrangler.log"
+---
+
+--- 2026-11-03T23:31:29.146Z warn
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+---
+
+--- 2026-11-03T23:31:29.160Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:31:29.160Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:31:29.166Z log
+
+ ⛅️ wrangler 4.156.0 (update available 4.157.0)
+───────────────────────────────────────────────
+---
+
+--- 2026-11-03T23:31:29.176Z log
+No Functions. Shimming...
+---
+
+--- 2026-11-03T23:31:29.231Z debug
+Metrics dispatcher: Posting data {"deviceId":"e987ca08-4b7f-4a0a-bb25-a5c3f87a2f31","event":"wrangler command started","timestamp":1793748689231,"properties":{"amplitude_session_id":1793748689166,"amplitude_event_id":0,"wranglerVersion":"4.156.0","wranglerMajorVersion":4,"wranglerMinorVersion":156,"wranglerPatchVersion":0,"osPlatform":"Mac OS","osVersion":"Darwin Kernel Version 27.0.0: Tue Aug 11 21:20:40 PDT 2026; root:xnu-13432.1.9~1/RELEASE_ARM64_T6020","nodeVersion":24,"packageManager":"npm","isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":null,"argsUsed":["ip","port"],"argsCombination":"ip, port","sanitizedCommand":"pages dev","sanitizedArgs":{},"currentAgentSkillsInstalled":null}}
+---
+
+--- 2026-11-03T23:31:29.261Z debug
+setting config
+---
+
+--- 2026-11-03T23:31:29.261Z debug
+Updating config... undefined undefined
+---
+
+--- 2026-11-03T23:31:29.274Z debug
+Metrics dispatcher: Failed to send request: fetch failed
+---
+
+--- 2026-11-03T23:31:29.281Z debug
+local dev variables file not found at ".dev.vars". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:31:29.281Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:31:29.281Z debug
+.env file not found at "/Users/aidenpham/Documents/Wedding-Journey/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-11-03T23:31:29.282Z log
+Your Worker has access to the following bindings:
+---
+
+--- 2026-11-03T23:31:29.282Z log
+Binding                                                                   Resource                  Mode
+---
+
+--- 2026-11-03T23:31:29.282Z log
+env.CF_PAGES ("1")                                                        Environment Variable      local
+---
+
+--- 2026-11-03T23:31:29.282Z log
+env.CF_PAGES_BRANCH ("main")                                              Environment Variable      local
+---
+
+--- 2026-11-03T23:31:29.282Z log
+env.CF_PAGES_COMMIT_SHA ("cd2ff137ee67d3ad9f871f5f42b7d6647f0ef...")      Environment Variable      local
+---
+
+--- 2026-11-03T23:31:29.282Z log
+env.CF_PAGES_URL ("https://cd2ff13.wedding-journey.pages...")             Environment Variable      local
+---
+
+--- 2026-11-03T23:31:29.282Z log
+
+---

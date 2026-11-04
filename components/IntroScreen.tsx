@@ -121,6 +121,7 @@ function IntroParticles() {
 }
 
 // =====================================================================
+// =====================================================================
 // WAX SEAL BUTTON — con dấu TH (mở ra mượt mà)
 // =====================================================================
 function WaxSealButton({
@@ -132,118 +133,128 @@ function WaxSealButton({
   visible: boolean;
   interactive: boolean;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.button
       onClick={onClick}
       initial={{ opacity: 0 }}
       animate={visible ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.5, ease }}
+      whileHover={interactive && !prefersReducedMotion ? { scale: 1.04 } : undefined}
+      whileTap={interactive && !prefersReducedMotion ? { scale: 0.96 } : undefined}
       className="relative flex h-28 w-28 cursor-pointer items-center justify-center rounded-full sm:h-36 sm:w-36"
       aria-label="Mở thiệp mời"
     >
-      {/* Vòng sóng nhựa — lan ra như sáp nóng chảy */}
-      <motion.span
-        className="absolute inset-0 rounded-full"
-        style={{ border: "1px solid rgba(196, 164, 132, 0.5)" }}
-        initial={{ opacity: 0, scale: 0.65 }}
-        animate={
-          visible
-            ? {
-                opacity: [0, 0.6, 0],
-                scale: [0.65, 1.35, 1.7],
-                transition: { duration: 2.4, ease: easeSmooth },
-              }
-            : { opacity: 0, scale: 0.65 }
-        }
-      />
-
-      {/* Outer pulsing ring */}
-      <motion.span
-        variants={outerRingVariants}
-        className="absolute inset-0 rounded-full"
-        style={{ border: "1px solid rgba(196, 164, 132, 0.4)" }}
-      />
-
-      {/* Glow ring */}
-      <motion.span
-        variants={sealGlowVariants}
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: "transparent",
-          boxShadow: "0 0 32px 8px rgba(196, 164, 132, 0.25), 0 0 64px 16px rgba(196, 164, 132, 0.1)",
-        }}
-      />
-
-      {/* Thân con dấu — bung ra + xoay nhẹ như được ấn */}
+      {/* ═══ Lớp pulse: zoom ra → zoom vào liên tục để gợi ý "nhấn vào" ═══ */}
       <motion.div
-        className="relative flex h-full w-full items-center justify-center rounded-full"
-        style={{
-          background: "linear-gradient(145deg, #8b6f47 0%, #6b5235 20%, #4a3525 50%, #3d2a1c 80%, #2d1f15 100%)",
-          boxShadow:
-            "inset 0 2px 4px rgba(255, 240, 220, 0.12), inset 0 -2px 4px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3)",
-        }}
-        initial={{ scale: 0.55, rotate: -14 }}
+        className="relative flex h-full w-full items-center justify-center"
         animate={
-          visible
-            ? { scale: 1, rotate: 0, transition: { duration: 1.1, ease } }
-            : { scale: 0.55, rotate: -14 }
+          visible && !prefersReducedMotion ? { scale: [1, 1.05, 1] } : { scale: 1 }
         }
+        transition={{
+          duration: 2.4,
+          repeat: visible && !prefersReducedMotion ? Infinity : 0,
+          ease: "easeInOut",
+        }}
       >
-        {/* Vòng khắc trong */}
-        <div
-          className="absolute rounded-full"
-          style={{
-            inset: 10,
-            border: "1.5px solid rgba(196, 164, 132, 0.2)",
-            boxShadow:
-              "inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 -1px 2px rgba(255, 240, 220, 0.06)",
-          }}
-        />
-
-        {/* Vòng khắc trong 2 */}
-        <div
-          className="absolute rounded-full"
-          style={{
-            inset: 16,
-            border: "0.75px solid rgba(196, 164, 132, 0.12)",
-          }}
-        />
-
-        {/* Monogram: T & H */}
-        <motion.div
-          className="relative z-10 flex flex-col items-center"
-          initial={{ opacity: 0, scale: 0.8 }}
+        {/* Vòng sóng nhựa — lan ra như sáp nóng chảy */}
+        <motion.span
+          className="absolute inset-0 rounded-full"
+          style={{ border: "1px solid rgba(196, 164, 132, 0.5)" }}
+          initial={{ opacity: 0, scale: 0.65 }}
           animate={
             visible
               ? {
-                  opacity: 1,
-                  scale: 1,
-                  transition: { duration: 0.7, delay: 0.35, ease },
+                  opacity: [0, 0.6, 0],
+                  scale: [0.65, 1.35, 1.7],
+                  transition: { duration: 2.4, ease: easeSmooth },
                 }
-              : { opacity: 0, scale: 0.8 }
+              : { opacity: 0, scale: 0.65 }
+          }
+        />
+
+        {/* Outer pulsing ring */}
+        <motion.span
+          variants={outerRingVariants}
+          className="absolute inset-0 rounded-full"
+          style={{ border: "1px solid rgba(196, 164, 132, 0.4)" }}
+        />
+
+        {/* Glow ring */}
+        <motion.span
+          variants={sealGlowVariants}
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "transparent",
+            boxShadow:
+              "0 0 32px 8px rgba(196, 164, 132, 0.25), 0 0 64px 16px rgba(196, 164, 132, 0.1)",
+          }}
+        />
+
+        {/* Thân con dấu — bung ra + xoay nhẹ như được ấn */}
+        <motion.div
+          className="relative flex h-full w-full items-center justify-center rounded-full"
+          style={{
+            background:
+              "linear-gradient(145deg, #8b6f47 0%, #6b5235 20%, #4a3525 50%, #3d2a1c 80%, #2d1f15 100%)",
+            boxShadow:
+              "inset 0 2px 4px rgba(255, 240, 220, 0.12), inset 0 -2px 4px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3)",
+          }}
+          initial={{ scale: 0.55, rotate: -14 }}
+          animate={
+            visible
+              ? { scale: 1, rotate: 0, transition: { duration: 1.1, ease } }
+              : { scale: 0.55, rotate: -14 }
           }
         >
-          <span
-            className="font-[family-name:var(--font-playfair)] text-3xl leading-none text-[#c4a484] sm:text-4xl"
+          {/* Vòng khắc trong */}
+          <div
+            className="absolute rounded-full"
             style={{
-              fontWeight: 500,
-              letterSpacing: "-0.01em",
-              textShadow: "0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(196, 164, 132, 0.3)",
+              inset: 10,
+              border: "1.5px solid rgba(196, 164, 132, 0.2)",
+              boxShadow:
+                "inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 -1px 2px rgba(255, 240, 220, 0.06)",
             }}
-          >
-            T
-          </span>
-          <div className="my-0.5 h-px w-8 bg-gradient-to-r from-transparent via-[#c4a484]/60 to-transparent sm:my-1 sm:w-10" />
-          <span
-            className="font-[family-name:var(--font-playfair)] text-3xl leading-none italic text-[#c4a484] sm:text-4xl"
+          />
+
+          {/* Vòng khắc trong 2 */}
+          <div
+            className="absolute rounded-full"
             style={{
-              fontWeight: 500,
-              letterSpacing: "-0.01em",
-              textShadow: "0 1px 3px rgba(0,0,0,0.6), 0 0 8px rgba(196, 164, 132, 0.3)",
+              inset: 16,
+              border: "0.75px solid rgba(196, 164, 132, 0.12)",
             }}
+          />
+
+          {/* Monogram TH — text thuần Playfair Display, T & H lồng nhẹ */}
+          <motion.span
+            className="relative z-10 select-none font-[family-name:var(--font-playfair)] text-[2rem] leading-none sm:text-[2.5rem]"
+            style={{
+              letterSpacing: "-0.04em",
+              backgroundImage:
+                "linear-gradient(155deg, #f3e3c6 0%, #c4a484 42%, #8b6f47 70%, #eadcbe 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              filter:
+                "drop-shadow(0 1px 1.5px rgba(0,0,0,0.55)) drop-shadow(0 0 7px rgba(196, 164, 132, 0.25))",
+            }}
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={
+              visible
+                ? {
+                    opacity: 1,
+                    scale: 1,
+                    transition: { duration: 0.7, delay: 0.35, ease },
+                  }
+                : { opacity: 0, scale: 0.7 }
+            }
           >
-            H
-          </span>
+            <span className="italic">T</span>
+            <span className="-ml-[0.14em] not-italic">H</span>
+          </motion.span>
         </motion.div>
       </motion.div>
     </motion.button>

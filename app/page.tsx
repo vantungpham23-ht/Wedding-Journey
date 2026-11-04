@@ -6,6 +6,7 @@ import IntroScreen from "@/components/IntroScreen";
 import RevealScreen from "@/components/RevealScreen";
 import { DetailsSections } from "@/components/DetailsScreen";
 import ContinuityLayer from "@/components/ContinuityLayer";
+import Loading3DWrapper from "@/components/loading3d/Loading3DWrapper";
 import { installAudioUnlock, playShimmer } from "@/components/soundscape";
 import {
   WEDDING_DATE_SHORT,
@@ -13,7 +14,14 @@ import {
 } from "@/lib/weddingDate";
 import { BRIDE_NAME, GROOM_NAME } from "@/lib/weddingNames";
 
-type Stage = "intro" | "revealing" | "revealed";
+/**
+ * Các giai đoạn của trang:
+ *   loading3d → intro → revealing → revealed
+ *
+ * `loading3d` là cảnh 3D mở đầu (2 nhẫn quấn quít → nhân vật cúi chào).
+ * Sau khi xong → `intro` (thiệp mời 2D như hiện tại).
+ */
+type Stage = "loading3d" | "intro" | "revealing" | "revealed";
 
 interface Guest {
   to: string;
@@ -24,7 +32,7 @@ interface Guest {
 }
 
 export default function Page() {
-  const [stage, setStage] = useState<Stage>("intro");
+  const [stage, setStage] = useState<Stage>("loading3d");
   const [musicStarted, setMusicStarted] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [guest, setGuest] = useState<Guest>({
@@ -102,13 +110,34 @@ export default function Page() {
 
   return (
     <main className="relative h-screen w-full overflow-hidden">
+      {/* ============ LOADING 3D ============
+          Cảnh mở đầu: 2 nhẫn bay vào quấn quít → nhỏ dần rơi xuống →
+          chú rể & cô dâu đứng trên backdrop cúi chào.
+          Hiện overlay z-[60] nên nằm trên mọi thứ. */}
+      <AnimatePresence>
+        {stage === "loading3d" && (
+          <motion.div
+            key="loading3d"
+            className="fixed inset-0 z-[60]"
+            initial={{ opacity: 1 }}
+            exit={{
+              opacity: 0,
+              transition: { duration: 1.1, ease: "easeInOut" },
+            }}
+          >
+            <Loading3DWrapper onComplete={() => setStage("intro")} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Intro Screen Overlay */}
       <AnimatePresence>
         {stage === "intro" && (
           <motion.div
             key="intro"
             className="fixed inset-0 z-50"
-            initial={{ opacity: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{
               opacity: 0,
               transition: { duration: 1.2 },
@@ -140,7 +169,7 @@ export default function Page() {
 
       {/* Section snap scroll container */}
       <AnimatePresence>
-        {stage !== "intro" && (
+        {(stage === "revealing" || stage === "revealed") && (
           <motion.div
             key="sections-container"
             ref={sectionsRef}

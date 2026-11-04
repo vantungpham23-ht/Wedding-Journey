@@ -13,6 +13,62 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let pendingChime: (() => void) | null = null;
 
+/** Listener được gọi khi AudioContext chuyển sang "running" */
+const audioReadyListeners = new Set<() => void>();
+
+/** Trạng thái tắt tiếng (mute) — người dùng bấm nút loa */
+let muted = false;
+
+function notifyAudioReady() {
+  audioReadyListeners.forEach((cb) => {
+    try {
+      cb();
+    } catch {
+      /* listener lỗi không được chặn audio */
+    }
+  });
+}
+
+/**
+ * Đăng ký callback chạy khi AudioContext sẵn sàng phát âm thanh.
+ *
+ * ⚠ Trình duyệt chặn autoplay → AudioContext bắt đầu ở state
+ *   "suspended" và chỉ chạy sau khi user tương tác lần đầu.
+ *   Dùng hàm này để khởi động ambience đúng lúc, thay vì mất tiếng.
+ */
+export function onAudioReady(cb: () => void): () => void {
+  if (ctx && ctx.state === "running") {
+    cb();
+    return () => {};
+  }
+  audioReadyListeners.add(cb);
+  return () => {
+    audioReadyListeners.delete(cb);
+  };
+}
+
+/** AudioContext đã chạy chưa (tức là đã có tương tác người dùng) */
+export function isAudioRunning(): boolean {
+  return !!ctx && ctx.state === "running";
+}
+
+/** Đang tắt tiếng hay không */
+export function isMuted(): boolean {
+  return muted;
+}
+
+/**
+ * Bật / tắt toàn bộ âm thanh.
+ *
+ * Dùng `setTargetAtTime` để fade mượt, không cắt đột ngột giữa lúc
+ * đang phát tiếng.
+ */
+export function setMuted(value: boolean) {
+  muted = value;
+  if (!ctx || !master) return;
+  master.gain.setTargetAtTime(muted ? 0 : 0.85, ctx.currentTime, 0.06);
+}
+
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (ctx) return ctx;
@@ -44,7 +100,10 @@ export function unlockAudio() {
         // Chờ nhẹ để không chồng lên tiếng "chạm sáp"
         setTimeout(fn, 500);
       }
+      notifyAudioReady();
     });
+  } else if (c.state === "running") {
+    notifyAudioReady();
   }
 }
 
