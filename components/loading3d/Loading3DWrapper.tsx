@@ -18,7 +18,9 @@
  */
 
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import MuteButton from "@/components/MuteButton";
 
 /** Canvas 3D — chỉ load phía client */
 const Loading3D = dynamic(() => import("./Loading3D"), { ssr: false });
@@ -31,6 +33,8 @@ interface Props {
 export default function Loading3DWrapper({ onComplete }: Props) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  /** Scene đã bắt đầu chạy (đồng hồ chạy) → ẩn overlay */
+  const [sceneStarted, setSceneStarted] = useState(false);
 
   // Kiểm tra WebGL có khả dụng không
   useEffect(() => {
@@ -67,9 +71,50 @@ export default function Loading3DWrapper({ onComplete }: Props) {
       {/* Scene 3D */}
       {ready && !failed && (
         <div className="absolute inset-0">
-          <Loading3D onDone={onComplete} />
+          <Loading3D onDone={onComplete} onStart={() => setSceneStarted(true)} />
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════
+          OVERLAY "ĐANG CHUẨN BỊ" — chỉ hiện khi scene CHƯA chạy.
+
+          ⚠ VÌ SAO CẦN:
+          Đo được Canvas cần ~520ms (parse JS + hydrate React + setup
+          r3f) trước khi frame đầu tiên vẽ được. Trên mạng di động +
+          máy yếu con, con số này dễ lên 1-2s. User nhìn màn hình
+          đen TRỐNG và tưởng web bị treo → bấm thoát.
+
+          1 dòng chữ nhẹ + 3 chấm nhấp nháy giải quyết đúng vấn đề đó,
+          mà không cần thanh tiến trình (sẽ phải làm giả số %).
+
+          ⚠ Tự mờ dần khi scene bắt đầu → không giật màn hình.
+          ═══════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {ready && !failed && !sceneStarted && (
+          <motion.div
+            className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+          >
+            <p className="font-sans text-[10px] uppercase tracking-[0.35em] text-[#c4a484]/70 sm:text-[11px]">
+              Đang chuẩn bị
+              <motion.span
+                className="inline-block"
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{
+                  duration: 1.4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                ...
+              </motion.span>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Vignette cho cảm giác cinematic */}
       <div
@@ -79,6 +124,10 @@ export default function Loading3DWrapper({ onComplete }: Props) {
             "radial-gradient(ellipse 75% 60% at 50% 45%, transparent 40%, rgba(10,6,4,0.55) 100%)",
         }}
       />
+
+      {/* Nút tắt tiếng — góc trên phải, tự ẩn sau 3s
+          → không làm rối màn hình loading nhưng vẫn tắt được. */}
+      <MuteButton className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6" />
     </div>
   );
 }

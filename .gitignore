@@ -8,5 +8,6 @@ node_modules
 dist
 out
 .next
+.next-dev
 # TypeScript incremental build cache
 tsconfig.tsbuildinfo

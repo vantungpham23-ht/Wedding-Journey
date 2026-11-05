@@ -13,6 +13,13 @@
  *
  * ── PROGRESS ──
  * Trả về `progress` (0..1) để hiện thanh loading.
+ *
+ * ── HERO vs FULL ──
+ * ⚠ QUAN TRỌNG cho tốc độ: model được chia 2 nhóm.
+ *   • "hero" — 2 chiếc nhẫn (~1MB). Tải xong → cảnh BẮT ĐẦU.
+ *   • "full" — backdrop + nhân vật (~14MB). Tải NỀN, không chặn.
+ *
+ *   Trước đây cảnh đợi cả 15MB → trên mạng di động mất 10-20s.
  */
 
 import { useLoader } from "@react-three/fiber";
@@ -33,6 +40,17 @@ export const MODEL = {
 } as const;
 
 /**
+ * Phân loại model: "hero" (chặn cảnh) hay "full" (tải nền).
+ *
+ * Khớp với `assetTracker.hero` / `assetTracker.full` trong `store.ts`.
+ */
+function kindOf(path: string): "hero" | "full" {
+  return assetTracker.hero.some((name) => path.includes(name))
+    ? "hero"
+    : "full";
+}
+
+/**
  * DRACOLoader dùng chung cho mọi model — tạo 1 lần, dispose khi hết.
  */
 let sharedDraco: DRACOLoader | null = null;
@@ -42,6 +60,38 @@ function getDracoLoader(): DRACOLoader {
     sharedDraco = new DRACOLoader();
     // Decoder local trong /public/draco — khớp version three đang dùng
     sharedDraco.setDecoderPath("/draco/");
+
+    // ⚠ `workerLimit` — SỬA LẠI (đợt trước đặt là 1 → SAI).
+    //
+    // Đo được: 2 nhẫn cần decode ~615ms với `workerLimit = 1`.
+    // Lý do: DRACOLoader phân bổ task theo `worker._taskLoad` (chi phí
+    // ước tính), KHÔNG phải round-robin. Với limit = 1, cả 2 nhẫn
+    // (bride + groom) được giao cho CÙNG 1 worker → giải nén TUẦN TỰ
+    // → thời gian decode = tổng của cả 2.
+    //
+    // Với limit = 2 (mặc định của three): 2 nhẫn decode SONG SONG trên
+    // 2 worker → thời gian = max của 2 thay vì tổng → nhanh hơn ~2×.
+    //
+    // ⚠ Trade-off: 2 worker × WASM decoder ≈ vài MB RAM. Trên mobile vẫn
+    //   rất nhỏ so với 8MB model + textures. Đáng để đổi lấy ~300ms.
+    //
+    // ⚠ GIỚI HẠN: `navigator.hardwareConcurrency` thường >= 4 trên
+    //   mobile → không sợ oversubscribe. Nhưng ta chỉ cần 2 task cho
+    //   2 nhẫn → set 2 là đủ, không cần 4.
+    sharedDraco.setWorkerLimit(2);
+
+    // ⚠ PRELOAD DECODER — gọi NGAY, không đợi model đầu tiên.
+    //
+    // Đo được timeline thực tế (dev, localhost):
+    //   657ms  → Canvas mount, DRACOLoader bắt đầu tải decoder
+    //   1271ms → decode xong → clock chạy
+    //   ⇒ 615ms bị mất vào việc tải (344KB) + khởi tạo WASM
+    //
+    // `preload()` gọi `_initDecoder()` ngay → tải `draco_wasm_wrapper.js`
+    // (59KB) + `draco_decoder.wasm` (286KB) SONG SONG với JS bundle.
+    // Nhờ vậy decoder đã sẵn sàng khi Canvas mount → mất đúng ~150ms
+    // init WASM thay vì 615ms.
+    sharedDraco.preload();
   }
   return sharedDraco;
 }
@@ -70,8 +120,10 @@ export function useGLB(path: string) {
 
   useEffect(() => {
     setProgress(1);
-    // Báo "model này đã sẵn sàng" → timeline chỉ chạy khi TẤT CẢ xong
-    assetTracker.markLoaded(path);
+    // Báo "model này đã sẵn sàng".
+    //   • hero → mở chặng 1, timeline bắt đầu
+    //   • full → mở chặng 2, nhân vật fade-in
+    assetTracker.markLoaded(path, kindOf(path));
   }, [gltf, path]);
 
   return { gltf, progress };

@@ -115,6 +115,19 @@ export default function Ring({ side, url, tint = "#f0dcbf" }: RingProps) {
     // hoàn toàn (trước lúc nhẫn bắt đầu bay vào).
     g.visible = s.opacity > 0.001;
 
+    // ── DEBUG (chỉ dev): đo thời điểm nhẫn HIỆN THỰC SỰ ──
+    // Đây là mốc user thực sự "thấy nhẫn" — khác với lúc clock bắt đầu.
+    if (
+      process.env.NODE_ENV !== "production" &&
+      g.visible &&
+      typeof window !== "undefined"
+    ) {
+      const w = window as unknown as { __ringVisibleAt?: number };
+      if (w.__ringVisibleAt === undefined) {
+        w.__ringVisibleAt = Math.round(performance.now());
+      }
+    }
+
     // Mờ dần — dùng material đã cache, không traverse lại mỗi frame
     const mats = (g.children[0] as unknown as { __fadeMats?: Material[] })
       ?.__fadeMats;

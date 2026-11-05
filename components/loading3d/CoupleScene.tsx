@@ -63,7 +63,7 @@
  */
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimationMixer,
   type AnimationAction,
@@ -326,6 +326,19 @@ function Character({
   /** Trạng thái blend hiện tại — chỉ đổi khi cần (tránh compile lại shader mỗi frame) */
   const lastBlend = useRef(true);
 
+  /**
+   * Asset chưa sẵn sàng → nhân vật ẩn hoàn toàn.
+   *
+   * ⚠ VÌ SAO CẦN: giờ backdrop + nhân vật TẢI NỀN (không chặn cảnh).
+   *   Nếu không có cờ này, `useFrame` sẽ set `g.visible = true` ngay
+   *   khi timeline tới mốc `coupleIn` — nhưng lúc đó model còn đang
+   *   tải → mesh rỗng / chưa có geometry → nhân vật xuất hiện với
+   *   tư thế sai rồi mới "nhảy" đúng, hoặc lỗi render.
+   *
+   *   → Chỉ cho hiện khi model ĐÃ tải xong.
+   */
+  const [assetReady, setAssetReady] = useState(false);
+
   // Cache material để fade mà không traverse mỗi frame
   const fadeMats = useMemo(() => {
     const list: Material[] = [];
@@ -353,6 +366,11 @@ function Character({
     return list;
   }, [gltf]);
 
+  // Model đã tải xong → cho phép hiện
+  useEffect(() => {
+    setAssetReady(true);
+  }, [gltf]);
+
   // Dừng animation khi unmount
   useEffect(() => {
     return () => {
@@ -364,6 +382,15 @@ function Character({
   useFrame(() => {
     const g = group.current;
     if (!g) return;
+
+    // ⚠ Model chưa tải xong → ẩn hoàn toàn.
+    //   Backdrop/nhân vật giờ tải NỀN, nên timeline có thể tới mốc
+    //   `coupleIn` TRƯỚC khi model sẵn sàng. Không có guard này →
+    //   nhân vật hiện với mesh rỗng rồi giật lại.
+    if (!assetReady) {
+      g.visible = false;
+      return;
+    }
 
     const t = clock.time;
 
@@ -506,6 +533,21 @@ export default function CoupleScene() {
   const { gltf } = useGLB("/models/wedding-backdrop.glb");
   const backdropRef = useRef<Group>(null);
 
+  /**
+   * Backdrop tải NỀN → có thể xong SAU mốc `backdropReady` của
+   * timeline. Nếu không xử lý, backdrop sẽ "pop" (hiện đột ngột
+   * với opacity=1) giữa cảnh → rất giật.
+   *
+   * → Dùng 1 lớp fade riêng: sau khi model xong → fade 0→1 trong
+   *   1.2s, nhân với reveal của timeline.
+   */
+  const [assetReady, setAssetReady] = useState(false);
+  const fadeStart = useRef<number | null>(null);
+
+  useEffect(() => {
+    setAssetReady(true);
+  }, [gltf]);
+
   // Clone backdrop + ép vật liệu không phản chiếu quá mức
   const backdropClone = useMemo(() => {
     const c = gltf.scene.clone(true);
@@ -554,18 +596,34 @@ export default function CoupleScene() {
     // ⚠ Nhẫn KHÔNG biến mất nữa — chúng bay lên trên đầu 2 nhân vật
     // và lơ lửng ở đó, nên backdrop có thể hiện ra SONG SONG với nhẫn.
     const reveal = easeOutCubic(lerpProgress(t, T.backdropIn, T.backdropReady));
+
+    // ⚠ Fade riêng cho lúc model vừa tải xong (tải nền).
+    //   Nếu model xong SAU mốc `backdropReady`, reveal đã = 1 → backdrop
+    //   sẽ pop ngay. Lớp fade này giữ nó mềm mại.
+    let assetFade = 1;
+    if (!assetReady) {
+      assetFade = 0;
+    } else if (fadeStart.current === null) {
+      fadeStart.current = t;
+    } else {
+      assetFade = easeOutCubic(
+        lerpProgress(t, fadeStart.current, fadeStart.current + 1.2)
+      );
+    }
+
+    const opacity = reveal * assetFade;
     for (const mat of backdropMats) {
-      mat.opacity = reveal;
+      mat.opacity = opacity;
       // Khi đang mờ, tắt depthWrite để các mặt sau không bị cắt
       // hụt tạo vệt tối lỗm xổm. Bật lại khi đã đặc hoàn toàn.
-      mat.depthWrite = reveal > 0.98;
+      mat.depthWrite = opacity > 0.98;
 
       // ⚠ PERF QUAN TRỌNG: `transparent = true` buộc GPU vào chế độ
       //   blend + SẮP XẾP theo khoảng cách, và QUYẾT TẬT early-Z
       //   rejection (depth pre-pass). Với backdrop 1.8M vertices phủ
       //   gần hết màn hình, đây là mất năng lực GPU rất lớn.
       //   → Chỉ bật `transparent` trong lúc fade, tắt lại khi đặc.
-      const needsBlend = reveal < 0.999;
+      const needsBlend = opacity < 0.999;
       if (mat.transparent !== needsBlend) {
         mat.transparent = needsBlend;
         // Bật/tắt transparent cần compile lại shader

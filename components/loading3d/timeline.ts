@@ -4,50 +4,68 @@
  * ── TRIỂN KHAI ──
  * Cảnh 3D có 6 giai đoạn, mỗi giai đoạn là 1 "chương" của câu chuyện:
  *
- *   0.0s →  0.8s   DARKNESS    — màn hình trống hoàn toàn, chờ không khí
- *   0.8s →  4.2s   RINGS IN    — 2 chiếc nhẫn bay vào từ 2 phía, CHẬM
+ *   0.0s →  0.15s  DARKNESS    — khoảng lặng ngắn trước khi nhẫn xuất hiện
+ *   0.15s → 3.55s  RINGS IN    — 2 chiếc nhẫn bay vào từ 2 phía, CHẬM
  *                                 và nhẹ nhàng (3.4s, ease in-out)
- *   4.2s →  6.2s   RINGS ORBIT — 2 nhẫn quấn quít quanh nhau (2.0s)
- *   4.9s →  6.5s   BACKDROP    — wedding backdrop mờ dần hiện ra (nhẫn
+ *   3.55s → 5.55s  RINGS ORBIT — 2 nhẫn quấn quít quanh nhau (2.0s)
+ *   4.25s → 5.85s  BACKDROP    — wedding backdrop mờ dần hiện ra (nhẫn
  *                                 vẫn còn trên màn hình, ở phía trước)
- *   6.2s →  8.6s   RINGS RISE  — 2 nhẫn bay lên cao, tách ra, trôi ngay
+ *   5.55s → 7.95s  RINGS RISE  — 2 nhẫn bay lên cao, tách ra, trôi ngay
  *                                 trên đầu chú rể + cô dâu, cao hơn cả vòm
- *   6.6s →  8.4s   COUPLE      — chú rể + cô dâu xuất hiện trên sân khấu,
+ *   5.95s → 7.75s  COUPLE      — chú rể + cô dâu xuất hiện trên sân khấu,
  *                                 đứng yên tự nhiên (tay buông, thở nhẹ)
- *   8.4s → 11.4s   BOW         — cúi chào (đoạn cắt từ clip Mixamo),
+ *   7.75s → 10.75s BOW         — cúi chào (đoạn cắt từ clip Mixamo),
  *                                 camera ZOOM VÀO 2 nhân vật
- *  10.8s → 13.2s   HANDOFF     — camera lùi ra → hiện nút "Mở thiệp mời"
+ *  10.15s → 12.55s HANDOFF     — camera lùi ra → hiện nút "Mở thiệp mời"
+ *
+ * ── ⚠ THAY ĐỔI: CẮT "DARKNESS" 0.8s → 0.15s ──
+ * Đo được (dev, localhost): nhẫn hiện ở ~2.1s kể từ lúc mở trang.
+ * Phân rã:
+ *   520ms  parse JS + hydrate React + setup r3f
+ *   615ms  tải + init Draco decoder (344KB)
+ *   800ms  "darkness" CỐ Ý trong timeline  ← ĐÃ CẮT
+ *
+ * 800ms "chờ trước khi nhẫn xuất hiện" là khoảng chết thuần túy —
+ * người xem chỉ nhìn màn hình tối, không có gì xảy ra. Đã giảm còn
+ * 0.15s (vừa đủ để màn hình kịp chuyển từ trắng → nền đen).
+ *
+ * ⚠ Tất cả mốc sau `ringEnter` dịch sớm đúng 0.65s → TỔNG thời lượng
+ *   cảnh giảm từ 13.2s → 12.55s (vẫn đủ dài cho câu chuyện).
  *
  * ⚠ Nhẫn KHÔNG BAO GIỜ biến mất. Sau khi trôi lên trên đầu 2 nhân vật,
  * chúng lơ lửng nhẹ nhàng tới hết cảnh (bay + đảo chậm, không tan).
  *
- * ⚠ BẤT ĐỒNG BỘ NHẸ VỚI HÀNH ĐỘNG: nhân vật đứng thẳng lại ở 11.4s
- *   nhưng camera đã bắt đầu lùi ra từ 10.8s → màn hình nút hiện ra
+ * ⚠ BẤT ĐỒNG BỘ NHẸ VỚI HÀNH ĐỘNG: nhân vật đứng thẳng lại ở 10.75s
+ *   nhưng camera đã bắt đầu lùi ra từ 10.15s → màn hình nút hiện ra
  *   TRƯỚC khi nhân vật kịp đứng thẳng hẳn. Cố ý: người xem không
- *   phải chờ, và cảnh ngắn lại 2s.
+ *   phải chờ, và cảnh ngắn lại.
  *
  * Mọi component đọc `t` (giây) từ 1 store duy nhất → không bao giờ
  * lệch nhịp với nhau.
  */
 
 /** Tổng thời lượng loading (giây) */
-export const LOADING_DURATION = 13.2;
+export const LOADING_DURATION = 12.55;
 
 /** Thời điểm bắt đầu mỗi giai đoạn */
 export const PHASE = {
   backdrop: 0.0,
-  rings: 0.8,
-  orbit: 4.2,
-  rise: 6.2,
-  float: 8.6,
-  couple: 6.6,
-  handoff: 11.4,
+  rings: 0.15,
+  orbit: 3.55,
+  rise: 5.55,
+  float: 7.95,
+  couple: 5.95,
+  handoff: 10.75,
 } as const;
 
 /** Các mốc thời gian con (giây) */
 export const T = {
-  /** Nhẫn bắt đầu bay vào — màn hình lúc này trống hoàn toàn */
-  ringEnter: 0.8,
+  /**
+   * Nhẫn bắt đầu bay vào.
+   *
+   * ⚠ ĐÃ GIẢM: 0.8 → 0.15 (xem ghi chú bên dưới).
+   */
+  ringEnter: 0.15,
   /**
    * Nhẫn bay xong, bắt đầu quấn quít.
    *
@@ -56,21 +74,21 @@ export const T = {
    * ngay lập tức). Kết quả: nhẫn trôi vào khung hình một cách nhẹ
    * nhàng thay vì "bắn" vào.
    */
-  ringLock: 4.2,
+  ringLock: 3.55,
   /** Nhẫn quấn quít xong → bắt đầu bay lên trên đầu 2 nhân vật */
-  ringOrbitEnd: 6.2,
+  ringOrbitEnd: 5.55,
   /** Nhẫn đã trôi tới vị trí lơ lửng, bắt đầu bay lơ lửng nhẹ */
-  ringFloat: 8.6,
+  ringFloat: 7.95,
   /** Backdrop bắt đầu mờ dần hiện ra (nhẫn vẫn ở phía trước) */
-  backdropIn: 4.9,
+  backdropIn: 4.25,
   /** Backdrop mờ dần xong (1.6s sau backdropIn) */
-  backdropReady: 6.5,
+  backdropReady: 5.85,
   /** Nhân vật bắt đầu xuất hiện trên sân khấu */
-  coupleIn: 6.6,
+  coupleIn: 5.95,
   /** Nhân vật đã hiện hoàn toàn, đứng yên chờ */
-  coupleStand: 7.8,
+  coupleStand: 7.15,
   /** Bắt đầu cúi chào */
-  coupleBow: 8.4,
+  coupleBow: 7.75,
   /**
    * Cúi xong, ngẩng lên, đứng yên chào.
    *
@@ -79,7 +97,7 @@ export const T = {
    * world-velocity cho thấy hệ số 0.85× (chú rể) / 0.91× (cô dâu)
    * → mượt.
    */
-  coupleBowOut: 11.4,
+  coupleBowOut: 10.75,
   /**
    * Camera bắt đầu lùi ra (bắt đầu TẠI ĐÂY, không đợi hết cúi).
    *
@@ -87,9 +105,9 @@ export const T = {
    * lên, nên màn hình nút hiện ra mà không phải chờ nhân vật đứng
    * thẳng hẳn.
    */
-  cameraPull: 10.8,
+  cameraPull: 10.15,
   /** Xong, hiện nút */
-  done: 13.2,
+  done: 12.55,
 } as const;
 
 /**

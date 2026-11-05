@@ -36,6 +36,12 @@ import CoupleScene from "./CoupleScene";
 import { assetTracker, clock, resetClock } from "./store";
 import { cameraYAt, cameraZAt, easeInOutSine, lerpProgress, T } from "./timeline";
 import { MODEL } from "./useGLB";
+import {
+  resetSoundScore,
+  startSoundScore,
+  stopSoundScore,
+  updateSoundScore,
+} from "./soundscore";
 
 /**
  * Ánh sáng toàn cảnh.
@@ -209,7 +215,13 @@ function CameraRig() {
  * Driver timeline — cập nhật `clock.time` mỗi frame.
  * Đây là "trái tim" của animation: mọi thứ khác chỉ đọc `clock.time`.
  */
-function TimelineDriver({ onDone }: { onDone: () => void }) {
+function TimelineDriver({
+  onDone,
+  onStart,
+}: {
+  onDone: () => void;
+  onStart?: () => void;
+}) {
   const done = useRef(false);
   const elapsed = useRef(0);
 
@@ -218,15 +230,25 @@ function TimelineDriver({ onDone }: { onDone: () => void }) {
     elapsed.current = 0;
     done.current = false;
 
-    // ⚠ ASSET GATE — đồng hồ CHỈ chạy khi mọi model đã tải xong.
+    // ⚠ SOUNDSCORE — âm thanh tổng hợp bằng Web Audio (0 byte tải
+    //   thêm, không phải tải file MP3 nào → không làm chậm mobile).
     //
-    //   Trước đây đồng hồ chạy ngay khi Canvas mount. Trong lúc tải
-    //   ~13MB model, timeline đã trôi mất 2-4s → khi model xong:
-    //     • nhân vật hiện ra đột ngột giữa cảnh (mất trôi chạy)
-    //     • GPU phải compile shader NGAY LÚC ĐÓ → khựng lag
+    //   Reset trước khi start để mỗi lần mount đều phát lại từ đầu.
+    resetSoundScore();
+    startSoundScore();
+
+    // ⚠ ASSET GATE — đồng hồ chỉ chờ CHẶNG 1 (2 chiếc nhẫn ~432KB).
     //
-    //   Giờ: đợi tải xong → reset → chạy từ 0. Màn hình đen trong
-    //   lúc chờ (đúng như thiết kế "DARKNESS 0.0 → 0.8s").
+    //   TRƯỚC ĐÂY: chờ cả 5 model (~15MB). Trên mạng di động 4G,
+    //   15MB mất 10-20 giây → người dùng nhìn màn hình đen đặc rồi
+    //   mới thấy cảnh. Đây là lý do "chờ rất lâu".
+    //
+    //   GIỜ: chỉ chờ nhẫn (~432KB, tải trong 1-2s trên 4G) → timeline
+    //   chạy ngay. Backdrop + nhân vật (~8MB) tải NỀN song song,
+    //   tự fade-in khi xong (xem `Character` trong CoupleScene).
+    //
+    //   Vẫn reset về 0 khi bắt đầu → không mất trôi chạy, không
+    //   nhân vật hiện đột ngột giữa cảnh.
     let started = false;
     const begin = () => {
       if (started) return;
@@ -234,15 +256,48 @@ function TimelineDriver({ onDone }: { onDone: () => void }) {
       resetClock();
       elapsed.current = 0;
       clock.running = true;
+      // Báo ra ngoài → ẩn overlay "đang chuẩn bị"
+      onStart?.();
+      // ── DEBUG (chỉ dev) ──
+      if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+        const w = window as unknown as { __timeline?: Record<string, number> };
+        if (w.__timeline) {
+          w.__timeline.clockStartAt = Math.round(performance.now());
+        }
+      }
     };
 
     const unwatch = assetTracker.onAllReady(begin);
-    // Dự phòng: model lỗi / mạng chậm → vẫn phải chạy cảnh
-    const clearTimer = assetTracker.startFallbackTimer(begin, 8000);
+    // Dự phòng: mạng chậm / model lỗi → vẫn phải chạy cảnh
+    const clearTimer = assetTracker.startFallbackTimer(begin, 6000);
+
+    // ── DEBUG: đo timeline thực tế (chỉ dev) ──
+    if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+      const w = window as unknown as { __timeline?: Record<string, number> };
+      w.__timeline = {
+        mountAt: Math.round(performance.now()),
+        clockStartAt: 0,
+        heroReadyAt: 0,
+      };
+      const unwatchHero = assetTracker.onAllReady(() => {
+        if (w.__timeline) {
+          w.__timeline.heroReadyAt = Math.round(performance.now());
+        }
+      });
+      return () => {
+        unwatch();
+        unwatchHero();
+        clearTimer();
+        stopSoundScore();
+      };
+    }
 
     return () => {
       unwatch();
       clearTimer();
+      // Fade out ambience khi scene unmount → không đè tiếng drone
+      // lên nhạc nền ở intro screen.
+      stopSoundScore();
     };
   }, []);
 
@@ -255,6 +310,10 @@ function TimelineDriver({ onDone }: { onDone: () => void }) {
         clock.time = T.done;
       }
     }
+
+    // ── SOUNDSCORE: đồng bộ cue theo timeline ──
+    // Gọi mỗi frame → cue phát đúng khoảnh khắc hình ảnh chuyển.
+    updateSoundScore(clock.time);
 
     if (!done.current && clock.time >= T.done) {
       done.current = true;
@@ -276,7 +335,14 @@ function TimelineDriver({ onDone }: { onDone: () => void }) {
  * (mặt phẳng y ≈ -0.40) nên không cần lớp này.
  */
 
-export default function Loading3D({ onDone }: { onDone: () => void }) {
+export default function Loading3D({
+  onDone,
+  onStart,
+}: {
+  onDone: () => void;
+  /** Báo khi timeline bắt đầu chạy (để ẩn overlay "đang chuẩn bị") */
+  onStart?: () => void;
+}) {
   return (
     <Canvas
       camera={{ position: [0, 1.75, 8.2], fov: 42, near: 0.1, far: 100 }}
@@ -305,18 +371,35 @@ export default function Loading3D({ onDone }: { onDone: () => void }) {
       frameloop="always"
       style={{ background: "transparent" }}
     >
-      <TimelineDriver onDone={onDone} />
+      <TimelineDriver onDone={onDone} onStart={onStart} />
       <CameraRig />
       <Lights />
       <StudioEnv />
 
-      <Suspense fallback={null}>
-        {/* Bối cảnh + nhân vật */}
-        <CoupleScene />
+      {/* ═══════════════════════════════════════════════════════════
+          SUSPENSE TÁCH 2 LỚP — ĐÂY là thay đổi quan trọng nhất.
 
+          TRƯỚC ĐÂY: 1 <Suspense> bao quanh TẤT CẢ model.
+          → Chỉ cần 1 trong 5 model chưa xong (backdrop 7.2MB!) là
+            TOÀN BỘ Canvas bị Suspense chặn → KHÔNG render frame nào.
+          → Màn hình đen đặc, không có gì chuyển động.
+
+          GIỜ:
+          • Lớp 1 (HERO): chỉ 2 chiếc nhẫn (~1MB).
+            Chúng chỉ cần xong NHANH → nhẫn bay vào ngay.
+          • Lớp 2 (FULL): backdrop + nhân vật (~14MB) — TẢI NỀN.
+            Suspense chặn riêng → Canvas vẫn render bình thường,
+            nhân vật/backdrop tự fade-in khi sẵn sàng.
+          ═══════════════════════════════════════════════════════════ */}
+      <Suspense fallback={null}>
         {/* 2 chiếc nhẫn — lệch phase để quấn quít */}
         <Ring side={1} url={MODEL.brideRing} tint="#ffe9c9" />
         <Ring side={-1} url={MODEL.groomRing} tint="#ffd9b0" />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {/* Bối cảnh + nhân vật — tải nền, không chặn cảnh */}
+        <CoupleScene />
       </Suspense>
     </Canvas>
   );

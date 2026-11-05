@@ -7,12 +7,15 @@ import RevealScreen from "@/components/RevealScreen";
 import { DetailsSections } from "@/components/DetailsScreen";
 import ContinuityLayer from "@/components/ContinuityLayer";
 import Loading3DWrapper from "@/components/loading3d/Loading3DWrapper";
-import { installAudioUnlock, playShimmer } from "@/components/soundscape";
+import MuteButton from "@/components/MuteButton";
+import { installAudioUnlock, isMuted, playShimmer } from "@/components/soundscape";
+import { preload } from "react-dom";
 import {
   WEDDING_DATE_SHORT,
   WEDDING_DATE_LUNAR_TEXT,
 } from "@/lib/weddingDate";
 import { BRIDE_NAME, GROOM_NAME } from "@/lib/weddingNames";
+import { MODEL } from "@/components/loading3d/useGLB";
 
 /**
  * Các giai đoạn của trang:
@@ -110,6 +113,9 @@ export default function Page() {
 
   return (
     <main className="relative h-screen w-full overflow-hidden">
+      {/* Tải nền phần còn lại (backdrop + nhân vật) — ưu tiên thấp */}
+      <PreloadAssets />
+
       {/* ============ LOADING 3D ============
           Cảnh mở đầu: 2 nhẫn bay vào quấn quít → nhỏ dần rơi xuống →
           chú rể & cô dâu đứng trên backdrop cúi chào.
@@ -216,6 +222,14 @@ export default function Page() {
         )}
       </AnimatePresence>
 
+      {/* ============ NÚT TẮT TIẾNG ============
+          Dùng chung 1 AudioContext cho toàn bộ sound tổng hợp.
+          Nhạc nền MP3 đi qua `Audio` element riêng → cần cầu nối
+          thủ công (xem `AudioPlayer` bên dưới). */}
+      {(stage === "intro" || stage === "revealed" || stage === "revealing") && (
+        <MuteButton className="fixed right-4 top-4 z-50 sm:right-6 sm:top-6" />
+      )}
+
       {/* Page dots indicator */}
       {stage === "revealed" && (
         <div className="pointer-events-none fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2 sm:right-4 sm:gap-3">
@@ -282,6 +296,130 @@ export default function Page() {
   );
 }
 
+/**
+ * PRELOAD ASSET 3D — chạy NGAY khi HTML vừa tới.
+ *
+ * ── VÌ SAO CẦN ──
+ * ⚠ VẤN ĐỀ GỐC: trình duyệt chỉ biết tải GLB sau khi:
+ *   1. HTML tới
+ *   2. JS bundle (960KB three.js + r3f + drei) tải xong
+ *   3. React hydrate, Canvas mount
+ *   4. `useLoader` mới bắt đầu fetch GLB
+ *
+ *   → 4 bước TUẦN TỰ trên mạng di động = 5-15 giây chờ TRƯỚC khi
+ *     byte đầu tiên của model bắt đầu tải.
+ *
+ * ── VÌ SAO DÙNG `preload()` THAY VÌ `fetch()` THỦ CÔNG ──
+ * ⚠ LỖI ĐÃ GẶP (đo bằng Performance Resource Timing):
+ *   `fetch(url)` trong `useEffect` + `GLTFLoader` cùng tải 1 URL →
+ *   **2 request SONG SONG** cho cùng 1 file.
+ *
+ *   Đo thực tế: `wedding-backdrop.glb` bị tải 2 lần (4.6MB + 4.6MB),
+ *   `bride.glb` 2 lần, `groom.glb` 2 lần → **~8MB băng thông thừa**
+ *   trên mạng di động → đúng triệu chứng "chờ rất lâu".
+ *
+ *   Nguyên nhân: browser KHÔNG dedupe 2 request `fetch` đang in-flight
+ *   (chỉ dedupe `<link rel=preload>` với request cùng credentials).
+ *
+ *   → `ReactDOM.preload()` inject `<link rel="preload" as="fetch">` vào
+ *     `<head>` → browser gộp chung với request của `GLTFLoader`
+ *     (cùng URL + cùng `crossOrigin`) → **1 request duy nhất**.
+ *
+ * ⚠ `crossOrigin: "anonymous"` PHẢI khớp với `FileLoader` của Three.js
+ *   (luôn dùng CORS mode) — nếu lệch thì browser coi là 2 resource
+ *   khác nhau và tải 2 lần.
+ */
+function PreloadAssets() {
+  // Không còn fetch thủ công — preload đã xử lý ở module scope.
+  // Component giữ lại để cấu trúc gọi trong JSX rõ ràng.
+  return null;
+}
+
+/**
+ * PRELOAD 2 NHẪN — ưu tiên CAO.
+ *
+ * ── VÌ SAO RIÊNG? ──
+ * 2 nhẫn là thứ khách THẤY ĐẦU TIÊN. Chúng phải có mặt sớm nhất.
+ *
+ * ⚠ Gọi ở MODULE SCOPE (không phải trong component/useEffect):
+ *   React 19 thu thập `preload()` lúc RENDER để inject `<link>` vào
+ *   `<head>` của HTML tĩnh. Nếu gọi trong `useEffect` → chạy SAU khi
+ *   HTML đã gửi → không có link nào trong HTML → mất tác dụng.
+ *
+ * ⚠ `as: "fetch"` + `crossOrigin: "anonymous"` khớp với cách
+ *   Three.js `FileLoader` fetch (luôn CORS mode) → preload được
+ *   TÁI SỬ DỤNG, không phải tải 2 lần.
+ *
+ * ⚠ React tự dedupe → không có duplicate preload (khác vì thêm
+ *   `<link>` thủ công trong layout.tsx).
+ */
+preload(MODEL.brideRing, {
+  as: "fetch",
+  crossOrigin: "anonymous",
+  fetchPriority: "high",
+});
+preload(MODEL.groomRing, {
+  as: "fetch",
+  crossOrigin: "anonymous",
+  fetchPriority: "high",
+});
+
+/**
+ * PRELOAD 3 MODEL NỀN — ưu tiên THẤP.
+ *
+ * Backdrop + 2 nhân vật (~7.8MB) tải song song với JS + 2 nhẫn,
+ * nhưng KHÔNG chặn cảnh (xem `assetTracker` 2 chặng trong `store.ts`).
+ *
+ * ⚠ `fetchPriority: "low"` — không cạnh tranh băng thông với 2 nhẫn
+ *   (chúng là thứ khách thấy đầu tiên) và với JS bundle.
+ *
+ * ⚠ Vẫn dùng `preload()` chứ không `fetch()` thủ công — cùng lý do:
+ *   browser chỉ dedupe được `<link rel=preload>` với request của
+ *   `GLTFLoader`, còn 2 `fetch()` song song sẽ tải trùng 2 lần.
+ */
+preload(MODEL.backdrop, {
+  as: "fetch",
+  crossOrigin: "anonymous",
+  fetchPriority: "low",
+});
+preload(MODEL.groom, {
+  as: "fetch",
+  crossOrigin: "anonymous",
+  fetchPriority: "low",
+});
+preload(MODEL.bride, {
+  as: "fetch",
+  crossOrigin: "anonymous",
+  fetchPriority: "low",
+});
+
+/**
+ * PRELOAD DRACO DECODER — 2 file, 345KB.
+ *
+ * ⚠ ĐO ĐƯỢC: trước khi có preload này, decoder chỉ bắt đầu tải khi
+ *   Canvas mount (657ms) → mất 615ms chờ decode. Đây là nút thắt lớn
+ *   nhất sau "darkness" 0.8s.
+ *
+ *   → Preload ở module scope = browser tải SONG SONG với JS bundle
+ *     (bắt đầu ngay từ ~45ms thay vì 657ms) → decoder đã sẵn sàng
+ *     khi cần → chỉ còn ~150ms init WASM.
+ *
+ * ⚠ `crossOrigin: "anonymous"` — khớp với `FileLoader` của Three.js
+ *   (luôn CORS mode) → browser TÁI SỬ DỤNG response đã preload,
+ *   không tải 2 lần.
+ *
+ * ⚠ Không có `fetchPriority` → mặc định "high" của preload. ĐÚNG ý:
+ *   decoder là thứ chặn nhẫn xuất hiện → cần ưu tiên.
+ */
+preload("/draco/draco_wasm_wrapper.js", {
+  as: "fetch",
+  crossOrigin: "anonymous",
+});
+preload("/draco/draco_decoder.wasm", {
+  as: "fetch",
+  crossOrigin: "anonymous",
+});
+
 function AudioPlayer() {
   useEffect(() => {
     const audio = new Audio();
@@ -312,10 +450,22 @@ function AudioPlayer() {
     };
     tryPlay();
 
+    // ⚠ NÚT MUTE phải tắt cả nhạc nền MP3 này.
+    //   `setMuted()` chỉ điều khiển master gain của Web Audio — nhạc
+    //   nền nằm ngoài hệ thống đó (dùng `HTMLAudioElement` riêng).
+    //   → Cần đồng bộ 2 nguồn âm thanh.
+    const syncMute = () => {
+      audio.muted = isMuted();
+      audio.volume = isMuted() ? 0 : 0.5;
+    };
+    syncMute();
+    window.addEventListener("wedding:muted", syncMute);
+
     return () => {
       audio.pause();
       audio.src = "";
       audio.removeEventListener("error", onError);
+      window.removeEventListener("wedding:muted", syncMute);
     };
   }, []);
 

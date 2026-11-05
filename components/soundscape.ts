@@ -47,6 +47,22 @@ export function onAudioReady(cb: () => void): () => void {
   };
 }
 
+/**
+ * AudioContext dùng chung — export để `soundscore.ts` dùng lại.
+ *
+ * ⚠ PURE ACCESSOR — KHÔNG tạo context mới. Chỉ trả về context đã
+ *   tồn tại. (Nếu tạo ở đây thì mỗi lần gọi sẽ tạo AudioContext mới
+ *   → tốn bộ nhớ trên mobile.)
+ */
+export function getAudioContext(): AudioContext | null {
+  return ctx;
+}
+
+/** Gain tổng (master) — export để `soundscore.ts` nối vào */
+export function getMasterGain(): GainNode | null {
+  return master;
+}
+
 /** AudioContext đã chạy chưa (tức là đã có tương tác người dùng) */
 export function isAudioRunning(): boolean {
   return !!ctx && ctx.state === "running";
@@ -65,8 +81,15 @@ export function isMuted(): boolean {
  */
 export function setMuted(value: boolean) {
   muted = value;
-  if (!ctx || !master) return;
-  master.gain.setTargetAtTime(muted ? 0 : 0.85, ctx.currentTime, 0.06);
+  if (ctx && master) {
+    master.gain.setTargetAtTime(muted ? 0 : 0.85, ctx.currentTime, 0.06);
+  }
+
+  // ⚠ Nhạc nền MP3 dùng `HTMLAudioElement` riêng → không nằm trong
+  //   master gain của Web Audio. Phải thông báo riêng để nó tắt theo.
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("wedding:muted", { detail: muted }));
+  }
 }
 
 function getCtx(): AudioContext | null {
@@ -82,6 +105,19 @@ function getCtx(): AudioContext | null {
     master = ctx.createGain();
     master.gain.value = 0.85;
     master.connect(ctx.destination);
+
+    // ── DEBUG HOOK (chỉ dev) ──
+    // Expose trạng thái audio để kiểm tra bằng console / automation.
+    // Chỉ bật khi NODE_ENV !== "production" → không rò rỉ gì ra public.
+    if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+      (window as unknown as { __audioDebug?: unknown }).__audioDebug = {
+        ctx,
+        master,
+        get state() {
+          return ctx?.state ?? "none";
+        },
+      };
+    }
   } catch {
     ctx = null;
   }
@@ -129,13 +165,17 @@ export function installAudioUnlock() {
 // =====================================================================
 // HELPERS
 // =====================================================================
-function noiseBuffer(c: AudioContext, duration: number) {
+/** Tạo buffer nhiễu trắng — dùng cho tiếng gió / tiếng sáp / tiếng không khí */
+export function createNoiseBuffer(c: AudioContext, duration: number) {
   const len = Math.max(1, Math.floor(c.sampleRate * duration));
   const buf = c.createBuffer(1, len, c.sampleRate);
   const data = buf.getChannelData(0);
   for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
   return buf;
 }
+
+/** Alias giữ tương thích với các call site cũ trong file này */
+const noiseBuffer = createNoiseBuffer;
 
 function env(
   g: GainNode,
