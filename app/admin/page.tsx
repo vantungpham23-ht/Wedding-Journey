@@ -1173,9 +1173,16 @@ export default function AdminPage() {
           </div>
         </motion.section>
 
-        <p className="mt-10 text-center font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/25">
-          Tùng &amp; Hằng · {WEDDING_DATE_DISPLAY} · {WEDDING_DATE_LUNAR_TEXT}
-        </p>
+        {/* Footer — ngày dương và ngày âm lịch TÁCH DÒNG (đồng bộ với
+            header & intro: 2 tầng thị giác, không dồn dấu · trên 1 dòng) */}
+        <div className="mt-10 flex flex-col items-center gap-1 text-center">
+          <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-[#fdfbf7]/25">
+            Tùng &amp; Hằng · {WEDDING_DATE_DISPLAY}
+          </p>
+          <p className="font-sans text-[9px] uppercase tracking-[0.3em] text-[#fdfbf7]/20">
+            {WEDDING_DATE_LUNAR_TEXT}
+          </p>
+        </div>
       </div>
     </main>
   );

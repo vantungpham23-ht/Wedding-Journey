@@ -47,22 +47,6 @@ export function onAudioReady(cb: () => void): () => void {
   };
 }
 
-/**
- * AudioContext dùng chung — export để `soundscore.ts` dùng lại.
- *
- * ⚠ PURE ACCESSOR — KHÔNG tạo context mới. Chỉ trả về context đã
- *   tồn tại. (Nếu tạo ở đây thì mỗi lần gọi sẽ tạo AudioContext mới
- *   → tốn bộ nhớ trên mobile.)
- */
-export function getAudioContext(): AudioContext | null {
-  return ctx;
-}
-
-/** Gain tổng (master) — export để `soundscore.ts` nối vào */
-export function getMasterGain(): GainNode | null {
-  return master;
-}
-
 /** AudioContext đã chạy chưa (tức là đã có tương tác người dùng) */
 export function isAudioRunning(): boolean {
   return !!ctx && ctx.state === "running";

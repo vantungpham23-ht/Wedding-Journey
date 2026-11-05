@@ -671,18 +671,40 @@ export default function IntroScreen({
           </motion.p>
         </motion.div>
 
-        {/* ---------- DATE ---------- */}
-        <motion.p
-          initial={{ opacity: 0, y: 4 }}
-          animate={
-            mounted
-              ? { opacity: 0.35, y: 0, transition: { duration: 1, delay: T.date, ease } }
-              : { opacity: 0, y: 4 }
-          }
-          className="absolute bottom-10 font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/40 sm:text-[10px]"
-        >
-          {WEDDING_DATE_DISPLAY} · {WEDDING_DATE_LUNAR_TEXT}
-        </motion.p>
+        {/* ---------- DATE ----------
+            ⚠ ĐÃ TÁCH DÒNG: trước đây gộp "27 · 12 · 2026 · tức
+            19.11.2026 âm lịch" trên 1 dòng → dài và rối (2 dấu · liền
+            nhau, tự nó đã là dấu ngăn dòng). Nay:
+              dòng 1 — ngày dương (sáng hơn)
+              dòng 2 — ngày âm lịch (mờ hơn, nhỏ hơn) */}
+        <div className="absolute bottom-8 flex flex-col items-center gap-1.5 sm:bottom-10">
+          <motion.p
+            initial={{ opacity: 0, y: 4 }}
+            animate={
+              mounted
+                ? { opacity: 0.4, y: 0, transition: { duration: 1, delay: T.date, ease } }
+                : { opacity: 0, y: 4 }
+            }
+            className="font-sans text-[9px] uppercase tracking-[0.4em] text-[#fdfbf7]/45 sm:text-[10px]"
+          >
+            {WEDDING_DATE_DISPLAY}
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 4 }}
+            animate={
+              mounted
+                ? {
+                    opacity: 0.28,
+                    y: 0,
+                    transition: { duration: 1, delay: T.date + 0.15, ease },
+                  }
+                : { opacity: 0, y: 4 }
+            }
+            className="font-sans text-[9px] uppercase tracking-[0.35em] text-[#fdfbf7]/40 sm:text-[9px]"
+          >
+            {WEDDING_DATE_LUNAR_TEXT}
+          </motion.p>
+        </div>
 
         {/* ---------- NGƯỜI GỬI ---------- */}
         {guestFrom && (

@@ -46,15 +46,17 @@ export const WEDDING_DATE_FULL = "Chủ Nhật · 27 Tháng 12 · 2026";
 export const WEDDING_DATE_LUNAR_TEXT = `${LUNAR_PREFIX} ${WEDDING_DATE_LUNAR} âm lịch`;
 
 /**
- * Ngày cưới kèm ngày âm lịch trong ngoặc.
- * Dùng cho mọi chỗ hiển thị ngày cưới ra ngoài (thiệp, share, admin).
+ * Tagline tiếng Anh — dùng ở góc phải trên cùng (header cố định).
  *
- * Ví dụ: "27.12.2026 (tức 19.11.2026 âm lịch)"
+ * ── VÌ SAO ĐỔI TỪ NGÀY SANG TAGLINE? ──
+ * Trước đây góc phải trên hiện "27.12.2026 · tức 19.11.2026 âm lịch".
+ * Vấn đề:
+ *   1. Dài, chiếm nhiều chỗ trên màn hình hẹp (đặc biệt mobile).
+ *   2. Lặp lại ngày ở mọi section → thông tin lặp, không có giá trị gì.
+ *   3. "tức 19.11.2026 âm lịch" đọc hơi rối khi nằm cạnh ngày dương.
+ *
+ * → Thay bằng 1 câu ngắn về tình yêu/hạnh phúc → header có chất
+ *   "lời chúc" thay vì là 1 dòng metadata thừa.
+ *   Ngày vẫn hiện đầy đủ ở màn hình reveal + các section chi tiết.
  */
-export const WEDDING_DATE_WITH_LUNAR = `${WEDDING_DATE_SHORT} (${LUNAR_PREFIX} ${WEDDING_DATE_LUNAR} âm lịch)`;
-
-/**
- * Ngày cưới dạng hiển thị lớn kèm âm lịch.
- * Ví dụ: "27 · 12 · 2026 (tức 19.11.2026 âm lịch)"
- */
-export const WEDDING_DATE_DISPLAY_WITH_LUNAR = `${WEDDING_DATE_DISPLAY} (${LUNAR_PREFIX} ${WEDDING_DATE_LUNAR} âm lịch)`;
+export const WEDDING_TAGLINE_EN = "Two Hearts, One Forever";

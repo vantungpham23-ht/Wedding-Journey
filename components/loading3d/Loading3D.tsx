@@ -36,12 +36,6 @@ import CoupleScene from "./CoupleScene";
 import { assetTracker, clock, resetClock } from "./store";
 import { cameraYAt, cameraZAt, easeInOutSine, lerpProgress, T } from "./timeline";
 import { MODEL } from "./useGLB";
-import {
-  resetSoundScore,
-  startSoundScore,
-  stopSoundScore,
-  updateSoundScore,
-} from "./soundscore";
 
 /**
  * Ánh sáng toàn cảnh.
@@ -230,12 +224,17 @@ function TimelineDriver({
     elapsed.current = 0;
     done.current = false;
 
-    // ⚠ SOUNDSCORE — âm thanh tổng hợp bằng Web Audio (0 byte tải
-    //   thêm, không phải tải file MP3 nào → không làm chậm mobile).
+    // ⚠ ÂM THANH CẢNH LOADING ĐÃ BỎ (2026-11-05).
     //
-    //   Reset trước khi start để mỗi lần mount đều phát lại từ đầu.
-    resetSoundScore();
-    startSoundScore();
+    //   Lý do: soundscore tổng hợp (drone + 6 cue) làm cảnh loading
+    //   dài thêm ~12.5s nghe mệt, và đè lên nhạc nền "Golden Hour"
+    //   của các section phía sau. Ngoài ra nó còn giữ AudioContext
+    //   sống → tốn RAM trên mobile.
+    //
+    //   → Nhạc nền của các section (golden-hour.mp3) GIỮ NGUYÊN.
+    //     Âm thanh "ấn sáp / giấy / chuông" ở IntroScreen cũng giữ.
+    //
+    //   File `soundscore.ts` đã bị xoá hoàn toàn.
 
     // ⚠ ASSET GATE — đồng hồ chỉ chờ CHẶNG 1 (2 chiếc nhẫn ~432KB).
     //
@@ -288,16 +287,12 @@ function TimelineDriver({
         unwatch();
         unwatchHero();
         clearTimer();
-        stopSoundScore();
       };
     }
 
     return () => {
       unwatch();
       clearTimer();
-      // Fade out ambience khi scene unmount → không đè tiếng drone
-      // lên nhạc nền ở intro screen.
-      stopSoundScore();
     };
   }, []);
 
@@ -310,10 +305,6 @@ function TimelineDriver({
         clock.time = T.done;
       }
     }
-
-    // ── SOUNDSCORE: đồng bộ cue theo timeline ──
-    // Gọi mỗi frame → cue phát đúng khoảnh khắc hình ảnh chuyển.
-    updateSoundScore(clock.time);
 
     if (!done.current && clock.time >= T.done) {
       done.current = true;

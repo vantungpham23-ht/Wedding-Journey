@@ -7,10 +7,10 @@
  * Trước đây `setMuted()` / `isMuted()` tồn tại trong `soundscape.ts`
  * nhưng KHÔNG có UI nào gọi tới → người xem không có cách tắt tiếng.
  *
- * Sau khi thêm soundscore cho cảnh loading (drone nền 13 giây), việc
- * có nút tắt trở nên QUAN TRỌNG hơn nhiều:
+ * Sau khi thêm nhạc nền "Golden Hour" cho các section, việc có nút
+ * tắt trở nên QUAN TRỌNG hơn nhiều:
  *   • Khách mở web ở chỗ đông người (quán cà phê, lớp học) → không
- *     muốn tiếng drone phát ra
+ *     muốn nhạc phát ra
  *   • Người dùng mobile hay bật im lặng khi mở link trong Zalo/Messenger
  *     → nhưng autoplay policy chỉ cho phát sau tương tác
  *

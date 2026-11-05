@@ -423,14 +423,27 @@ export default function RevealScreen({
             </span>
           </p>
 
-          {/* Date subtitle */}
+          {/* Date subtitle
+              ⚠ ĐÃ TÁCH DÒNG: trước đây gộp "Chủ Nhật · 27 Tháng 12 · 2026
+              (tức 19.11.2026 âm lịch)" trên 1 dòng → dài, đọc lủng củng,
+              và trên mobile bị bó/khó đọc. Nay ngày dương 1 dòng, ngày
+              âm lịch 1 dòng riêng bên dưới (nhỏ hơn, mờ hơn → 2 tầng
+              thị giác rõ ràng). */}
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={active ? { opacity: 1, y: 0 } : { opacity: 0 }}
             transition={{ duration: 0.6, delay: T_NAMES + blockDur(NAMES_TEXT) + 0.2, ease: sharedEase }}
             className="mt-4 font-sans text-[9px] uppercase tracking-[0.3em] text-[#4a3525]/50 sm:mt-6 sm:text-xs sm:tracking-[0.4em]"
           >
-            {WEDDING_DATE_FULL} ({WEDDING_DATE_LUNAR_TEXT})
+            {WEDDING_DATE_FULL}
+          </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={active ? { opacity: 1, y: 0 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: T_NAMES + blockDur(NAMES_TEXT) + 0.35, ease: sharedEase }}
+            className="mt-2 font-sans text-[9px] uppercase tracking-[0.3em] text-[#4a3525]/40 sm:mt-3 sm:text-[10px] sm:tracking-[0.35em]"
+          >
+            {WEDDING_DATE_LUNAR_TEXT}
           </motion.p>
 
           {/* Nhắc lại lời mời — "Kính mời ... tới dự hôn lễ của ..."

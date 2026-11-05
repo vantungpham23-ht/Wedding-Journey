@@ -20,7 +20,6 @@
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import MuteButton from "@/components/MuteButton";
 
 /** Canvas 3D — chỉ load phía client */
 const Loading3D = dynamic(() => import("./Loading3D"), { ssr: false });
@@ -125,9 +124,12 @@ export default function Loading3DWrapper({ onComplete }: Props) {
         }}
       />
 
-      {/* Nút tắt tiếng — góc trên phải, tự ẩn sau 3s
-          → không làm rối màn hình loading nhưng vẫn tắt được. */}
-      <MuteButton className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6" />
+      {/* ⚠ ĐÃ BỎ NÚT TẮT TIẾNG Ở MÀN LOADING.
+          Lý do: âm thanh của cảnh loading đã bị gỡ (2026-11-05) →
+          nút loa ở đây không còn tác dụng gì. Để lại chỉ khiến khách
+          bấm vào rồi không thấy gì xảy ra → tệ hơn là không có nút.
+          Nút mute thật nằm ở `app/page.tsx`, hiện từ stage "intro" trở
+          đi (lúc đó đã có nhạc nền section). */}
     </div>
   );
 }

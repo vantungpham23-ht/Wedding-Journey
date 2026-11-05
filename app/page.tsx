@@ -10,10 +10,7 @@ import Loading3DWrapper from "@/components/loading3d/Loading3DWrapper";
 import MuteButton from "@/components/MuteButton";
 import { installAudioUnlock, isMuted, playShimmer } from "@/components/soundscape";
 import { preload } from "react-dom";
-import {
-  WEDDING_DATE_SHORT,
-  WEDDING_DATE_LUNAR_TEXT,
-} from "@/lib/weddingDate";
+import { WEDDING_TAGLINE_EN } from "@/lib/weddingDate";
 import { BRIDE_NAME, GROOM_NAME } from "@/lib/weddingNames";
 import { MODEL } from "@/components/loading3d/useGLB";
 
@@ -270,8 +267,12 @@ export default function Page() {
             <span className={`font-serif text-[10px] uppercase tracking-[0.3em] sm:text-xs ${textColor}`}>
               Tùng & Hằng
             </span>
-            <span className={`font-serif text-[10px] uppercase tracking-[0.3em] sm:text-xs ${accentColor}`}>
-              {WEDDING_DATE_SHORT} · {WEDDING_DATE_LUNAR_TEXT}
+            {/* ⚠ GÓC PHẢI TRÊN: dùng TAGLINE tiếng Anh thay cho ngày.
+                Lý do: ngày đã hiện đầy đủ ở màn hình reveal + section
+                chi tiết → lặp ở header chỉ tốn chỗ, không thêm thông tin.
+                Tagline ngắn gọn cho header có chiều sâu hơn. */}
+            <span className={`font-serif text-[10px] italic tracking-[0.2em] sm:text-xs ${accentColor}`}>
+              {WEDDING_TAGLINE_EN}
             </span>
           </div>
         );
